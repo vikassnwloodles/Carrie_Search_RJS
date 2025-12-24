@@ -182,6 +182,81 @@ ${currentCodeLines.join('\n')}
 }
 
 
+// Utility: safely extract domain from URL
+function getDomain(url) {
+    try {
+        return new URL(url).hostname;
+    } catch {
+        return '';
+    }
+}
+
+// Function to generate the citation badge HTML
+function getCitationHtml(citationsMetadata) {
+    if (!citationsMetadata || citationsMetadata.length === 0) return '';
+
+    const uniqueId = Date.now() + Math.floor(Math.random() * 1000);
+
+    // Attach hover handlers after rendering
+    setTimeout(() => {
+        attachEventHandlers(uniqueId);
+    }, 0);
+
+    const firstCitation = citationsMetadata[0];
+    const remainingCount = citationsMetadata.length - 1;
+    const remainingText = remainingCount > 0 ? ` +${remainingCount}` : '';
+
+    // Build tooltip items
+    const sourceItemsHtml = citationsMetadata.map(cit => {
+        const domain = getDomain(cit.site_url);
+
+        return `
+        <a href="${cit.site_url}" target="_blank" rel="noopener noreferrer"
+           class="flex items-start gap-3 p-2 rounded hover:bg-gray-100">
+            
+            <img
+                src="https://www.google.com/s2/favicons?domain=${domain}&sz=16"
+                class="w-4 h-4 flex-shrink-0 rounded"
+                alt=""
+                onerror="this.outerHTML='<i class=&quot;fa-solid fa-globe w-4 h-4 text-gray-400 flex-shrink-0&quot;></i>'"
+            />
+
+            <div class="flex-1 truncate">
+                <div class="text-sm font-sans truncate">${cit.title}</div>
+                <div class="text-xs font-mono text-gray-500 truncate">${cit.domain_short}</div>
+            </div>
+        </a>`;
+    }).join('');
+
+    return `
+    <span id="citation-badge-${uniqueId}" class="relative inline-block">
+        <!-- Citation badge -->
+        <a 
+            href="${firstCitation.site_url}"
+            target="_blank"
+            rel="nofollow noopener"
+            aria-label="${firstCitation.title}"
+            class="inline-flex items-center ml-1 no-underline hover:no-underline"
+        >
+            <span class="text-xs rounded-full px-2 py-[0.1875rem] font-mono tabular-nums 
+                         text-gray-600 bg-gray-100 border border-gray-300 
+                         hover:bg-blue-600 hover:text-white cursor-pointer transition-colors duration-200">
+                ${firstCitation.domain_short}${remainingText}
+            </span>
+        </a>
+    </span>
+
+    <!-- Tooltip -->
+    <div id="citation-tooltip-${uniqueId}"
+         class="absolute mt-1 w-80 bg-white border border-gray-300 rounded-lg shadow-lg
+                opacity-0 invisible transition-opacity duration-200 z-10 pointer-events-auto">
+        <div class="px-3 py-2 space-y-2 max-h-60 overflow-y-auto">
+            ${sourceItemsHtml}
+        </div>
+    </div>
+    `;
+}
+
 
 function getMainTextAndCitationsHtml(trimmedLine, citationsMetadata) {
     // EXTRACT CITATION NUMBERS SUCH AS 1, 2... FROM `trimmedLine`
@@ -195,67 +270,6 @@ function getMainTextAndCitationsHtml(trimmedLine, citationsMetadata) {
         citationsHtml = getCitationHtml(citationsMetadataFiltered)
     }
     return [mainText, citationsHtml];
-}
-
-
-// Function to generate the citation badge HTML
-window.getCitationHtml = function (citationsMetadata) {
-    const uniqueId = Date.now() + Math.floor(Math.random() * 1000); // ensure uniqueness
-
-    // Attach hover handlers after rendering
-    setTimeout(() => {
-        attachEventHandlers(uniqueId);
-    }, 0);
-
-    if (!citationsMetadata || citationsMetadata.length === 0) return '';
-
-    const firstCitation = citationsMetadata[0];
-    const remainingCount = citationsMetadata.length - 1;
-    const remainingText = remainingCount > 0 ? ` +${remainingCount}` : '';
-
-    // Build tooltip items for all citations
-    // `<img src="${cit.icon}" alt="favicon" class="w-4 h-4 flex-shrink-0 rounded-full">`
-
-    //     ${cit.icon
-    //     ? `<img src="https://www.google.com/s2/favicons?domain=${cit.site_url}&sz=16">`
-    //     : `<i class="fa-solid fa-globe w-4 h-4 text-gray-600 flex-shrink-0"></i>`
-    // }
-    const sourceItemsHtml = citationsMetadata.map(cit => `
-    <a href="${cit.site_url}" target="_blank" class="flex items-start gap-3 p-2 rounded hover:bg-gray-100">
-        <img src="https://www.google.com/s2/favicons?domain=${cit.site_url}&sz=16">
-        <div class="flex-1 truncate">
-            <div class="text-sm font-sans truncate">${cit.title}</div>
-            <div class="text-xs font-mono text-gray-500 truncate">${cit.domain_short}</div>
-        </div>
-    </a>
-`).join('');
-
-
-    return `
-    <span id="citation-badge-${uniqueId}" class="relative inline-block">
-        <!-- Citation badge -->
-        <a 
-        rel="nofollow noopener" 
-        class="inline-flex items-center ml-1 no-underline hover:no-underline"
-        target="_blank"
-        href="${firstCitation.site_url}"
-        aria-label="${firstCitation.title}">
-            <span class="text-xs rounded-full px-2 py-[0.1875rem] font-mono tabular-nums 
-                        text-gray-600 bg-gray-100 border border-gray-300 
-                        hover:bg-blue-600 hover:text-white cursor-pointer transition-colors duration-200">
-                ${firstCitation.domain_short}${remainingText}
-            </span>
-        </a>
-    </span>
-
-    <!-- Tooltip -->
-    <div id="citation-tooltip-${uniqueId}" class="absolute mt-1 w-80 bg-white border border-gray-300 rounded-lg shadow-lg
-                opacity-0 invisible transition-opacity duration-200 z-10 pointer-events-auto">
-        <div class="px-3 py-2 space-y-2 max-h-60 overflow-y-auto">
-            ${sourceItemsHtml}
-        </div>
-    </div>
-    `;
 }
 
 

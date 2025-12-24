@@ -5,6 +5,7 @@ import { showCustomToast } from "../utils/customToast";
 import { useAuthUtils } from "../utils/useAuthUtils";
 
 export default function SearchResultContainer({ setShowImg }) {
+  const [performScroll, setPerformScroll] = useState(null)
   const showFileMetadata = false
   const uploadedFile = {}
   const main2DropdownOpen = false
@@ -55,17 +56,25 @@ export default function SearchResultContainer({ setShowImg }) {
       }
     } else {
       setSearchHistoryContainer(resJson);
+      setPerformScroll(Math.random())
     }
   }
 
   /* ---------------- FIRE SEARCH ---------------- */
   async function fireSearch(prompt, id = null) {
-    prompt = prompt.trim()
-    if (!prompt) return
+    if (prompt || searchInputData.prompt) {
+      if (prompt) {
+        searchInputData.prompt = prompt.trim()
+      } else {
+        searchInputData.prompt = searchInputData.prompt.trim()
+      }
+    } else {
+      return
+    }
+
     setPk(id);              // null → new search, id → edit
     setSearchStarted(true); // toast visible immediately
 
-    if (prompt) searchInputData.prompt = prompt;
     if (searchBoxRef.current) searchBoxRef.current.innerText = "";
 
     const res = await fetch(`${import.meta.env.VITE_API_URL}/search/`, {
@@ -89,6 +98,9 @@ export default function SearchResultContainer({ setShowImg }) {
           type: "warn",
         });
         logoutAndNavigate();
+      } else if (res.status === 402) {
+        showCustomToast(resJson, { type: "error" });
+        navigate("/pricing")
       } else {
         showCustomToast(resJson, { type: "error" });
       }
@@ -133,20 +145,31 @@ export default function SearchResultContainer({ setShowImg }) {
     return () => setShowImg(true);
   }, [threadId]);
 
-  /* ---------------- SCROLL: INITIAL PAGE LOAD ---------------- */
+
   useEffect(() => {
-    if (!threadId) return;
-    if (!searchHistoryContainer.length) return;
-    if (hasScrolledOnInitialLoadRef.current) return;
-
-    hasScrolledOnInitialLoadRef.current = true;
-
+    if(!performScroll) return
     const t = setTimeout(() => {
       bottomRef.current?.scrollIntoView({ behavior: "auto" });
     }, 0);
 
     return () => clearTimeout(t);
-  }, [searchHistoryContainer, threadId]);
+  }, [performScroll])
+
+
+  /* ---------------- SCROLL: INITIAL PAGE LOAD ---------------- */
+  // useEffect(() => {
+  //   if (!threadId) return;
+  //   if (!searchHistoryContainer.length) return;
+  //   if (hasScrolledOnInitialLoadRef.current) return;
+
+  //   hasScrolledOnInitialLoadRef.current = true;
+
+  //   const t = setTimeout(() => {
+  //     bottomRef.current?.scrollIntoView({ behavior: "auto" });
+  //   }, 0);
+
+  //   return () => clearTimeout(t);
+  // }, [searchHistoryContainer, threadId]);
 
   /* ---------------- SCROLL: NEW SEARCH (EARLY) ---------------- */
   useEffect(() => {

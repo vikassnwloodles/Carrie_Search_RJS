@@ -20,7 +20,7 @@ export default function SearchResult({ response, prompt, pk, onSearch }) {
   );
 
   return (
-    <div id={response.pk}>
+    <div id={pk}>
       <div className="animate-fade-in text-left mb-8 p-6 bg-white rounded-lg border border-gray-200 relative">
         <SearchQueryContainer
           query={prompt}
@@ -34,7 +34,7 @@ export default function SearchResult({ response, prompt, pk, onSearch }) {
         <SearchResponseContainer content={content} uniqueId={uniqueId} searchResultId={response.pk} />
 
         <SearchExportOptions
-          searchResultId={response.pk}
+          searchResultId={pk}
           uniqueId={uniqueId}
         />
       </div>
