@@ -144,45 +144,6 @@ export default function Home({ setShowImg }) {
     }
     const threadId = crypto.randomUUID();
     navigate(`/search/${threadId}`, { state: { ...searchInputData, prompt: text } });
-    return
-
-    setSearchStarted(true)
-    setShowImg(false)
-    setShowSearchResultContainer(true)
-    setUpdateUiOnSearch(true)
-
-    searchBoxRef.current.innerText = "";
-
-    setTimeout(() => {
-      bottomRef.current?.scrollIntoView({
-        behavior: "smooth",
-      });
-    }, 0);
-
-    // return
-    const res = await fetch(`${import.meta.env.VITE_API_URL}/search/`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${localStorage.getItem("authToken")}`
-      },
-      body: JSON.stringify({ ...searchInputData, prompt: text })
-    })
-    const resJson = await res.json()
-    if (!res.ok) {
-      if (res.status === 401) {
-        showCustomToast("Session expired. Please log in again.", { type: "warn" });
-        logoutAndNavigate()
-      } else {
-        showCustomToast(resJson, { type: "error" })
-      }
-    } else {
-      setSearchResponse({ ...resJson, prompt: text })
-      setSearchHistoryContainer([...searchHistoryContainer, { ...resJson, prompt: text }])
-      // window.history.pushState(null, "", "/search");
-      navigate("/search", { state: { response: resJson, prompt: text } });
-    }
-    setSearchStarted(false)
 
   }
 
