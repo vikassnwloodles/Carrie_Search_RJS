@@ -1,0 +1,74 @@
+# ---------------------------
+# Logs
+# ---------------------------
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# ---------------------------
+# Dependencies
+# ---------------------------
+node_modules/
+.pnp/
+.pnp.js
+
+# ---------------------------
+# Build output
+# ---------------------------
+dist/
+dist-ssr/
+build/
+out/
+
+# ---------------------------
+# Environment variables
+# ---------------------------
+.env
+.env.*
+*.local
+!.env.example
+
+# ---------------------------
+# Cache / tooling
+# ---------------------------
+.cache/
+.vite/
+.parcel-cache/
+.eslintcache
+.turbo/
+.next/
+.nuxt/
+
+# ---------------------------
+# Coverage
+# ---------------------------
+coverage/
+
+# ---------------------------
+# Editor directories and files
+# ---------------------------
+.vscode/*
+!.vscode/extensions.json
+.idea/
+.DS_Store
+Thumbs.db
+
+# ---------------------------
+# Windows / Visual Studio
+# ---------------------------
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# ---------------------------
+# Misc
+# ---------------------------
+*.pid
+*.seed
+*.tgz

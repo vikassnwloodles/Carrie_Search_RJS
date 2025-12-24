@@ -1,0 +1,532 @@
+body {
+    font-family: 'Poppins', sans-serif;
+    overflow-x: hidden;
+    background-color: #fcfcf9;
+}
+
+.main-logo {
+    width: 60vh;
+    max-width: 65vh;
+}
+
+.logo-main .char-c {
+    color: #8a3ffc;
+}
+
+.logo-main .char-a {
+    color: #f47f20;
+}
+
+.logo-main .char-r1 {
+    color: #4589ff;
+}
+
+.logo-main .char-r2 {
+    color: #fcc100;
+}
+
+.logo-main .char-i {
+    color: #4589ff;
+}
+
+.logo-main .char-e {
+    color: #34c759;
+}
+
+#main-sidebar:hover+#secondary-sidebar,
+#secondary-sidebar:hover {
+    transform: translateX(0);
+    opacity: 1;
+}
+
+#secondary-sidebar {
+    transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
+    transform: translateX(-100%);
+    opacity: 0;
+}
+
+.modal {
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+#center-content-wrapper {
+    transition: all 0.5s ease-in-out;
+}
+
+/* #search-results-container { */
+/* max-height: calc(100vh - 250px); */
+/* overflow-y: auto; */
+/* scroll-behavior: smooth; */
+/* } */
+#search-width{
+    width: 482px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    /* left: 190px; */
+}
+#search-results-container {
+    margin-bottom: 150px;
+}
+
+#search-results-container::-webkit-scrollbar {
+    width: 8px;
+}
+
+#search-results-container::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+
+#search-results-container::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 10px;
+}
+
+#search-results-container::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+
+#model-dropdown {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.toggle-switch {
+    position: relative;
+    display: inline-block;
+    width: 38px;
+    /* Adjusted width */
+    height: 22px;
+    /* Adjusted height */
+}
+
+.toggle-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    transition: .4s;
+    border-radius: 22px;
+    /* Adjusted border-radius */
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 18px;
+    /* Adjusted height */
+    width: 18px;
+    /* Adjusted width */
+    left: 2px;
+    /* Adjusted left */
+    bottom: 2px;
+    /* Adjusted bottom */
+    background-color: white;
+    transition: .4s;
+    border-radius: 50%;
+}
+
+input:checked+.slider {
+    background-color: #20c997;
+    /* Tailwind teal-500 equivalent */
+}
+
+input:checked+.slider:before {
+    transform: translateX(16px);
+    /* Adjusted translate for smaller switch */
+}
+
+/* Custom height for the search input and padding to make space for icons at the bottom */
+#ai_search {
+    /* min-height: 100px; */
+    /* Increased height */
+    /* padding-bottom: 50px; */
+    /* Create space for icons at the bottom */
+    padding-left: 20px;
+    /* Adjusted padding for text at the top */
+    padding-right: 20px;
+    /* Adjusted padding for text at the top */
+}
+
+
+[contenteditable][data-placeholder]:empty:before {
+    content: attr(data-placeholder);
+    color: #9ca3af;
+    /* Tailwind gray-400 */
+    pointer-events: none;
+}
+
+
+/* Position left and right icon containers at the bottom of the input field */
+#search-form .absolute.left-4 {
+    bottom: 8px;
+    /* Adjust as needed for exact vertical alignment */
+    top: unset;
+    /* Remove top positioning */
+    transform: unset;
+    /* Remove transform */
+    left: 10px;
+    /* Keep consistent left spacing */
+}
+
+#search-form .absolute.right-4 {
+    bottom: 8px;
+    /* Adjust as needed for exact vertical alignment */
+    top: unset;
+    /* Remove top positioning */
+    transform: unset;
+    /* Remove transform */
+    right: 10px;
+    /* Keep consistent right spacing */
+}
+
+.image-carousel-wrapper {
+    position: relative;
+    width: 100%;
+    /* Make wrapper full width */
+    margin-top: 16px;
+    /* Space above the carousel */
+    margin-bottom: 32px;
+    /* Space below the carousel */
+}
+
+.image-carousel-container {
+    display: flex;
+    overflow-x: auto;
+    gap: 16px;
+    /* Space between images */
+    padding: 0 40px;
+    /* Padding for scrollbar and space for arrows */
+    -webkit-overflow-scrolling: touch;
+    /* Smooth scrolling on iOS */
+    scrollbar-width: thin;
+    /* Firefox */
+    scrollbar-color: #888 #f1f1f1;
+    /* Firefox scrollbar color */
+}
+
+.image-carousel-container::-webkit-scrollbar {
+    height: 8px;
+}
+
+.image-carousel-container::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+
+.image-carousel-container::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 10px;
+}
+
+.image-carousel-container::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+
+.image-card {
+    flex-shrink: 0;
+    /* Prevent images from shrinking */
+    height: 150px;
+    /* Fixed height for all image cards */
+    width: 250px;
+    /* Fixed width for each card, adjust as needed */
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    background-color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.image-card img {
+    height: 100%;
+    /* Image fills the height of the card */
+    width: 100%;
+    /* Image fills the width of the card */
+    object-fit: cover;
+    /* Cover the area, cropping if necessary */
+}
+
+.carousel-arrow {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background-color: rgba(0, 0, 0, 0.5);
+    color: white;
+    border-radius: 50%;
+    padding: 10px;
+    cursor: pointer;
+    z-index: 10;
+    transition: background-color 0.3s ease;
+}
+
+.carousel-arrow:hover {
+    background-color: rgba(0, 0, 0, 0.7);
+}
+
+.carousel-arrow.left {
+    left: 5px;
+}
+
+.carousel-arrow.right {
+    right: 5px;
+}
+
+@keyframes shake {
+
+    0%,
+    100% {
+        transform: translateX(0);
+    }
+
+    20%,
+    60% {
+        transform: translateX(-10px);
+    }
+
+    40%,
+    80% {
+        transform: translateX(10px);
+    }
+}
+
+.shake {
+    animation: shake 0.5s ease-in-out;
+}
+
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 60px;
+    height: 34px;
+}
+
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    transition: .4s;
+    border-radius: 34px;
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 26px;
+    width: 26px;
+    left: 4px;
+    bottom: 4px;
+    background-color: white;
+    transition: .4s;
+    border-radius: 50%;
+}
+
+input:checked+.slider {
+    background-color: #2196F3;
+}
+
+input:checked+.slider:before {
+    transform: translateX(26px);
+}
+
+
+/* Overlay covers whole screen */
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.6);
+    backdrop-filter: blur(1px);
+    display: none;
+    /* hidden by default */
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+}
+
+
+.loader-container {
+    width: 70%;
+    max-width: 600px;
+    text-align: center;
+    background: #fff;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+    position: relative;
+}
+
+.text {
+    font-size: 20px;
+    margin-bottom: 20px;
+    font-weight: bold;
+    color: #444;
+}
+
+.progress-bar {
+    position: relative;
+    height: 20px;
+    border-radius: 10px;
+    background: #ddd;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    width: 0;
+    background: linear-gradient(90deg, #f7c600, #ffc107);
+    border-radius: 10px;
+    transition: width 0.3s ease;
+}
+
+.icon {
+    position: absolute;
+    top: 50%;
+    left: 0%;
+    transform: translate(-50%, -50%);
+    font-size: 26px;
+    transition: left 0.3s ease;
+}
+
+.parenetProgress {
+    margin: 0;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.close-btn {
+    display: none;
+    /* only show on error */
+    position: absolute;
+    top: 8px;
+    right: 12px;
+    font-size: 22px;
+    font-weight: bold;
+    color: #ff4d4d;
+    cursor: pointer;
+}
+
+.loaderPersontage {
+    font-size: 14px;
+    text-align: center;
+    vertical-align: middle;
+    font-style: italic;
+}
+
+.ai-section {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    width: 52%;
+    flex-wrap: wrap;
+}
+
+.ai-left,
+.ai-right {
+    flex: 1;
+    min-width: 300px;
+    /* ensures good responsiveness */
+}
+
+.ai-left {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.ai-left h3 {
+    font-size: 22px;
+}
+
+.ai-left p {
+    font-size: 0.8rem;
+    margin-bottom: 10px;
+}
+
+.hipaa-text {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #555;
+}
+
+.hipaa-text i {
+    color: #007bff;
+}
+
+/* Right section */
+.ai-right {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: -81px;
+}
+
+.btn-how {
+    display: block;
+    width: 60%;
+    text-align: center;
+    background-color: #896ecb;
+    color: #fff;
+    font-weight: bold;
+    padding: 7px 0;
+    border-radius: 8px;
+    text-decoration: none;
+}
+
+.btn-how:hover {
+    background-color: #0056b3;
+}
+
+/* Make the right image take full width */
+.ai-right .ai-image {
+    width: 100%;
+    height: auto;
+    border-radius: 12px;
+    cursor: pointer;
+}
+
+/* Left side image adjustment if needed */
+.ai-left .ai-image {
+    width: 35%;
+    margin-left: 30%;
+    margin-top: -32px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .ai-section {
+        flex-direction: column;
+    }
+
+    .ai-left,
+    .ai-right {
+        width: 100%;
+    }
+}
