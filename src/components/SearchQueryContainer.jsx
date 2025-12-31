@@ -72,7 +72,7 @@ export default function SearchQueryContainer({ query, uniqueId, searchResultId, 
       )}
 
       {/* Icons */}
-      <div className="absolute bottom-0 right-0 flex space-x-2">
+      <div className="pdf-hide absolute bottom-0 right-0 flex space-x-2">
         <IconButton
           onClick={copyPromptToClipboard}
           id={`query-copy-icon-${uniqueId}`}
@@ -80,37 +80,40 @@ export default function SearchQueryContainer({ query, uniqueId, searchResultId, 
           title="Copy"
           hidden={isEditBtnClicked}
         />
+        {onSearch &&
+          <>
+            <IconButton
+              onClick={() => setIsEditBtnClicked(true)}
+              id={`query-edit-icon-${uniqueId}`}
+              icon="far fa-edit"
+              title="Edit"
+              hidden={isEditBtnClicked}
+            />
 
-        <IconButton
-          onClick={() => setIsEditBtnClicked(true)}
-          id={`query-edit-icon-${uniqueId}`}
-          icon="far fa-edit"
-          title="Edit"
-          hidden={isEditBtnClicked}
-        />
+            <IconButton
+              onClick={handleConfirmEdit}
+              id={`confirm-edit-${uniqueId}`}
+              icon="fas fa-check"
+              title="Confirm"
+              hidden={!isEditBtnClicked}
+            />
 
-        <IconButton
-          onClick={handleConfirmEdit}
-          id={`confirm-edit-${uniqueId}`}
-          icon="fas fa-check"
-          title="Confirm"
-          hidden={!isEditBtnClicked}
-        />
-
-        <IconButton
-          onClick={handleCancelEdit}
-          id={`cancel-edit-${uniqueId}`}
-          icon="fas fa-times"
-          title="Cancel"
-          hidden={!isEditBtnClicked}
-        />
+            <IconButton
+              onClick={handleCancelEdit}
+              id={`cancel-edit-${uniqueId}`}
+              icon="fas fa-times"
+              title="Cancel"
+              hidden={!isEditBtnClicked}
+            />
+          </>
+        }
       </div>
 
       {/* Toggle */}
       {!isEditBtnClicked && (
         <button
           onClick={() => setIsPromptContainerExpanded(v => !v)}
-          className={`toggle-btn-${uniqueId} absolute bottom-0 text-teal-600 flex items-center gap-1`}
+          className={`toggle-btn-${uniqueId} absolute bottom-0 text-teal-600 flex items-center gap-1 pdf-hide`}
         >
           <span className={`toggle-text-${uniqueId}`}>
             {isPromptContainerExpanded ? "Show less" : "Show more"}

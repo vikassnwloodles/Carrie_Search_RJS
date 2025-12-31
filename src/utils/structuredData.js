@@ -229,32 +229,37 @@ function getCitationHtml(citationsMetadata) {
     }).join('');
 
     return `
-    <span id="citation-badge-${uniqueId}" class="relative inline-block">
-        <!-- Citation badge -->
-        <a 
-            href="${firstCitation.site_url}"
-            target="_blank"
-            rel="nofollow noopener"
-            aria-label="${firstCitation.title}"
-            class="inline-flex items-center ml-1 no-underline hover:no-underline"
-        >
-            <span class="text-xs rounded-full px-2 py-[0.1875rem] font-mono tabular-nums 
-                         text-gray-600 bg-gray-100 border border-gray-300 
-                         hover:bg-blue-600 hover:text-white cursor-pointer transition-colors duration-200">
-                ${firstCitation.domain_short}${remainingText}
-            </span>
-        </a>
-    </span>
+<span id="citation-wrapper-${uniqueId}" class="relative inline-block">
+    
+    <!-- Citation badge -->
+    <a 
+        href="${firstCitation.site_url}"
+        target="_blank"
+        rel="nofollow noopener"
+        aria-label="${firstCitation.title}"
+        class="inline-flex items-center ml-1 no-underline hover:no-underline"
+    >
+        <span
+            id="citation-badge-${uniqueId}"
+            class="text-xs rounded-full px-2 py-[0.1875rem] font-mono tabular-nums 
+                   text-gray-600 bg-gray-100 border border-gray-300 
+                   hover:bg-blue-600 hover:text-white cursor-pointer transition-colors duration-200">
+            ${firstCitation.domain_short}${remainingText}
+        </span>
+    </a>
 
     <!-- Tooltip -->
-    <div id="citation-tooltip-${uniqueId}"
-         class="absolute mt-1 w-80 bg-white border border-gray-300 rounded-lg shadow-lg
-                opacity-0 invisible transition-opacity duration-200 z-10 pointer-events-auto">
+    <div
+        id="citation-tooltip-${uniqueId}"
+        class="absolute left-0 mt-1 w-80 bg-white border border-gray-300 rounded-lg shadow-lg
+               opacity-0 invisible transition-opacity duration-200 z-10">
         <div class="px-3 py-2 space-y-2 max-h-60 overflow-y-auto">
             ${sourceItemsHtml}
         </div>
     </div>
-    `;
+
+</span>
+`;
 }
 
 
@@ -283,7 +288,7 @@ function parsebold(text) {
 }
 
 
-function attachEventHandlers(uniqueId) {
+// function attachEventHandlers(uniqueId) {
     // let hideTimeout; // store timeout ID
     // const $badge = $(`#citation-badge-${uniqueId}`);
     // const $anchor = $badge.find('a');
@@ -324,7 +329,36 @@ function attachEventHandlers(uniqueId) {
     //         $tooltip.removeClass("opacity-100 visible").addClass("opacity-0 invisible");
     //     }, 100);
     // })
+// }
+function attachEventHandlers(uniqueId) {
+    const badge = document.getElementById(`citation-badge-${uniqueId}`);
+    const tooltip = document.getElementById(`citation-tooltip-${uniqueId}`);
+    const wrapper = document.getElementById(`citation-wrapper-${uniqueId}`);
+
+    if (!badge || !tooltip || !wrapper) return;
+
+    let hideTimeout;
+
+    const showTooltip = () => {
+        clearTimeout(hideTimeout);
+        tooltip.classList.remove('opacity-0', 'invisible');
+        tooltip.classList.add('opacity-100', 'visible');
+    };
+
+    const hideTooltip = () => {
+        hideTimeout = setTimeout(() => {
+            tooltip.classList.add('opacity-0', 'invisible');
+            tooltip.classList.remove('opacity-100', 'visible');
+        }, 100); // small delay prevents flicker
+    };
+
+    badge.addEventListener('mouseenter', showTooltip);
+    badge.addEventListener('mouseleave', hideTooltip);
+
+    tooltip.addEventListener('mouseenter', showTooltip);
+    tooltip.addEventListener('mouseleave', hideTooltip);
 }
+
 
 
 function removeFootnotes(text) {

@@ -1,101 +1,246 @@
 import { useEffect, useState } from "react";
-
-
-// function handleChatExportAsPDF(searchResultId) {
-//   alert(searchResultId)
-//   setTimeout(() => {
-//     // Code to run after delay
-//     const element = document.getElementById(`${searchResultId}`);
-//     console.log(element)
-//     html2pdf(element, {
-//       margin: 10,
-//       filename: 'document.pdf',
-//       image: { type: 'jpeg', quality: 0.98 },
-//       html2canvas: { scale: 2 },
-//       jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-//     });
-//   }, 200); // delay in milliseconds (200ms = .2 second)
-// }
-
-
-function sanitizeForPdf(root) {
-  // Remove ALL external hrefs
-  root.querySelectorAll('a[href]').forEach(a => {
-    const href = a.getAttribute('href');
-    if (href && href.startsWith('http')) {
-      a.removeAttribute('href');
-      a.style.pointerEvents = 'none';
-      a.style.cursor = 'default';
-    }
-  });
-
-  // Remove favicon images if any slipped in
-  root.querySelectorAll('img').forEach(img => {
-    if (img.src && img.src.includes('favicon')) {
-      img.remove();
-    }
-  });
-
-  // Hide tooltips / popovers
-  root.querySelectorAll('[id^="citation-tooltip"]').forEach(el => {
-    el.style.display = 'none';
-  });
-}
+import { toJpeg } from "html-to-image";
+import jsPDF from "jspdf";
+import { Document, Packer, Paragraph, TextRun } from "docx";
+import { saveAs } from "file-saver";
+import { showCustomToast } from "../utils/customToast";
+import { useAuthUtils } from "../utils/useAuthUtils";
 
 
 
-function handleChatExportAsPDF(searchResultId) {
-  alert(searchResultId)
-  const source = document.getElementById(searchResultId);
-  if (!source) return;
-
-  // --- STEP 1: Clone DOM ---
-  const clone = source.cloneNode(true);
-
-  // --- STEP 2: Sanitize clone (NO external URLs remain) ---
-  sanitizeForPdf(clone);
-
-  // --- STEP 3: Mount clone OFFSCREEN ---
-  const sandbox = document.createElement('div');
-  sandbox.style.position = 'fixed';
-  sandbox.style.left = '-99999px';
-  sandbox.style.top = '0';
-  sandbox.style.width = source.offsetWidth + 'px';
-  sandbox.appendChild(clone);
-  document.body.appendChild(sandbox);
-
-  // --- STEP 4: Render PDF from clone ---
-  setTimeout(() => {
-    html2pdf()
-      .set({
-        margin: 10,
-        filename: 'document.pdf',
-        image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: {
-          scale: 2,
-          useCORS: false,     // IMPORTANT
-          allowTaint: true,  // IMPORTANT
-          logging: false
-        },
-        jsPDF: {
-          unit: 'mm',
-          format: 'a4',
-          orientation: 'portrait'
-        }
-      })
-      .from(clone)
-      .save()
-      .finally(() => {
-        // --- STEP 5: Cleanup ---
-        document.body.removeChild(sandbox);
-      });
-  }, 50);
-}
 
 
+export default function SearchExportOptions({ searchResultId, uniqueId, response, onSearch, prompt }) {
 
-export default function SearchExportOptions({ searchResultId, uniqueId }) {
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const { logoutAndNavigate } = useAuthUtils()
+
+
+  /* ---------------- CLEAN UI FOR PDF ---------------- */
+  function cleanUIForPdf(root) {
+    /* Remove elements explicitly marked for PDF hide */
+    root.querySelectorAll(".pdf-hide").forEach((el) => el.remove());
+
+    /* Expand truncated / collapsed text */
+    root.querySelectorAll("*").forEach((el) => {
+      el.style.maxHeight = "none";
+      el.style.height = "auto";
+      el.style.overflow = "visible";
+
+      // Handle Tailwind line-clamp
+      if (el.style.webkitLineClamp) {
+        el.style.webkitLineClamp = "unset";
+        el.style.display = "block";
+      }
+    });
+  }
+
+
+  /* ---------------- EXPORT PDF ---------------- */
+  async function handleChatExportAsPDF(searchResultId) {
+    const source = document.getElementById(searchResultId);
+    if (!source) return;
+
+    /* Clone DOM (never touch live UI) */
+    const clone = source.cloneNode(true);
+
+    /* Clean for PDF */
+    cleanUIForPdf(clone);
+
+    /* Mount offscreen */
+    const sandbox = document.createElement("div");
+    sandbox.style.position = "fixed";
+    sandbox.style.left = "-99999px";
+    sandbox.style.top = "0";
+    sandbox.style.width = source.offsetWidth + "px";
+    sandbox.appendChild(clone);
+    document.body.appendChild(sandbox);
+
+    try {
+      /* Render image */
+      const dataUrl = await toJpeg(clone, {
+        quality: 0.98,
+        backgroundColor: "#ffffff",
+        cacheBust: true,
+        skipFonts: true, // avoids CORS warnings
+      });
+
+      /* Create PDF */
+      const pdf = new jsPDF("p", "mm", "a4");
+
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
+      const margin = 15; // 👈 PDF padding in mm
+
+      const usableWidth = pageWidth - margin * 2;
+
+      const img = new Image();
+      img.src = dataUrl;
+      await new Promise((res) => (img.onload = res));
+
+      const imgHeight = (img.height * usableWidth) / img.width;
+
+      let heightLeft = imgHeight;
+      let position = margin;
+
+      while (heightLeft > 0) {
+        pdf.addImage(
+          img,
+          "JPEG",
+          margin,
+          position,
+          usableWidth,
+          imgHeight
+        );
+
+        heightLeft -= pageHeight - margin * 2;
+
+        if (heightLeft > 0) {
+          pdf.addPage();
+          position = margin - heightLeft;
+        }
+      }
+
+      pdf.save("document.pdf");
+    } finally {
+      document.body.removeChild(sandbox);
+    }
+  }
+
+
+  function extractPlainTextFromDOM(element) {
+    const clone = element.cloneNode(true);
+
+    // Remove UI-only elements
+    clone.querySelectorAll(".pdf-hide, button, svg").forEach(el => el.remove());
+
+    return clone.innerText.trim();
+  }
+
+
+
+  function handleChatExportAsMarkdown(searchResultId) {
+    const source = document.getElementById(searchResultId);
+    if (!source) return;
+
+    const text = extractPlainTextFromDOM(source);
+
+    const markdown =
+      `# Exported Chat
+
+${text}
+`;
+
+    const blob = new Blob([markdown], { type: "text/markdown;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "document.md";
+    a.click();
+
+    URL.revokeObjectURL(url);
+  }
+
+
+  async function handleChatExportAsDocx(searchResultId) {
+    const source = document.getElementById(searchResultId);
+    if (!source) return;
+
+    const text = extractPlainTextFromDOM(source);
+
+    const paragraphs = text.split("\n").map(
+      line =>
+        new Paragraph({
+          children: [new TextRun(line)],
+        })
+    );
+
+    const doc = new Document({
+      sections: [
+        {
+          children: paragraphs,
+        },
+      ],
+    });
+
+    const blob = await Packer.toBlob(doc);
+    saveAs(blob, "document.docx");
+  }
+
+  async function handleShareChat(response_id) {
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/make-chat-public/`, {
+        method: 'POST',
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${localStorage.getItem("authToken")}`
+        },
+        body: JSON.stringify({
+          "search-result-id": response_id
+        })
+      })
+
+      const resJson = await res.json()
+
+      if (!res.ok) {
+        if (res.status === 401) {
+          showCustomToast("Session expired. Please log in again.", { type: "warn" });
+          logoutAndNavigate()
+        } else {
+          showCustomToast(resJson, { type: "error" })
+        }
+      } else {
+        const shareUrl = `${window.location.origin}/search/public/${resJson.shared_chat_id}`;
+
+        // Modern clipboard API
+        if (navigator.clipboard && window.isSecureContext) {
+          navigator.clipboard.writeText(shareUrl)
+            .then(() => {
+              showCustomToast("Shareable link copied successfully", { type: "success" });
+            })
+            .catch(() => {
+              fallbackCopyToClipboard(shareUrl);
+            });
+        } else {
+          // Fallback for older browsers / http
+          fallbackCopyToClipboard(shareUrl);
+        }
+      }
+    } catch (err) {
+      console.error(err);
+      showCustomToast({ message: "Something went wrong" }, { type: "error" });
+    }
+
+  }
+
+  /* ----------- Fallback copy method ----------- */
+  function fallbackCopyToClipboard(text) {
+    const textarea = document.createElement("textarea");
+    textarea.value = text;
+    textarea.style.position = "fixed";
+    textarea.style.left = "-9999px";
+    textarea.style.top = "-9999px";
+
+    document.body.appendChild(textarea);
+    textarea.focus();
+    textarea.select();
+
+    try {
+      document.execCommand("copy");
+      showCustomToast("Shareable link copied successfully", { type: "success" });
+    } catch (err) {
+      showCustomToast("Failed to copy link", "error");
+    } finally {
+      document.body.removeChild(textarea);
+    }
+  }
+
+
+  const handleRewrite = () => {
+    onSearch(prompt, searchResultId)
+  };
+
 
   /* ---------------- ATTACH LEGACY HANDLERS ---------------- */
   useEffect(() => {
@@ -110,7 +255,7 @@ export default function SearchExportOptions({ searchResultId, uniqueId }) {
   }, [uniqueId, searchResultId]);
 
   return (
-    <div className="absolute bottom-0 left-0 flex space-x-2 text-sm opacity-100 transition-opacity duration-200">
+    <div className="pdf-hide absolute bottom-0 left-0 flex space-x-2 text-sm opacity-100 transition-opacity duration-200">
 
       {/* ================= EXPORT DROPDOWN ================= */}
       <div className="relative">
@@ -157,7 +302,7 @@ export default function SearchExportOptions({ searchResultId, uniqueId }) {
             <button
               onClick={() => {
                 setDropdownOpen(false);
-                handleChatExportAsMarkdown(uniqueId);
+                handleChatExportAsMarkdown(searchResultId);
               }}
               className="flex w-full items-center gap-2 px-4 py-2 hover:bg-gray-100 text-gray-700 cursor-pointer"
             >
@@ -168,7 +313,7 @@ export default function SearchExportOptions({ searchResultId, uniqueId }) {
             <button
               onClick={() => {
                 setDropdownOpen(false);
-                handleChatExportAsDocx(uniqueId);
+                handleChatExportAsDocx(searchResultId);
               }}
               className="flex w-full items-center gap-2 px-4 py-2 hover:bg-gray-100 text-gray-700 cursor-pointer"
             >
@@ -181,7 +326,7 @@ export default function SearchExportOptions({ searchResultId, uniqueId }) {
       {/* ================= SHARE ================= */}
       <div className="relative group">
         <div
-          onClick={() => handleShareChat(searchResultId, uniqueId)}
+          onClick={() => handleShareChat(response.id)}
           className="flex items-center gap-1 p-2 bg-white h-8 rounded-md text-gray-600 hover:text-teal-600 cursor-pointer"
         >
           <svg
@@ -211,6 +356,7 @@ export default function SearchExportOptions({ searchResultId, uniqueId }) {
       {/* ================= REWRITE ================= */}
       <div className="relative group">
         <div
+          onClick={() => handleRewrite()}
           id={`rewrite-btn-${uniqueId}`}
           className="flex items-center gap-1 p-2 bg-white h-8 rounded-md text-gray-600 hover:text-teal-600 cursor-pointer"
         >

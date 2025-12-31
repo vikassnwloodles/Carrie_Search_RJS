@@ -158,7 +158,7 @@ export default function LibraryPage({ setShowImg }) {
 
       {/* Filters */}
       <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
-        <div className="flex gap-2">
+        {/* <div className="flex gap-2">
           <button
             onClick={() => {
               setSelectMode((v) => !v);
@@ -181,7 +181,7 @@ export default function LibraryPage({ setShowImg }) {
                 : "Select All"}
             </button>
           )}
-        </div>
+        </div> */}
 
         <select
           value={sort}

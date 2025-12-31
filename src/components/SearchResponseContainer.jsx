@@ -25,7 +25,7 @@ export default function SearchResponseContainer({ content, uniqueId, searchResul
   return (
     <div className="bg-white p-6 rounded-lg border border-gray-200 mb-4 relative">
       {/* Copy icon */}
-      <div className="absolute bottom-0 right-0">
+      <div className="pdf-hide absolute bottom-0 right-0">
         <button
           type="button"
           onClick={copyResponseToClipboard}

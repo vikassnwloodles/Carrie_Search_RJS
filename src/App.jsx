@@ -15,6 +15,7 @@ import ForgotPassword from "./pages/ForgotPassword";
 import { useState } from "react";
 import SearchResultContainer from "./components/SearchResultContainer";
 import LibraryPage from "./pages/LibraryPage";
+import SearchResult from "./components/SearchResult";
 
 const App = () => {
   const [showImg, setShowImg] = useState(true);
@@ -54,6 +55,7 @@ const App = () => {
                   <Route path="/login" element={<LoginPage />} />
                   <Route path="/forgot-password" element={<ForgotPassword />} />
                   <Route path="/search/:threadId" element={<SearchResultContainer setShowImg={setShowImg} />} />
+                  <Route path="/search/public/:chatId" element={<SearchResult setShowImg={setShowImg} />} />
                   <Route path="/library" element={<LibraryPage setShowImg={setShowImg} />} />
                 </Routes>
                 {/* </div> */}

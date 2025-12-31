@@ -2,7 +2,7 @@ export default function RelatedQuestionsContainer({ relatedQuestions, searchResu
   if (!relatedQuestions || relatedQuestions.length === 0) return null;
 
   return (
-    <div className="mb-12">
+    <div className="pdf-hide mb-12">
       <h3 className="text-lg font-medium mb-3">Related</h3>
 
       {relatedQuestions.map((q, i) => (
