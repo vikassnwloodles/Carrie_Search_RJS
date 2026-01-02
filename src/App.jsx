@@ -19,13 +19,19 @@ import SearchResult from "./components/SearchResult";
 
 const App = () => {
   const [showImg, setShowImg] = useState(true);
+  const [threadId, setThreadId] = useState(window.location.pathname.split("/")[2] || null);
+  const [threadsContainer, setThreadsContainer] = useState([]);
   return (
     <BrowserRouter>
       <AuthProvider>
         <ScrollToTop />
         <ToastContainer />
         <div className="flex h-screen">
-          <Sidebar />
+          <Sidebar
+            setThreadId={setThreadId}
+            threadsContainer={threadsContainer}
+            setThreadsContainer={setThreadsContainer}
+          />
           <main id="main-content-area" className="flex-1 flex flex-col">
             <Header />
 
@@ -47,14 +53,14 @@ const App = () => {
                 }
                 {/* <!-- DYNAMIC CONTENT GOES HERE --> */}
                 <Routes>
-                  <Route path="/" element={<Home />} />
+                  <Route path="/search/:threadId" element={<Home threadId={threadId} setThreadId={setThreadId} setShowImg={setShowImg} threadsContainer={threadsContainer} setThreadsContainer={setThreadsContainer} />} />
+                  <Route path="/" element={<Home threadId={threadId} setThreadId={setThreadId} setShowImg={setShowImg} threadsContainer={threadsContainer} setThreadsContainer={setThreadsContainer} />} />
                   <Route path="/about-us" element={<AboutUs />} />
                   <Route path="/how-carrie-works" element={<HowCarrieWorks />} />
                   <Route path="/pricing" element={<Pricing />} />
                   <Route path="/signup" element={<SignupForm />} />
                   <Route path="/login" element={<LoginPage />} />
                   <Route path="/forgot-password" element={<ForgotPassword />} />
-                  <Route path="/search/:threadId" element={<SearchResultContainer setShowImg={setShowImg} />} />
                   <Route path="/search/public/:chatId" element={<SearchResult setShowImg={setShowImg} />} />
                   <Route path="/library" element={<LibraryPage setShowImg={setShowImg} />} />
                 </Routes>

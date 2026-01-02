@@ -10,7 +10,7 @@ import { useAuthUtils } from "../utils/useAuthUtils";
 
 
 
-export default function SearchExportOptions({ searchResultId, uniqueId, response, onSearch, prompt }) {
+export default function SearchExportOptions({ searchResultId, uniqueId, response, onSearch, prompt, threadId }) {
 
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const { logoutAndNavigate } = useAuthUtils()
@@ -238,7 +238,7 @@ ${text}
 
 
   const handleRewrite = () => {
-    onSearch(prompt, searchResultId)
+    onSearch(prompt, searchResultId, threadId)
   };
 
 

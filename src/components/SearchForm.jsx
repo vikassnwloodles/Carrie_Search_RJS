@@ -1,25 +1,27 @@
-import React, { useEffect, useRef, useState } from 'react'
+import { forwardRef, useEffect, useRef, useState } from 'react'
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import { showCustomToast } from '../utils/customToast';
 
-const SearchForm = ({ updateUiOnSearch, searchStarted }) => {
+const SearchForm = forwardRef(({ searchStarted, threadId, setThreadId, fireSearch, searchInputData, setSearchInputData, threadsContainer, setThreadsContainer, setShouldFetchThread }, ref) => {
+
     const { isAuthenticated } = useAuth()
     const navigate = useNavigate()
 
     // Refs & state
+    const modelDropdownRef = useRef(null);
+    const sourceDropdownRef = useRef(null);
+    const attachmentDropdownRef = useRef(null);
     const fileInputRef = useRef(null);
-    const searchBoxRef = useRef(null);
     const [showFileMetadata, setShowFileMetadata] = useState(false);
     const [uploadedFile, setUploadedFile] = useState(null);
     const [main2DropdownOpen, setMain2DropdownOpen] = useState(false);
     const [main3DropdownOpen, setMain3DropdownOpen] = useState(false);
     const [mainDropdownOpen, setMainDropdownOpen] = useState(false);
-    const [searchInputData, setSearchInputData] = useState({
-        image_url: "",
-        search_result_id: "",
-        search_mode: "web",
-        checkedAIModelValues: "best",
-    })
+    const micIconRef = useRef(null);
+    const recognitionRef = useRef(null);
+    const [isListening, setIsListening] = useState(false);
+
 
     function normalizePrompt(text) {
         return text
@@ -29,8 +31,74 @@ const SearchForm = ({ updateUiOnSearch, searchStarted }) => {
     }
 
 
+    // CALL UPLOAD IMAGE API FUNCTION
+    async function callUploadImageApi(uploadedFile) {
+        try {
+            const formData = new FormData();
+            formData.append("image", uploadedFile);
+            const res = await fetch(`${import.meta.env.VITE_API_URL}/upload-image/`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                },
+                body: formData
+            })
+
+            const resJson = await res.json()
+            if (!res.ok) {
+                if (res.status === 401) {
+                    showCustomToast("Session expired. Please log in again.", {
+                        type: "warn",
+                    });
+                    logoutAndNavigate();
+                } else {
+                    showCustomToast(resJson, { type: "error" });
+                }
+            } else {
+                return resJson.image_url
+            }
+        } catch (err) {
+            console.error(err);
+            showCustomToast({ message: "Something went wrong" }, { type: "error" });
+        }
+    }
+
+
+    // CALL UPLOAD DOC API FUNCTION
+    async function callUploadDocApi(uploadedFile) {
+        try {
+            const formData = new FormData();
+            formData.append("file", uploadedFile);
+            const res = await fetch(`${import.meta.env.VITE_API_URL}/upload-doc/`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                },
+                body: formData
+            })
+
+            const resJson = await res.json()
+            if (!res.ok) {
+                if (res.status === 401) {
+                    showCustomToast("Session expired. Please log in again.", {
+                        type: "warn",
+                    });
+                    logoutAndNavigate();
+                } else {
+                    showCustomToast(resJson, { type: "error" });
+                }
+            } else {
+                return resJson.text_content
+            }
+        } catch (err) {
+            console.error(err);
+            showCustomToast({ message: "Something went wrong" }, { type: "error" });
+        }
+    }
+
+
     async function handleSearchSubmit() {
-        const text = normalizePrompt(searchBoxRef.current.innerText);
+        const text = normalizePrompt(ref.current.innerText);
         if (!text) {
             return;
         }
@@ -38,28 +106,67 @@ const SearchForm = ({ updateUiOnSearch, searchStarted }) => {
             showCustomToast("Login Required!", { type: "error" })
             return
         }
-        const threadId = crypto.randomUUID();
-        navigate(`/search/${threadId}`, { state: { ...searchInputData, prompt: text } });
 
+        // ✅ CLEAR SELECTED FILE METADATA BOX
+        closeUploadedFileMetadata()
+
+        // ✅ CLEAR SEARCH BOX
+        ref.current.innerHTML = "";
+
+        // VALIDATE SELECTED FILE AND CALL UPLOAD IMAGE API
+        let imageUrl = "";
+        let docContent = "";
+        if (uploadedFile) {
+            if (uploadedFile?.type.startsWith("image/")) {
+                // CALL UPLOAD IMAGE API
+                imageUrl = await callUploadImageApi(uploadedFile)
+            } else if (
+                uploadedFile?.type !== "application/pdf" &&
+                uploadedFile?.type !== "text/plain" &&
+                uploadedFile?.type !== "text/csv" &&
+                uploadedFile?.type !== "application/vnd.openxmlformats-officedocument.wordprocessingml.document" &&
+                uploadedFile?.type !== "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" &&
+                uploadedFile?.type !== "application/vnd.openxmlformats-officedocument.presentationml.presentation"
+            ) {
+
+                showCustomToast("Only PDF, DOCX, TXT, XLSX, CSV and image files are allowed.", { type: "warn", title: "Invalid File Type" })
+                return
+            } else {
+                // CALL UPLOAD DOC API
+                docContent = await callUploadDocApi(uploadedFile)
+            }
+        }
+
+        if (threadId) {
+            fireSearch(text, null, threadId, imageUrl, docContent)
+        } else {
+            const newThreadId = crypto.randomUUID();
+            setThreadId(newThreadId)
+            setShouldFetchThread(false)
+            window.history.replaceState({}, "", `/search/${newThreadId}`);
+            const resJson = await fireSearch(text, null, newThreadId, imageUrl, docContent)
+            setThreadsContainer([{ ...resJson, thread_id: newThreadId, prompt: text }, ...threadsContainer])
+        }
     }
 
     // File upload handlers
     function onFileUploadClick() {
         fileInputRef.current?.click();
+        setMainDropdownOpen(false)
     }
 
     // Bind handlers that were previously attached by calling bindFileUploadHandler/bindSearchHandler
-    useEffect(() => {
-        // mimic bindFileUploadHandler: attaches click listeners
-        const fileUploadBtn = document.getElementById("file-upload-button");
-        if (fileUploadBtn) {
-            fileUploadBtn.addEventListener("click", onFileUploadClick);
-        }
-        // cleanup
-        return () => {
-            if (fileUploadBtn) fileUploadBtn.removeEventListener("click", onFileUploadClick);
-        };
-    }, []);
+    // useEffect(() => {
+    //     // mimic bindFileUploadHandler: attaches click listeners
+    //     const fileUploadBtn = document.getElementById("file-upload-button");
+    //     if (fileUploadBtn) {
+    //         fileUploadBtn.addEventListener("click", onFileUploadClick);
+    //     }
+    //     // cleanup
+    //     return () => {
+    //         if (fileUploadBtn) fileUploadBtn.removeEventListener("click", onFileUploadClick);
+    //     };
+    // }, []);
 
     // AI model change stub
     function changeAIModel(ev, model) {
@@ -67,6 +174,7 @@ const SearchForm = ({ updateUiOnSearch, searchStarted }) => {
         // set state or call backend as needed
         setMain2DropdownOpen(false);
         setSearchInputData((prev) => ({ ...prev, ["checkedAIModelValues"]: model }))
+        localStorage.setItem("model", model)
     }
 
     // Helpers originally from inline JS
@@ -114,11 +222,12 @@ const SearchForm = ({ updateUiOnSearch, searchStarted }) => {
     function onFileInputChange(e) {
         const f = e.target.files?.[0];
         if (!f) return;
-        setUploadedFile({
-            name: f.name,
-            size: f.size,
-            type: f.type,
-        });
+        // setUploadedFile({
+        //     name: f.name,
+        //     size: f.size,
+        //     type: f.type,
+        // });
+        setUploadedFile(f);
         setShowFileMetadata(true);
     }
 
@@ -142,19 +251,139 @@ const SearchForm = ({ updateUiOnSearch, searchStarted }) => {
         // We use scrollHeight to allow content to grow; set max-height via css (already present)
         el.style.height = "auto";
         const newH = Math.min(el.scrollHeight, window.innerHeight * 0.4);
-        el.style.height = `${newH}px`;
+        // el.style.height = `${newH}px`;
     }
     useEffect(() => {
-        const el = searchBoxRef.current;
+        const el = ref.current;
         if (!el) return;
 
         function onInput() {
+            if (el.innerHTML === "<br>" || el.innerHTML === "\n") {
+                el.innerHTML = "";
+            }
             autoGrowSearchBox(el); // ONLY layout logic here
         }
 
         el.addEventListener("input", onInput);
         return () => el.removeEventListener("input", onInput);
     }, []);
+
+    useEffect(() => {
+        function handleClickOutside(e) {
+            if (
+                modelDropdownRef.current &&
+                !modelDropdownRef.current.contains(e.target)
+            ) {
+                setMain2DropdownOpen(false);
+            }
+
+            if (
+                sourceDropdownRef.current &&
+                !sourceDropdownRef.current.contains(e.target)
+            ) {
+                setMain3DropdownOpen(false);
+            }
+
+            if (
+                attachmentDropdownRef.current &&
+                !attachmentDropdownRef.current.contains(e.target)
+            ) {
+                setMainDropdownOpen(false);
+            }
+        }
+
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, []);
+
+
+    useEffect(() => {
+        const SpeechRecognition =
+            window.SpeechRecognition || window.webkitSpeechRecognition;
+
+        if (!SpeechRecognition) {
+            console.warn("Speech Recognition API not supported");
+            return;
+        }
+
+        const recognition = new SpeechRecognition();
+        recognition.continuous = false;
+        recognition.lang = "en-US";
+
+        recognition.onstart = () => {
+            setIsListening(true);
+            if (micIconRef.current) {
+                micIconRef.current.classList.remove("text-gray-500");
+                micIconRef.current.classList.add("text-red-500");
+            }
+            if (ref.current) {
+                ref.current.setAttribute("data-placeholder", "Listening...");
+            }
+        };
+
+        recognition.onresult = (event) => {
+            const transcript = event.results[0][0].transcript;
+            if (ref.current) {
+                ref.current.innerText = transcript;
+                placeCaretAtEnd(ref.current);
+            }
+        };
+
+        recognition.onend = () => {
+            setIsListening(false);
+            if (micIconRef.current) {
+                micIconRef.current.classList.remove("text-red-500");
+                micIconRef.current.classList.add("text-gray-500");
+            }
+            if (ref.current) {
+                ref.current.setAttribute(
+                    "data-placeholder",
+                    "Search, Ask, or Write Anything!"
+                );
+            }
+        };
+
+        recognition.onerror = () => {
+            setIsListening(false);
+            if (ref.current) {
+                ref.current.setAttribute(
+                    "data-placeholder",
+                    "Speech recognition failed. Try typing."
+                );
+            }
+        };
+
+        recognitionRef.current = recognition;
+
+        return () => {
+            recognition.stop();
+        };
+    }, []);
+
+
+    function handleMicClick() {
+        if (!recognitionRef.current) return;
+
+        try {
+            recognitionRef.current.start();
+        } catch (e) {
+            console.error("Mic already active or permission denied", e);
+            if (ref.current) {
+                ref.current.setAttribute(
+                    "data-placeholder",
+                    "Microphone already active or permission denied."
+                );
+                setTimeout(() => {
+                    ref.current.setAttribute(
+                        "data-placeholder",
+                        "Search, Ask, or Write Anything!"
+                    );
+                }, 3000);
+            }
+        }
+    }
 
 
 
@@ -164,32 +393,50 @@ const SearchForm = ({ updateUiOnSearch, searchStarted }) => {
             <form
                 id="search-form"
                 // className="z-10 w-full max-w-4xl pb-12 bg-[#fcfcf9] rounded-xl"
-                className={`z-10 ${true ? "" : "w-full"} max-w-4xl pb-12 rounded-xl ${updateUiOnSearch ? "fixed -bottom-5 !w-full" : ""}`}
+                className={`z-10 ${true ? "" : "w-full"} max-w-4xl pb-12 rounded-xl ${threadId ? "fixed -bottom-5 !w-full" : ""}`}
                 onSubmit={(e) => {
                     e.preventDefault();
                     handleSearchSubmit();
                 }}
             >
-                <div className={`relative flex items-center rounded-xl ${updateUiOnSearch ? "!w-full !left-0" : ""}`} id="search-width">
+                <div className={`relative flex items-center rounded-xl ${threadId ? "!w-full !left-0" : ""}`} id="search-width">
                     <div
                         id="searchbox_parent_div"
                         className="w-full border border-gray-200 rounded-xl p-2 pb-12 bg-white shadow-sm transition-shadow focus-within:outline-none focus-within:ring-2 focus-within:ring-teal-500"
-                        onClick={() => {
-                            // focus the editable div when parent clicked
-                            searchBoxRef.current?.focus();
-                            placeCaretAtEnd(searchBoxRef.current);
+                        onMouseDown={(e) => {
+                            const el = ref.current;
+                            if (!el) return;
+
+                            // If user clicks inside existing text → DO NOTHING
+                            if (e.target !== el) return;
+
+                            // If empty → allow caret at end
+                            if (el.innerText.trim() === "") {
+                                e.preventDefault(); // stop browser default
+                                el.focus();
+                                placeCaretAtEnd(el);
+                            }
                         }}
                     >
                         <div
                             id="ai_search"
-                            ref={searchBoxRef}
+                            ref={ref}
                             contentEditable={true}
                             data-placeholder="Search, Ask, or Write Anything!"
                             name="prompt"
                             // onInput={captureSearchInputData}
                             onKeyDown={handleKeyDownOnSearchBox}
                             // input handled by useEffect attaching 'input'
-                            className="max-h-[40vh] resize-none w-full rounded-xl pt-2 pl-16 pr-32 md:pl-20 md:pr-40 text-lg bg-white focus:outline-none transition-shadow whitespace-pre-wrap overflow-y-auto"
+                            // className="max-h-[40vh] resize-none w-full rounded-xl pt-2 pl-16 pr-32 md:pl-20 md:pr-40 text-lg bg-white focus:outline-none transition-shadow whitespace-pre-wrap overflow-y-auto"
+                            className={`
+                                max-h-[40vh] resize-none w-full rounded-xl
+                                pl-16 pr-32 md:pl-20 md:pr-40
+                                text-lg bg-white focus:outline-none
+                                whitespace-pre-wrap overflow-y-auto
+                                transition-all
+                                ${showFileMetadata ? "pt-20" : "pt-2"}
+                                `}
+
                             style={{ minHeight: "50px" }}
                         />
                     </div>
@@ -197,7 +444,7 @@ const SearchForm = ({ updateUiOnSearch, searchStarted }) => {
                     <div className="absolute left-4 flex items-center space-x-1 sm:space-x-2" />
 
                     {/* File metadata box */}
-                    <div
+                    {/* <div
                         id="file-metadata-box"
                         className={`top-3 left-3 absolute p-2 ml-3 bg-white border border-gray-300 rounded-xl shadow-sm ${showFileMetadata ? "" : "hidden"
                             }`}
@@ -225,12 +472,58 @@ const SearchForm = ({ updateUiOnSearch, searchStarted }) => {
                         >
                             <i className="fas fa-times text-gray-600 text-base" />
                         </button>
+                    </div> */}
+                    <div
+                        id="file-metadata-box"
+                        className={`absolute top-3 left-3 z-10
+                            flex items-center gap-3
+                            p-2 bg-white border border-gray-300
+                            rounded-xl shadow-sm
+                            ${showFileMetadata ? "" : "hidden"}
+                        `}
+                    >
+                        <div className="bg-teal-600 rounded-md w-10 h-10 flex items-center justify-center shrink-0">
+                            {uploadedFile?.type === "application/pdf" ?
+                                <i className="fas fa-file-pdf text-white text-xl" />
+                                : uploadedFile?.type === "text/plain" ?
+                                    <i className="fas fa-file-lines text-white text-xl" />
+                                    : uploadedFile?.type === "text/csv" ?
+                                        <i className="fas fa-file-csv text-white text-xl" />
+                                        : uploadedFile?.type.startsWith("image/") ?
+                                            <i className="fas fa-file-image text-white text-xl" />
+                                            : uploadedFile?.type === "application/vnd.openxmlformats-officedocument.wordprocessingml.document" ?
+                                                <i className="fas fa-file-word text-white text-xl" />
+                                                : uploadedFile?.type === "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" ?
+                                                    <i className="fas fa-file-excel text-white text-xl" />
+                                                    : uploadedFile?.type === "application/vnd.openxmlformats-officedocument.presentationml.presentation" ?
+                                                        <i className="fas fa-file-powerpoint text-white text-xl" />
+                                                        : <i className="fas fa-file text-white text-xl" />
+                            }
+                        </div>
+
+                        <div className="min-w-0">
+                            <div className="text-xs text-gray-700 font-semibold truncate max-w-[180px]">
+                                {uploadedFile?.name}
+                            </div>
+                            <div className="text-xs text-gray-500">
+                                {(uploadedFile?.size / 1024).toFixed(1)} KB
+                            </div>
+                        </div>
+
+                        <button
+                            type="button"
+                            onClick={closeUploadedFileMetadata}
+                            className="text-gray-500 hover:text-gray-800"
+                        >
+                            <i className="fas fa-times" />
+                        </button>
                     </div>
+
 
                     {/* Right controls */}
                     <div className="absolute right-4 flex items-center space-x-1 sm:space-x-2">
                         {/* AI model dropdown */}
-                        <div className="relative inline-block">
+                        <div className="relative inline-block" ref={modelDropdownRef}>
                             <button
                                 type="button"
                                 id="dropdown2Button"
@@ -243,7 +536,7 @@ const SearchForm = ({ updateUiOnSearch, searchStarted }) => {
                             <div
                                 id="main2Dropdown"
                                 className={`${main2DropdownOpen ? "" : "hidden"}
-                                    absolute right-0 ${updateUiOnSearch ? "bottom-full mb-2" : "mt-2"}
+                                    absolute right-0 ${threadId ? "bottom-full mb-2" : "mt-2"}
                                     w-56 bg-white rounded shadow-lg z-[9999]
                                 `}
                             >
@@ -255,7 +548,44 @@ const SearchForm = ({ updateUiOnSearch, searchStarted }) => {
                                     >
                                         Best {searchInputData.checkedAIModelValues === "best" && <i className="fa fa-angle-left text-gray-500 float-right aiFlapperSelected" />}
                                     </button>
+
+                                    {/* GPT 5.2 */}
                                     <button
+                                        type="button"
+                                        className="w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100"
+                                        onClick={(e) => changeAIModel(e, "gpt-5_2")}
+                                    >
+                                        GPT-5.2 {searchInputData.checkedAIModelValues === "gpt-5_2" && <i className="fa fa-angle-left text-gray-500 float-right aiFlapperSelected" />}
+                                    </button>
+
+                                    {/* Claude Opus 4.5 */}
+                                    <button
+                                        type="button"
+                                        className="w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100"
+                                        onClick={(e) => changeAIModel(e, "claude-opus-4_5")}
+                                    >
+                                        Claude Opus 4.5 {searchInputData.checkedAIModelValues === "claude-opus-4_5" && <i className="fa fa-angle-left text-gray-500 float-right aiFlapperSelected" />}
+                                    </button>
+
+                                    {/* Claude Sonnet 4.5 */}
+                                    <button
+                                        type="button"
+                                        className="w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100"
+                                        onClick={(e) => changeAIModel(e, "claude-sonnet-4_5")}
+                                    >
+                                        Claude Sonnet 4.5 {searchInputData.checkedAIModelValues === "claude-sonnet-4_5" && <i className="fa fa-angle-left text-gray-500 float-right aiFlapperSelected" />}
+                                    </button>
+
+                                    {/* DeepSeek */}
+                                    <button
+                                        type="button"
+                                        className="w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100"
+                                        onClick={(e) => changeAIModel(e, "deepseek")}
+                                    >
+                                        DeepSeek {searchInputData.checkedAIModelValues === "deepseek" && <i className="fa fa-angle-left text-gray-500 float-right aiFlapperSelected" />}
+                                    </button>
+
+                                    {/* <button
                                         type="button"
                                         className="w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100"
                                         onClick={(e) => changeAIModel(e, "sonar")}
@@ -289,13 +619,13 @@ const SearchForm = ({ updateUiOnSearch, searchStarted }) => {
                                         onClick={(e) => changeAIModel(e, "sonar-deep-research")}
                                     >
                                         Sonar Deep Research {searchInputData.checkedAIModelValues === "sonar-deep-research" && <i className="fa fa-angle-left text-gray-500 float-right aiFlapperSelected" />}
-                                    </button>
+                                    </button> */}
                                 </div>
                             </div>
                         </div>
 
                         {/* Source dropdown */}
-                        <div className="relative inline-block">
+                        <div className="relative inline-block" ref={sourceDropdownRef}>
                             <button
                                 type="button"
                                 id="dropdown3Button"
@@ -308,7 +638,7 @@ const SearchForm = ({ updateUiOnSearch, searchStarted }) => {
                             <div
                                 id="main3Dropdown"
                                 className={`${main3DropdownOpen ? "" : "hidden"
-                                    } absolute right-0 bg-white rounded shadow-lg z-10 ${updateUiOnSearch ? "bottom-full mb-2" : "mt-2"}`}
+                                    } absolute right-0 bg-white rounded shadow-lg z-10 ${threadId ? "bottom-full mb-2" : "mt-2"}`}
                                 style={{ width: 300 }}
                             >
                                 <div className="p-3">
@@ -387,7 +717,7 @@ const SearchForm = ({ updateUiOnSearch, searchStarted }) => {
                         </div>
 
                         {/* Attachments dropdown */}
-                        <div className="relative inline-block">
+                        <div className="relative inline-block" ref={attachmentDropdownRef}>
                             <button
                                 type="button"
                                 id="dropdownButton"
@@ -399,7 +729,7 @@ const SearchForm = ({ updateUiOnSearch, searchStarted }) => {
 
                             <input id="file-upload" ref={fileInputRef} type="file" className="hidden" onChange={onFileInputChange} />
 
-                            <div id="mainDropdown" className={`${mainDropdownOpen ? "" : "hidden"} absolute right-0 w-56 bg-white rounded shadow-lg z-10 ${updateUiOnSearch ? "bottom-full mb-2" : "mt-2"}`}>
+                            <div id="mainDropdown" className={`${mainDropdownOpen ? "" : "hidden"} absolute right-0 w-56 bg-white rounded shadow-lg z-10 ${threadId ? "bottom-full mb-2" : "mt-2"}`}>
                                 <div className="p-1">
                                     <button type="button" id="file-upload-button" className="w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100" onClick={onFileUploadClick}>
                                         <i className="fa-regular fa-file mr-2" /> Local files
@@ -427,8 +757,20 @@ const SearchForm = ({ updateUiOnSearch, searchStarted }) => {
                         </div>
 
                         {/* Mic button */}
-                        <button type="button" id="mic-button" className="text-gray-500 hover:text-black p-1 sm:p-2" onClick={() => console.log("mic clicked")}>
+                        {/* <button type="button" id="mic-button" className="text-gray-500 hover:text-black p-1 sm:p-2" onClick={() => console.log("mic clicked")}>
                             <i className="fa-solid fa-microphone-lines text-base sm:text-xl" id="mic-icon" />
+                        </button> */}
+                        <button
+                            type="button"
+                            id="mic-button"
+                            onClick={handleMicClick}
+                            className="text-gray-500 hover:text-black p-1 sm:p-2"
+                        >
+                            <i
+                                ref={micIconRef}
+                                id="mic-icon"
+                                className="fa-solid fa-microphone-lines text-base sm:text-xl text-gray-500"
+                            />
                         </button>
 
                         {/* Submit */}
@@ -445,6 +787,6 @@ const SearchForm = ({ updateUiOnSearch, searchStarted }) => {
             </form >
         </>
     )
-}
+})
 
 export default SearchForm

@@ -9,7 +9,7 @@ import { useEffect, useState } from "react";
 import { showCustomToast } from "../utils/customToast";
 import { useAuthUtils } from "../utils/useAuthUtils";
 
-export default function SearchResult({ response: initResponse, prompt: initPrompt, pk: initPk, onSearch }) {
+export default function SearchResult({ response: initResponse, prompt: initPrompt, pk: initPk, onSearch, threadId }) {
   const [response, setResponse] = useState(initResponse)
   const [prompt, setPrompt] = useState(initPrompt)
   const [pk, setPk] = useState(initPk)
@@ -70,9 +70,14 @@ export default function SearchResult({ response: initResponse, prompt: initPromp
     url: img.origin_url,
   }));
 
+  // const content = response ? structuredData(
+  //   response.choices[0].message.content,
+  //   response.citations_metadata || []
+  // ) : null;
+
   const content = response ? structuredData(
-    response.choices[0].message.content,
-    response.citations_metadata || []
+    response.choices?.[0]?.message?.content ?? response.content?.[0]?.text,
+    response.citations_metadata ?? []
   ) : null;
 
 
@@ -101,6 +106,7 @@ export default function SearchResult({ response: initResponse, prompt: initPromp
                 response={response}
                 onSearch={onSearch}
                 prompt={prompt}
+                threadId={threadId}
               />
             }
           </div>

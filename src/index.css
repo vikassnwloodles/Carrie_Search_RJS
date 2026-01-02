@@ -1,6 +1,14 @@
 @import "tailwindcss";
 
 
+/* contentEditable placeholder support */
+[contenteditable][data-placeholder]:empty::before {
+  content: attr(data-placeholder);
+  color: #9ca3af;
+  pointer-events: none;
+}
+
+
 body {
     font-family: 'Poppins', sans-serif;
     overflow-x: hidden;
