@@ -280,7 +280,8 @@ export default function Home({ threadId, setThreadId, setShowImg, threadsContain
         />
 
         {/* --- GOOGLE VERIFICATION: APP PURPOSE SECTION --- */}
-        {!threadId && (
+        {/* {!threadId && ( */}
+        {false && (
           <div className="w-full max-w-4xl mt-6 p-4 bg-white border border-gray-200 rounded-lg text-sm text-gray-700">
             <h2 className="text-lg font-semibold mb-2">What is Ask Carrie?</h2>
 
@@ -314,6 +315,32 @@ export default function Home({ threadId, setThreadId, setShowImg, threadsContain
             </div>
           </div>
         )}
+
+
+        {/* --- GOOGLE VERIFICATION FOOTER (STATIC, ALWAYS VISIBLE) --- */}
+        <footer className="w-full max-w-4xl mt-10 mb-6 text-sm text-gray-600">
+          <p className="mb-2">
+            Ask Carrie is an AI-powered search and document analysis platform that helps
+            users search, analyze, and summarize their own files and content.
+          </p>
+
+          <p className="mb-2">
+            Users may optionally connect Google Drive to select files for analysis.
+            Ask Carrie only accesses files explicitly chosen by the user and does not
+            modify or share Google Drive data.
+          </p>
+
+          <div className="flex gap-4">
+            <Link
+              to="/privacy-policy"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-teal-600 hover:underline"
+            >
+              Privacy Policy
+            </Link>
+          </div>
+        </footer>
 
 
         {/* AI section (bottom) */}
