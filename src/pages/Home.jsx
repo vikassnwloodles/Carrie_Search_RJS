@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { useNavigate, useParams, useSearchParams } from "react-router-dom";
+import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { toast } from "react-toastify";
 import ResetPasswordModal from "../components/ResetPasswordModal";
 import SearchForm from "../components/SearchForm";
@@ -235,7 +235,7 @@ export default function Home({ threadId, setThreadId, setShowImg, threadsContain
     }
 
     // return () => { setShowImg(true); }
-    return () => {setShowImg(true); setSearchHistoryContainer([]); setShouldFetchThread(true)}
+    return () => { setShowImg(true); setSearchHistoryContainer([]); setShouldFetchThread(true) }
   }, [threadId]);
 
 
@@ -279,8 +279,46 @@ export default function Home({ threadId, setThreadId, setShowImg, threadsContain
           setShouldFetchThread={setShouldFetchThread}
         />
 
+        {/* --- GOOGLE VERIFICATION: APP PURPOSE SECTION --- */}
+        {!threadId && (
+          <div className="w-full max-w-4xl mt-6 p-4 bg-white border border-gray-200 rounded-lg text-sm text-gray-700">
+            <h2 className="text-lg font-semibold mb-2">What is Ask Carrie?</h2>
+
+            <p className="mb-2">
+              Ask Carrie is an AI-powered search and document analysis platform that helps
+              users search, analyze, and summarize their own files and online content.
+            </p>
+
+            <p className="mb-2">
+              Users can optionally connect Google Drive to securely select files for
+              analysis. Ask Carrie only accesses files explicitly chosen by the user and
+              does not modify, delete, or share Google Drive data.
+            </p>
+
+            <div className="mt-3 flex gap-4">
+              <Link
+                to="/privacy-policy"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-teal-600 hover:underline"
+              >
+                Privacy Policy
+              </Link>
+
+              {/* <a
+                href="/about-us"
+                className="text-teal-600 hover:underline"
+              >
+                About Us
+              </a> */}
+            </div>
+          </div>
+        )}
+
+
         {/* AI section (bottom) */}
-        {!threadId &&
+        {/* {!threadId && */}
+        {false &&
           < div className="ai-section w-full max-w-4xl mt-6 flex flex-col md:flex-row items-start gap-6" >
             {/* Left */}
             < div className="ai-left flex-1" >
