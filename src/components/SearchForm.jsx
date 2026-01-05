@@ -5,10 +5,35 @@ import { showCustomToast } from '../utils/customToast';
 
 const SearchForm = forwardRef(({ searchStarted, threadId, setThreadId, fireSearch, searchInputData, setSearchInputData, threadsContainer, setThreadsContainer, setShouldFetchThread }, ref) => {
 
+    const allowedMimeTypes = [
+        // Documents
+        "application/pdf",
+        "text/plain",
+        "text/csv",
+
+        // Word / Excel / PowerPoint
+        "application/msword",
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        "application/vnd.ms-excel",
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        "application/vnd.ms-powerpoint",
+        "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+
+        // Images
+        "image/png",
+        "image/jpeg",
+        "image/jpg",
+        "image/gif",
+        "image/webp",
+
+        // Google-native (important!)
+        "application/vnd.google-apps.document",
+        "application/vnd.google-apps.spreadsheet",
+        "application/vnd.google-apps.presentation"
+    ];
+
+
     const [uploadedFile, setUploadedFile] = useState(null);
-    const [fileMeta, setFileMeta] = useState(null);
-    const [fileIcon, setFileIcon] = useState("fa-file");
-    const [isImage, setIsImage] = useState(false);
 
     const pickerLoadedRef = useRef(false);
 
@@ -26,7 +51,25 @@ const SearchForm = forwardRef(({ searchStarted, threadId, setThreadId, fireSearc
         });
     }, []);
 
+    // Helper to map MIME type to file extension
+    const getExtensionFromMime = function (mime) {
+        if (!mime) return '';
 
+        if (mime === 'text/plain') return '.txt';
+        if (mime === 'application/pdf') return '.pdf';
+
+        if (mime.includes('wordprocessingml') || mime.includes('msword')) return '.docx';
+        if (mime.includes('spreadsheetml') || mime.includes('excel')) return '.xlsx';
+        if (mime === 'text/csv') return '.csv';
+        if (mime.includes('presentationml') || mime.includes('powerpoint')) return '.pptx';
+
+        // Google native formats → export targets
+        if (mime === 'application/vnd.google-apps.document') return '.docx';
+        if (mime === 'application/vnd.google-apps.spreadsheet') return '.xlsx';
+        if (mime === 'application/vnd.google-apps.presentation') return '.pptx';
+
+        return '';
+    }
 
     const pickerCallback = async (data) => {
         if (data.action !== window.google.picker.Action.PICKED) return;
@@ -34,43 +77,14 @@ const SearchForm = forwardRef(({ searchStarted, threadId, setThreadId, fireSearc
         const file = data.docs[0];
         const accessToken = sessionStorage.getItem("google_oauth_token");
 
-        /* ---------- MIME TYPE VALIDATION ---------- */
         if (!allowedMimeTypes.includes(file.mimeType)) {
-            showCustomToast("Only PDF, DOCX, TXT, XLSX, CSV and image files are allowed", {
-                type: "warning"
-            });
+            showCustomToast(
+                "Only PDF, DOCX, TXT, XLSX, CSV and image files are allowed",
+                { type: "warning" }
+            );
             return;
         }
 
-        /* ---------- FILE SIZE ---------- */
-        const fileSizeKB = file.sizeBytes
-            ? Math.round(file.sizeBytes / 1024)
-            : "N/A";
-
-        /* ---------- ICON DETECTION ---------- */
-        let icon = "fa-file";
-        let image = false;
-
-        if (file.mimeType) {
-            if (file.mimeType.includes("word")) icon = "fa-file-word";
-            else if (file.mimeType.includes("excel") || file.mimeType.includes("spreadsheet"))
-                icon = "fa-file-excel";
-            else if (file.mimeType.includes("powerpoint"))
-                icon = "fa-file-powerpoint";
-            else if (file.mimeType === "application/pdf")
-                icon = "fa-file-pdf";
-            else if (file.mimeType.startsWith("image/")) {
-                icon = "fa-file-image";
-                image = true;
-            }
-            else if (file.mimeType.includes("text"))
-                icon = "fa-file-lines";
-        }
-
-        setFileIcon(icon);
-        setIsImage(image);
-
-        /* ---------- FETCH URL ---------- */
         let fetchUrl;
         let extension = getExtensionFromMime(file.mimeType);
 
@@ -89,7 +103,6 @@ const SearchForm = forwardRef(({ searchStarted, threadId, setThreadId, fireSearc
             fetchUrl = `https://www.googleapis.com/drive/v3/files/${file.id}?alt=media`;
         }
 
-        /* ---------- FETCH FILE ---------- */
         try {
             const res = await fetch(fetchUrl, {
                 headers: { Authorization: `Bearer ${accessToken}` }
@@ -107,20 +120,21 @@ const SearchForm = forwardRef(({ searchStarted, threadId, setThreadId, fireSearc
             });
 
             setUploadedFile(fileObject);
-            setFileMeta({
-                name: finalName,
-                sizeKB: fileSizeKB,
-                url: file.url
-            });
+            setShowFileMetadata(true);
 
             sessionStorage.setItem("uploadType", "local");
             sessionStorage.setItem("uploadTypeURL", file.url);
-            sessionStorage.setItem("isUploadTypeURLImage", image);
+            sessionStorage.setItem(
+                "isUploadTypeURLImage",
+                file.mimeType?.startsWith("image/")
+            );
 
         } catch (err) {
             console.error("Error fetching Drive file:", err);
+            showCustomToast("Failed to fetch Google Drive file", { type: "error" });
         }
     };
+
 
 
     const { isAuthenticated } = useAuth()
@@ -531,6 +545,9 @@ const SearchForm = forwardRef(({ searchStarted, threadId, setThreadId, fireSearc
                         tokenResponse.access_token
                     );
                     console.log("Google Drive authenticated");
+
+                    // ✅ THIS IS REQUIRED
+                    createGooglePicker();
                 }
             });
     }, []);
