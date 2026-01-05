@@ -419,6 +419,26 @@ const SearchForm = forwardRef(({ searchStarted, threadId, setThreadId, fireSearc
     }, []);
 
 
+
+    function createGooglePicker() {
+        const token = sessionStorage.getItem("google_oauth_token");
+
+        if (!window.google?.picker || !token) {
+            showCustomToast("Google Picker not ready", { type: "error" });
+            return;
+        }
+
+        const picker = new window.google.picker.PickerBuilder()
+            .addView(window.google.picker.ViewId.DOCS)
+            .setOAuthToken(token)
+            .setDeveloperKey(import.meta.env.VITE_GOOGLE_API_KEY)
+            .setCallback(pickerCallback)
+            .build();
+
+        picker.setVisible(true);
+    }
+
+
     async function handleGoogleDriveClick() {
         setMainDropdownOpen(false);
 
@@ -429,20 +449,14 @@ const SearchForm = forwardRef(({ searchStarted, threadId, setThreadId, fireSearc
 
         const token = sessionStorage.getItem("google_oauth_token");
 
-        // 🔹 If no token, request it
         if (!token) {
-            if (!googleTokenClientRef.current) {
-                showCustomToast("Google Auth not ready", { type: "error" });
-                return;
-            }
-
             googleTokenClientRef.current.requestAccessToken();
-            return; // picker will be opened AFTER auth
+            return;
         }
 
-        // 🔹 Token already exists → open picker
-        window.maybeCreatePicker();
+        createGooglePicker();
     }
+
 
 
     /* ---------------- DROPBOX ---------------- */
