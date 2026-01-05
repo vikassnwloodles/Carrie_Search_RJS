@@ -280,8 +280,8 @@ export default function Home({ threadId, setThreadId, setShowImg, threadsContain
         />
 
         {/* --- GOOGLE VERIFICATION: APP PURPOSE SECTION --- */}
-        {/* {!threadId && ( */}
-        {false && (
+        {!threadId && (
+          // {false && (
           <div className="w-full max-w-4xl mt-6 p-4 bg-white border border-gray-200 rounded-lg text-sm text-gray-700">
             <h2 className="text-lg font-semibold mb-2">What is Ask Carrie?</h2>
 
@@ -306,19 +306,21 @@ export default function Home({ threadId, setThreadId, setShowImg, threadsContain
                 Privacy Policy
               </Link>
 
-              {/* <a
-                href="/about-us"
+              <Link
+                to="/terms-of-service"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="text-teal-600 hover:underline"
               >
-                About Us
-              </a> */}
+                Terms & Conditions
+              </Link>
             </div>
           </div>
         )}
 
 
         {/* --- GOOGLE VERIFICATION FOOTER (STATIC, ALWAYS VISIBLE) --- */}
-        <footer className="w-full max-w-4xl mt-10 mb-6 text-sm text-gray-600">
+        {/* <footer className="w-full max-w-4xl mt-10 mb-6 text-sm text-gray-600">
           <p className="mb-2">
             Ask Carrie is an AI-powered search and document analysis platform that helps
             users search, analyze, and summarize their own files and content.
@@ -349,7 +351,7 @@ export default function Home({ threadId, setThreadId, setShowImg, threadsContain
               Terms & Conditions
             </Link>
           </div>
-        </footer>
+        </footer> */}
 
 
         {/* AI section (bottom) */}
