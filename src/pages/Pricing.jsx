@@ -171,9 +171,8 @@ export default function Pricing() {
   return (
     <>
       <style>{`
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        :root { --card-max-width: 28rem; }
-        .container { max-width: var(--card-max-width); margin: 0 auto; margin-bottom: 3rem; }
+
+        .container { max-width: 28rem; margin: 0 auto; margin-bottom: 3rem; }
         .pricing-card { background: white; border-radius: 1rem; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04); overflow: hidden; border: 1px solid #e5e7eb; }
         .card-header { background: linear-gradient(135deg, #2563eb 0%, #9333ea 100%); padding: 2.5rem 2rem; text-align: center; color: white; }
         .card-header h2 { font-size: 1.875rem; font-weight: bold; margin-bottom: 0.5rem; }

@@ -21,6 +21,7 @@ const SearchForm = forwardRef(({ searchStarted, threadId, setThreadId, fireSearc
     const micIconRef = useRef(null);
     const recognitionRef = useRef(null);
     const [isListening, setIsListening] = useState(false);
+    const [showConnectSubmenu, setShowConnectSubmenu] = useState(false);
 
 
     function normalizePrompt(text) {
@@ -386,6 +387,114 @@ const SearchForm = forwardRef(({ searchStarted, threadId, setThreadId, fireSearc
     }
 
 
+    function redirectURLExternal(url) {
+        window.open(url, "_blank", "noopener,noreferrer");
+    }
+
+
+    /* ---------------- GOOGLE DRIVE ---------------- */
+
+    /* ---------------- GOOGLE DRIVE AUTH ---------------- */
+
+    const googleTokenClientRef = useRef(null);
+
+    useEffect(() => {
+        if (!window.google || !window.google.accounts?.oauth2) {
+            console.warn("Google OAuth not loaded yet");
+            return;
+        }
+
+        googleTokenClientRef.current =
+            window.google.accounts.oauth2.initTokenClient({
+                client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID,
+                scope: "https://www.googleapis.com/auth/drive.readonly",
+                callback: (tokenResponse) => {
+                    sessionStorage.setItem(
+                        "google_oauth_token",
+                        tokenResponse.access_token
+                    );
+                    console.log("Google Drive authenticated");
+                }
+            });
+    }, []);
+
+
+    async function handleGoogleDriveClick() {
+        setMainDropdownOpen(false);
+
+        if (!window.google || !window.gapi) {
+            showCustomToast("Google Drive API not loaded", { type: "error" });
+            return;
+        }
+
+        const token = sessionStorage.getItem("google_oauth_token");
+
+        // 🔹 If no token, request it
+        if (!token) {
+            if (!googleTokenClientRef.current) {
+                showCustomToast("Google Auth not ready", { type: "error" });
+                return;
+            }
+
+            googleTokenClientRef.current.requestAccessToken();
+            return; // picker will be opened AFTER auth
+        }
+
+        // 🔹 Token already exists → open picker
+        window.maybeCreatePicker();
+    }
+
+
+    /* ---------------- DROPBOX ---------------- */
+
+    function handleDropboxClick() {
+        setMainDropdownOpen(false);
+
+        if (!window.Dropbox) {
+            showCustomToast("Dropbox SDK not loaded", { type: "error" });
+            return;
+        }
+
+        window.Dropbox.choose({
+            linkType: "direct",
+            multiselect: false,
+
+            success: async (files) => {
+                const file = files[0];
+
+                try {
+                    const res = await fetch(file.link);
+                    const blob = await res.blob();
+
+                    const fileObject = new File(
+                        [blob],
+                        file.name,
+                        { type: blob.type || "application/octet-stream" }
+                    );
+
+                    // 🔹 Attach file to input
+                    const dt = new DataTransfer();
+                    dt.items.add(fileObject);
+                    fileInputRef.current.files = dt.files;
+
+                    // 🔹 Update UI
+                    setUploadedFile(fileObject);
+                    setShowFileMetadata(true);
+
+                } catch (err) {
+                    console.error(err);
+                    showCustomToast("Failed to fetch Dropbox file", { type: "error" });
+                }
+            },
+
+            cancel: () => {
+                console.log("Dropbox picker closed");
+            }
+        });
+    }
+
+
+
 
     return (
         <>
@@ -735,23 +844,50 @@ const SearchForm = forwardRef(({ searchStarted, threadId, setThreadId, fireSearc
                                         <i className="fa-regular fa-file mr-2" /> Local files
                                     </button>
 
-                                    <div className="relative">
-                                        <button type="button" id="submenu2Button" className="w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100" onClick={() => setMainDropdownOpen(false) || setMain3DropdownOpen(false)}>
-                                            <span><i className="fa-solid fa-share-nodes mr-2" /> Connect files</span>
+                                    <div
+                                        className="relative"
+                                        onMouseEnter={() => setShowConnectSubmenu(true)}
+                                        onMouseLeave={() => setShowConnectSubmenu(false)}
+                                    >
+                                        {/* CONNECT FILES BUTTON */}
+                                        <button
+                                            type="button"
+                                            className="w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100"
+                                        >
+                                            <span>
+                                                <i className="fa-solid fa-share-nodes mr-2" /> Connect files
+                                            </span>
                                             <i className="fa fa-angle-right text-gray-500 float-right" />
                                         </button>
 
-                                        <div id="submenu2" className="hidden absolute top-0 left-full ml-1 bg-white rounded shadow-lg w-[225px]">
-                                            <button type="button" id="drivePickerBtn" className="block px-4 py-2 text-gray-700 hover:bg-gray-100" style={{ width: "100%", textAlign: "left" }} onClick={() => redirectURLExternal("https://drive.google.com")}>
-                                                <span><i className="fa-brands fa-google mr-2" /> Google Drive</span>
-                                                <i className="fa fa-arrow-up text-gray-500 float-right" style={{ transform: "rotate(45deg)" }} />
-                                            </button>
-                                            <button type="button" id="dropBoxPickerBtn" className="block px-4 py-2 text-gray-700 hover:bg-gray-100" style={{ width: "100%", textAlign: "left" }} onClick={() => redirectURLExternal("https://www.dropbox.com")}>
-                                                <span><i className="fa-brands fa-dropbox mr-2" /> Dropbox</span>
-                                                <i className="fa fa-arrow-up text-gray-500 float-right" style={{ transform: "rotate(45deg)" }} />
-                                            </button>
-                                        </div>
+                                        {/* SUBMENU */}
+                                        {showConnectSubmenu && (
+                                            <div
+                                                id="submenu2"
+                                                className="absolute top-0 left-full bg-white rounded shadow-lg w-[225px] z-50"
+                                            >
+                                                <button
+                                                    type="button"
+                                                    className="w-full px-4 py-2 text-left hover:bg-gray-100"
+                                                    onClick={handleGoogleDriveClick}
+                                                >
+                                                    <i className="fa-brands fa-google-drive mr-2" />
+                                                    Google Drive
+                                                </button>
+
+                                                <button
+                                                    type="button"
+                                                    className="w-full px-4 py-2 text-left hover:bg-gray-100"
+                                                    onClick={handleDropboxClick}
+                                                >
+                                                    <i className="fa-brands fa-dropbox mr-2" />
+                                                    Dropbox
+                                                </button>
+
+                                            </div>
+                                        )}
                                     </div>
+
                                 </div>
                             </div>
                         </div>

@@ -12,7 +12,7 @@ import LoginPage from "./pages/Login";
 import { AuthProvider } from "./context/AuthContext";
 import ScrollToTop from "./components/ScrollToTop";
 import ForgotPassword from "./pages/ForgotPassword";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import SearchResultContainer from "./components/SearchResultContainer";
 import LibraryPage from "./pages/LibraryPage";
 import SearchResult from "./components/SearchResult";
@@ -21,6 +21,8 @@ const App = () => {
   const [showImg, setShowImg] = useState(true);
   const [threadId, setThreadId] = useState(window.location.pathname.split("/")[2] || null);
   const [threadsContainer, setThreadsContainer] = useState([]);
+
+
   return (
     <BrowserRouter>
       <AuthProvider>
