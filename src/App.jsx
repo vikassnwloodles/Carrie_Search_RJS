@@ -17,6 +17,7 @@ import SearchResultContainer from "./components/SearchResultContainer";
 import LibraryPage from "./pages/LibraryPage";
 import SearchResult from "./components/SearchResult";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
+import TermsOfService from "./pages/TermsOfService";
 
 const App = () => {
   const [showImg, setShowImg] = useState(true);
@@ -67,6 +68,7 @@ const App = () => {
                   <Route path="/search/public/:chatId" element={<SearchResult setShowImg={setShowImg} />} />
                   <Route path="/library" element={<LibraryPage setShowImg={setShowImg} />} />
                   <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+                  <Route path="/terms-of-service" element={<TermsOfService />} />
                 </Routes>
                 {/* </div> */}
               </div>

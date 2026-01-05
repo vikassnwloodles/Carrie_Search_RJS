@@ -339,6 +339,15 @@ export default function Home({ threadId, setThreadId, setShowImg, threadsContain
             >
               Privacy Policy
             </Link>
+
+            <Link
+              to="/terms-of-service"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-teal-600 hover:underline"
+            >
+              Terms & Conditions
+            </Link>
           </div>
         </footer>
 
