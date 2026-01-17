@@ -36,6 +36,8 @@ export default function SignupForm({ apiEndpoint, onSuccess }) {
 
   const [message, setMessage] = useState(null); // { type: 'success' | 'error', text }
   const [submitting, setSubmitting] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   function handleChange(e) {
     const { name, type, value, checked } = e.target;
@@ -239,32 +241,54 @@ export default function SignupForm({ apiEndpoint, onSuccess }) {
           <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="signup-password">
             *Create a Password:
           </label>
-          <input
-            id="signup-password"
-            name="password"
-            type="password"
-            required
-            placeholder="******************"
-            value={form.password}
-            onChange={handleChange}
-            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline"
-          />
+          <div className="relative">
+            <input
+              id="signup-password"
+              name="password"
+              type={showPassword ? "text" : "password"}
+              required
+              placeholder="******************"
+              value={form.password}
+              onChange={handleChange}
+              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline"
+            />
+            {/* Eye icon */}
+            <button
+              type="button"
+              onMouseOver={() => setShowPassword(true)}
+              onMouseOut={() => setShowPassword(false)}
+              className="absolute inset-y-0 right-3 flex items-center text-gray-500 hover:text-gray-700"
+            >
+              <i className="fa-solid fa-eye" />
+            </button>
+          </div>
         </div>
 
         <div className="mb-6">
           <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="confirm-password">
             *Confirm Password:
           </label>
-          <input
-            id="confirm-password"
-            name="confirm_password"
-            type="password"
-            required
-            placeholder="******************"
-            value={form.confirm_password}
-            onChange={handleChange}
-            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline"
-          />
+          <div className="relative">
+            <input
+              id="confirm-password"
+              name="confirm_password"
+              type={showConfirmPassword ? "text" : "password"}
+              required
+              placeholder="******************"
+              value={form.confirm_password}
+              onChange={handleChange}
+              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline"
+            />
+            {/* Eye icon */}
+            <button
+              type="button"
+              onMouseOver={() => setShowConfirmPassword(true)}
+              onMouseOut={() => setShowConfirmPassword(false)}
+              className="absolute inset-y-0 right-3 flex items-center text-gray-500 hover:text-gray-700"
+            >
+              <i className="fa-solid fa-eye" />
+            </button>
+          </div>
         </div>
 
         {/* Consent and Agreement */}

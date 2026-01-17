@@ -97,7 +97,7 @@ export default function Pricing() {
       }
     } else {
       showCustomToast(resJson, { type: "success" })
-      var result = '4d : 23h : 59m'
+      var result = '6d : 23h : 59m'
       setBtnTxt('Free Trial Ends in ' + result)
     }
   }

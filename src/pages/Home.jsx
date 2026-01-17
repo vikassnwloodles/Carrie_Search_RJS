@@ -43,6 +43,8 @@ export default function Home({ threadId, setThreadId, setShowImg, threadsContain
     if (emailVerificationStatus) {
       if (emailVerificationStatus === "success") {
         toast.success("Email verified successfully 🎉")
+        localStorage.setItem("authToken", searchParams.get("access"));
+        navigate("/");
       } else if (emailVerificationStatus === "email_already_in_use") {
         toast.error(
           <div>
