@@ -5,7 +5,7 @@ import { showCustomToast } from "../utils/customToast";
 import { useAuthUtils } from "../utils/useAuthUtils";
 
 const SearchResultContainer = forwardRef(({ searchStarted, pk, searchHistoryContainer, fireSearch, threadId }, ref) => {
-  
+
   const showFileMetadata = false
   const uploadedFile = {}
   const main2DropdownOpen = false
@@ -19,11 +19,13 @@ const SearchResultContainer = forwardRef(({ searchStarted, pk, searchHistoryCont
 
   const searchInputData = location.state || { checkedAIModelValues: localStorage.getItem("model") || "best" };
   const searchBoxRef = useRef(null);
-  
-  
 
+
+
+  // const dynamicText =
+  //   "Please standby, Carrie is working on your request...";
   const dynamicText =
-    "Please standby, Carrie is working on your request...";
+    "Thinking... Working Your Request.";
 
   /* ---------------- SCROLL CONTROL REFS ---------------- */
   const hasScrolledOnInitialLoadRef = useRef(false);

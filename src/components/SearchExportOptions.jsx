@@ -38,6 +38,33 @@ export default function SearchExportOptions({ searchResultId, uniqueId, response
 
   /* ---------------- EXPORT PDF ---------------- */
   async function handleChatExportAsPDF(searchResultId) {
+    const resp = await fetch(`${import.meta.env.VITE_API_URL}/download-llm-response/`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+      },
+      body: JSON.stringify({
+        searchResultId,
+        "format": "pdf"
+      })
+    })
+
+    const blob = await resp.blob()
+    const url = window.URL.createObjectURL(blob)
+
+    const a = document.createElement("a")
+    a.href = url
+    a.download = "report.pdf"
+    document.body.appendChild(a)
+    a.click()
+
+    a.remove()
+    window.URL.revokeObjectURL(url)
+
+
+
+    return
     const source = document.getElementById(searchResultId);
     if (!source) return;
 
@@ -119,53 +146,106 @@ export default function SearchExportOptions({ searchResultId, uniqueId, response
 
 
 
-  function handleChatExportAsMarkdown(searchResultId) {
-    const source = document.getElementById(searchResultId);
-    if (!source) return;
+  async function handleChatExportAsMarkdown(searchResultId) {
 
-    const text = extractPlainTextFromDOM(source);
+    const resp = await fetch(`${import.meta.env.VITE_API_URL}/download-llm-response/`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+      },
+      body: JSON.stringify({
+        searchResultId,
+        "format": "markdown"
+      })
+    })
 
-    const markdown =
-      `# Exported Chat
+    const blob = await resp.blob()
+    const url = window.URL.createObjectURL(blob)
 
-${text}
-`;
+    const a = document.createElement("a")
+    a.href = url
+    a.download = "report.md"
+    document.body.appendChild(a)
+    a.click()
 
-    const blob = new Blob([markdown], { type: "text/markdown;charset=utf-8" });
-    const url = URL.createObjectURL(blob);
+    a.remove()
+    window.URL.revokeObjectURL(url)
 
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "document.md";
-    a.click();
+    return
+    //     const source = document.getElementById(searchResultId);
+    //     if (!source) return;
 
-    URL.revokeObjectURL(url);
+    //     const text = extractPlainTextFromDOM(source);
+
+    //     const markdown =
+    //       `# Exported Chat
+
+    // ${text}
+    // `;
+
+    //     const blob = new Blob([markdown], { type: "text/markdown;charset=utf-8" });
+    //     const url = URL.createObjectURL(blob);
+
+    //     const a = document.createElement("a");
+    //     a.href = url;
+    //     a.download = "document.md";
+    //     a.click();
+
+    //     URL.revokeObjectURL(url);
   }
 
 
   async function handleChatExportAsDocx(searchResultId) {
-    const source = document.getElementById(searchResultId);
-    if (!source) return;
 
-    const text = extractPlainTextFromDOM(source);
+    const resp = await fetch(`${import.meta.env.VITE_API_URL}/download-llm-response/`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+      },
+      body: JSON.stringify({
+        searchResultId,
+        "format": "docx"
+      })
+    })
 
-    const paragraphs = text.split("\n").map(
-      line =>
-        new Paragraph({
-          children: [new TextRun(line)],
-        })
-    );
+    const blob = await resp.blob()
+    const url = window.URL.createObjectURL(blob)
 
-    const doc = new Document({
-      sections: [
-        {
-          children: paragraphs,
-        },
-      ],
-    });
+    const a = document.createElement("a")
+    a.href = url
+    a.download = "report.docx"
+    document.body.appendChild(a)
+    a.click()
 
-    const blob = await Packer.toBlob(doc);
-    saveAs(blob, "document.docx");
+    a.remove()
+    window.URL.revokeObjectURL(url)
+
+    // return
+
+    // const source = document.getElementById(searchResultId);
+    // if (!source) return;
+
+    // const text = extractPlainTextFromDOM(source);
+
+    // const paragraphs = text.split("\n").map(
+    //   line =>
+    //     new Paragraph({
+    //       children: [new TextRun(line)],
+    //     })
+    // );
+
+    // const doc = new Document({
+    //   sections: [
+    //     {
+    //       children: paragraphs,
+    //     },
+    //   ],
+    // });
+
+    // const blob = await Packer.toBlob(doc);
+    // saveAs(blob, "document.docx");
   }
 
   async function handleShareChat(response_id) {
