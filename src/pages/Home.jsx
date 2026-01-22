@@ -7,6 +7,7 @@ import SearchResultContainer from "../components/SearchResultContainer";
 import { showCustomToast } from "../utils/customToast";
 import { ApiError } from "../errors/ApiError";
 import { useAuthUtils } from "../utils/useAuthUtils";
+import AlertsForm from "../components/AlertsForm";
 
 
 export default function Home({ threadId, setThreadId, setShowImg, threadsContainer, setThreadsContainer }) {
@@ -319,6 +320,8 @@ export default function Home({ threadId, setThreadId, setShowImg, threadsContain
             </div>
           </div>
         )}
+
+        <AlertsForm />
 
 
         {/* --- GOOGLE VERIFICATION FOOTER (STATIC, ALWAYS VISIBLE) --- */}
