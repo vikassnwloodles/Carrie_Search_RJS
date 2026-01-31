@@ -9,12 +9,8 @@ import { useEffect, useState } from "react";
 import { showCustomToast } from "../utils/customToast";
 import { useAuthUtils } from "../utils/useAuthUtils";
 
-export default function SearchResult({ response: initResponse, prompt: initPrompt, pk: initPk, onSearch, threadId }) {
-  const [response, setResponse] = useState(initResponse)
-  const [prompt, setPrompt] = useState(initPrompt)
+export default function SearchResult({ response, prompt, pk: initPk, onSearch, threadId }) {
   const [pk, setPk] = useState(initPk)
-  // const [onSearch, setOnSearch] = useState(initOnSearch)
-
 
   const { chatId } = useParams();
 
@@ -43,7 +39,6 @@ export default function SearchResult({ response: initResponse, prompt: initPromp
         setPk(resJson.id)
       }
     } catch (err) {
-      console.log(err)
       showCustomToast("Something went wrong!", { type: "error" })
     }
   }
@@ -74,6 +69,8 @@ export default function SearchResult({ response: initResponse, prompt: initPromp
   //   response.choices[0].message.content,
   //   response.citations_metadata || []
   // ) : null;
+
+
 
   const content = response ? structuredData(
     response.choices?.[0]?.message?.content ?? response.content?.[0]?.text,

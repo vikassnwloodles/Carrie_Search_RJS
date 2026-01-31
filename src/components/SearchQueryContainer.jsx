@@ -2,11 +2,16 @@ import { useEffect, useRef, useState } from "react";
 import { showCustomToast } from "../utils/customToast";
 
 export default function SearchQueryContainer({ query, uniqueId, searchResultId, onSearch }) {
+  // alert(query)
   const promptContainerRef = useRef(null);
 
   const [isPromptContainerExpanded, setIsPromptContainerExpanded] = useState(false);
   const [isEditBtnClicked, setIsEditBtnClicked] = useState(false);
   const [editedQuery, setEditedQuery] = useState(query);
+
+  useEffect(() => {
+    setEditedQuery(query)
+  }, [query])
 
   useEffect(() => {
     // attachEventHandlers(uniqueId, searchResultId)

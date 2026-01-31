@@ -1,9 +1,59 @@
-import { forwardRef, useEffect, useRef, useState } from 'react'
-import { useAuth } from '../context/AuthContext';
+import { useEffect, useRef, useState } from 'react'
+import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import { showCustomToast } from '../utils/customToast';
+import { showCustomToast } from '../../utils/customToast';
+import SearchSuggestionsBox from '../SearchSuggestionsBox/SearchSuggestionsBox';
+import { fetchSearchSuggestions } from '../SearchSuggestionsBox/fetchSearchSuggestions'
+import { useFireSearch } from '../../hooks/useFireSearch';
+import { useSearch } from '../../context/SearchContext';
 
-const SearchForm = forwardRef(({ searchStarted, threadId, setThreadId, fireSearch, searchInputData, setSearchInputData, threadsContainer, setThreadsContainer, setShouldFetchThread }, ref) => {
+
+const SearchForm = ({isThreadPage}) => {
+
+    const {
+        searchStarted,
+        threadsContainer,
+        setThreadsContainer,
+        searchInputData,
+        setSearchInputData,
+    } = useSearch();
+    const fireSearch = useFireSearch()
+
+    // ================ STATES DEFINED HERE ================
+    const [searchSuggestions, setSearchSuggestions] = useState([])
+    const [searchQuery, setSearchQuery] = useState("")
+
+    // ================ REFS DEFINED HERE ================
+    const searchBoxRef = useRef(null);
+
+    // ================ CAPTURING TEXT FROM SEARCHBOX AS USER STARTS TYPING ================
+    useEffect(() => {
+        const el = searchBoxRef.current;
+        if (!el) return;
+
+        const handleInput = () => {
+            setSearchQuery(el.innerText)
+        };
+
+        el.addEventListener("input", handleInput);
+        return () => el.removeEventListener("input", handleInput);
+    }, []);
+
+
+    // ================ CALLING `fetchSearchSuggestions` API AS USER STARTS TYPING ================
+    useEffect(() => {
+        if (!searchQuery || isThreadPage) {
+            setSearchSuggestions([]);
+            return;
+        }
+        let isLatest = true;
+        (async () => {
+            const suggestions = await fetchSearchSuggestions(searchQuery, 6)
+            if (isLatest) setSearchSuggestions(suggestions)
+        })();
+        return () => isLatest = false
+    }, [searchQuery, isThreadPage]);
+
 
     const allowedMimeTypes = [
         // Documents
@@ -43,7 +93,6 @@ const SearchForm = forwardRef(({ searchStarted, threadId, setThreadId, fireSearc
         window.gapi.load("picker", {
             callback: () => {
                 pickerLoadedRef.current = true;
-                console.log("✅ Google Picker loaded");
             },
             onerror: () => {
                 console.error("❌ Failed to load Google Picker");
@@ -230,7 +279,9 @@ const SearchForm = forwardRef(({ searchStarted, threadId, setThreadId, fireSearc
 
 
     async function handleSearchSubmit() {
-        const text = normalizePrompt(ref.current.innerText);
+        alert("setting search suggestions to empty array...")
+        setSearchSuggestions([])
+        const text = normalizePrompt(searchBoxRef.current.innerText);
         if (!text) {
             return;
         }
@@ -243,7 +294,7 @@ const SearchForm = forwardRef(({ searchStarted, threadId, setThreadId, fireSearc
         closeUploadedFileMetadata()
 
         // ✅ CLEAR SEARCH BOX
-        ref.current.innerHTML = "";
+        searchBoxRef.current.innerHTML = "";
 
         // VALIDATE SELECTED FILE AND CALL UPLOAD IMAGE API
         let imageUrl = "";
@@ -269,15 +320,14 @@ const SearchForm = forwardRef(({ searchStarted, threadId, setThreadId, fireSearc
             }
         }
 
-        if (threadId) {
-            fireSearch(text, null, threadId, imageUrl, docContent)
+        if (isThreadPage) {
+            fireSearch(text, null, isThreadPage, imageUrl, docContent)
         } else {
-            const newThreadId = crypto.randomUUID();
-            setThreadId(newThreadId)
-            setShouldFetchThread(false)
-            window.history.replaceState({}, "", `/search/${newThreadId}`);
-            const resJson = await fireSearch(text, null, newThreadId, imageUrl, docContent)
-            setThreadsContainer([{ ...resJson, thread_id: newThreadId, prompt: text }, ...threadsContainer])
+            const newisThreadPage = crypto.randomUUID();
+            setSearchInputData(prev => ({...prev, thread_id: newisThreadPage}))
+            alert(`new thread id: ${newisThreadPage}`)
+            navigate(`/thread/${newisThreadPage}`, {state: {shouldFetchThread: false}})
+            fireSearch(searchQuery, null, newisThreadPage)
         }
     }
 
@@ -386,7 +436,7 @@ const SearchForm = forwardRef(({ searchStarted, threadId, setThreadId, fireSearc
         // el.style.height = `${newH}px`;
     }
     useEffect(() => {
-        const el = ref.current;
+        const el = searchBoxRef.current;
         if (!el) return;
 
         function onInput() {
@@ -450,16 +500,16 @@ const SearchForm = forwardRef(({ searchStarted, threadId, setThreadId, fireSearc
                 micIconRef.current.classList.remove("text-gray-500");
                 micIconRef.current.classList.add("text-red-500");
             }
-            if (ref.current) {
-                ref.current.setAttribute("data-placeholder", "Listening...");
+            if (searchBoxRef.current) {
+                searchBoxRef.current.setAttribute("data-placeholder", "Listening...");
             }
         };
 
         recognition.onresult = (event) => {
             const transcript = event.results[0][0].transcript;
-            if (ref.current) {
-                ref.current.innerText = transcript;
-                placeCaretAtEnd(ref.current);
+            if (searchBoxRef.current) {
+                searchBoxRef.current.innerText = transcript;
+                placeCaretAtEnd(searchBoxRef.current);
             }
         };
 
@@ -469,8 +519,8 @@ const SearchForm = forwardRef(({ searchStarted, threadId, setThreadId, fireSearc
                 micIconRef.current.classList.remove("text-red-500");
                 micIconRef.current.classList.add("text-gray-500");
             }
-            if (ref.current) {
-                ref.current.setAttribute(
+            if (searchBoxRef.current) {
+                searchBoxRef.current.setAttribute(
                     "data-placeholder",
                     "Search, Ask, or Write Anything!"
                 );
@@ -479,8 +529,8 @@ const SearchForm = forwardRef(({ searchStarted, threadId, setThreadId, fireSearc
 
         recognition.onerror = () => {
             setIsListening(false);
-            if (ref.current) {
-                ref.current.setAttribute(
+            if (searchBoxRef.current) {
+                searchBoxRef.current.setAttribute(
                     "data-placeholder",
                     "Speech recognition failed. Try typing."
                 );
@@ -502,13 +552,13 @@ const SearchForm = forwardRef(({ searchStarted, threadId, setThreadId, fireSearc
             recognitionRef.current.start();
         } catch (e) {
             console.error("Mic already active or permission denied", e);
-            if (ref.current) {
-                ref.current.setAttribute(
+            if (searchBoxRef.current) {
+                searchBoxRef.current.setAttribute(
                     "data-placeholder",
                     "Microphone already active or permission denied."
                 );
                 setTimeout(() => {
-                    ref.current.setAttribute(
+                    searchBoxRef.current.setAttribute(
                         "data-placeholder",
                         "Search, Ask, or Write Anything!"
                     );
@@ -544,7 +594,6 @@ const SearchForm = forwardRef(({ searchStarted, threadId, setThreadId, fireSearc
                         "google_oauth_token",
                         tokenResponse.access_token
                     );
-                    console.log("Google Drive authenticated");
 
                     // ✅ THIS IS REQUIRED
                     createGooglePicker();
@@ -656,18 +705,19 @@ const SearchForm = forwardRef(({ searchStarted, threadId, setThreadId, fireSearc
             <form
                 id="search-form"
                 // className="z-10 w-full max-w-4xl pb-12 bg-[#fcfcf9] rounded-xl"
-                className={`z-10 ${true ? "" : "w-full"} max-w-4xl pb-12 rounded-xl ${threadId ? "fixed -bottom-5 !w-full" : ""}`}
+                className={`z-10 ${true ? "" : "w-full"} max-w-4xl pb-12 rounded-xl ${isThreadPage ? "fixed -bottom-5 !w-full" : ""}`}
                 onSubmit={(e) => {
                     e.preventDefault();
                     handleSearchSubmit();
                 }}
             >
-                <div className={`relative flex items-center rounded-xl ${threadId ? "!w-full !left-0" : ""}`} id="search-width">
+                <div className={`relative flex items-center rounded-xl ${isThreadPage ? "!w-full !left-0" : ""}`} id="search-width">
                     <div
                         id="searchbox_parent_div"
-                        className="w-full border border-gray-200 rounded-xl p-2 pb-12 bg-white shadow-sm transition-shadow focus-within:outline-none focus-within:ring-2 focus-within:ring-teal-500"
+                        // className={`w-full border border-gray-200 rounded-xl p-2 pb-12 bg-white shadow-sm transition-shadow focus-within:outline-none focus-within:ring-2 focus-within:ring-teal-500`}
+                        className={`w-full border border-gray-200 ${searchSuggestions && searchSuggestions.length > 0 ? "rounded-t-xl" : "rounded-xl"}  p-2 pb-12 bg-white shadow-sm transition-shadow focus-within:outline-none focus-within:ring-2 focus-within:ring-teal-500`}
                         onMouseDown={(e) => {
-                            const el = ref.current;
+                            const el = searchBoxRef.current;
                             if (!el) return;
 
                             // If user clicks inside existing text → DO NOTHING
@@ -683,7 +733,7 @@ const SearchForm = forwardRef(({ searchStarted, threadId, setThreadId, fireSearc
                     >
                         <div
                             id="ai_search"
-                            ref={ref}
+                            ref={searchBoxRef}
                             contentEditable={true}
                             data-placeholder="Search, Ask, or Write Anything!"
                             name="prompt"
@@ -799,7 +849,7 @@ const SearchForm = forwardRef(({ searchStarted, threadId, setThreadId, fireSearc
                             <div
                                 id="main2Dropdown"
                                 className={`${main2DropdownOpen ? "" : "hidden"}
-                                    absolute right-0 ${threadId ? "bottom-full mb-2" : "mt-2"}
+                                    absolute right-0 ${isThreadPage ? "bottom-full mb-2" : "mt-2"}
                                     w-56 bg-white rounded shadow-lg z-[9999]
                                 `}
                             >
@@ -848,41 +898,14 @@ const SearchForm = forwardRef(({ searchStarted, threadId, setThreadId, fireSearc
                                         DeepSeek {searchInputData.checkedAIModelValues === "deepseek" && <i className="fa fa-angle-left text-gray-500 float-right aiFlapperSelected" />}
                                     </button>
 
-                                    {/* <button
-                                        type="button"
-                                        className="w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100"
-                                        onClick={(e) => changeAIModel(e, "sonar")}
-                                    >
-                                        Sonar {searchInputData.checkedAIModelValues === "sonar" && <i className="fa fa-angle-left text-gray-500 float-right aiFlapperSelected" />}
-                                    </button>
+                                    {/* Grok 3 */}
                                     <button
                                         type="button"
                                         className="w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100"
-                                        onClick={(e) => changeAIModel(e, "sonar-pro")}
+                                        onClick={(e) => changeAIModel(e, "grok-3")}
                                     >
-                                        Sonar Pro {searchInputData.checkedAIModelValues === "sonar-pro" && <i className="fa fa-angle-left text-gray-500 float-right aiFlapperSelected" />}
+                                        Grok 3 {searchInputData.checkedAIModelValues === "grok-3" && <i className="fa fa-angle-left text-gray-500 float-right aiFlapperSelected" />}
                                     </button>
-                                    <button
-                                        type="button"
-                                        className="w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100"
-                                        onClick={(e) => changeAIModel(e, "sonar-reasoning")}
-                                    >
-                                        Sonar Reasoning {searchInputData.checkedAIModelValues === "sonar-reasoning" && <i className="fa fa-angle-left text-gray-500 float-right aiFlapperSelected" />}
-                                    </button>
-                                    <button
-                                        type="button"
-                                        className="w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100"
-                                        onClick={(e) => changeAIModel(e, "sonar-reasoning-pro")}
-                                    >
-                                        Sonar Reasoning Pro {searchInputData.checkedAIModelValues === "sonar-reasoning-pro" && <i className="fa fa-angle-left text-gray-500 float-right aiFlapperSelected" />}
-                                    </button>
-                                    <button
-                                        type="button"
-                                        className="w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100"
-                                        onClick={(e) => changeAIModel(e, "sonar-deep-research")}
-                                    >
-                                        Sonar Deep Research {searchInputData.checkedAIModelValues === "sonar-deep-research" && <i className="fa fa-angle-left text-gray-500 float-right aiFlapperSelected" />}
-                                    </button> */}
                                 </div>
                             </div>
                         </div>
@@ -901,7 +924,7 @@ const SearchForm = forwardRef(({ searchStarted, threadId, setThreadId, fireSearc
                             <div
                                 id="main3Dropdown"
                                 className={`${main3DropdownOpen ? "" : "hidden"
-                                    } absolute right-0 bg-white rounded shadow-lg z-10 ${threadId ? "bottom-full mb-2" : "mt-2"}`}
+                                    } absolute right-0 bg-white rounded shadow-lg z-10 ${isThreadPage ? "bottom-full mb-2" : "mt-2"}`}
                                 style={{ width: 300 }}
                             >
                                 <div className="p-3">
@@ -992,7 +1015,7 @@ const SearchForm = forwardRef(({ searchStarted, threadId, setThreadId, fireSearc
 
                             <input id="file-upload" ref={fileInputRef} type="file" className="hidden" onChange={onFileInputChange} />
 
-                            <div id="mainDropdown" className={`${mainDropdownOpen ? "" : "hidden"} absolute right-0 w-56 bg-white rounded shadow-lg z-10 ${threadId ? "bottom-full mb-2" : "mt-2"}`}>
+                            <div id="mainDropdown" className={`${mainDropdownOpen ? "" : "hidden"} absolute right-0 w-56 bg-white rounded shadow-lg z-10 ${isThreadPage ? "bottom-full mb-2" : "mt-2"}`}>
                                 <div className="p-1">
                                     <button type="button" id="file-upload-button" className="w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100" onClick={onFileUploadClick}>
                                         <i className="fa-regular fa-file mr-2" /> Local files
@@ -1074,9 +1097,10 @@ const SearchForm = forwardRef(({ searchStarted, threadId, setThreadId, fireSearc
                         </button>
                     </div>
                 </div >
+                <SearchSuggestionsBox searchSuggestions={searchSuggestions} mt={1} ref={searchBoxRef} handleSearchSubmit={handleSearchSubmit} />
             </form >
         </>
     )
-})
+}
 
 export default SearchForm

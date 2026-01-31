@@ -75,8 +75,9 @@ export function AuthProvider({ children }) {
 
   // Logout: clear everything
   function logout() {
-    localStorage.removeItem("authToken");
-    localStorage.removeItem("isPro");
+    // localStorage.removeItem("authToken");
+    // localStorage.removeItem("isPro");
+    localStorage.clear();
 
     setIsAuthenticated(false);
     setUser(null);

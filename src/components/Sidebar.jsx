@@ -5,8 +5,11 @@ import { useAuth } from "../context/AuthContext";
 import BottomUserProfileSection from "./BottomUserProfileSection";
 import { showCustomToast } from "../utils/customToast";
 import { useAuthUtils } from "../utils/useAuthUtils";
+import { useSearch } from "../context/SearchContext";
 
-export default function Sidebar({ setThreadId, threadsContainer, setThreadsContainer }) {
+export default function Sidebar() {
+
+  const { threadsContainer, setThreadsContainer } = useSearch()
 
   const { logoutAndNavigate } = useAuthUtils();
   const { isAuthenticated } = useAuth();
@@ -85,7 +88,6 @@ export default function Sidebar({ setThreadId, threadsContainer, setThreadsConta
           {/* HOME */}
           <Link
             to="/"
-            onClick={() => setThreadId(null)}
             className="w-12 h-12 flex items-center justify-center
                        rounded-full bg-gray-200 text-gray-800"
             title="Home"
@@ -148,8 +150,7 @@ export default function Sidebar({ setThreadId, threadsContainer, setThreadsConta
           {threadsContainer.map((item) => (
             <Link
               key={item.thread_id}
-              to={`/search/${item.thread_id}`}
-              onClick={() => setThreadId(item.thread_id)}
+              to={`/thread/${item.thread_id}`}
               className="block px-3 py-2 rounded-md
                          hover:bg-gray-100 text-sm"
             >

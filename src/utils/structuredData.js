@@ -202,6 +202,10 @@ function getCitationHtml(citationsMetadata) {
         attachEventHandlers(uniqueId);
     }, 0);
 
+    citationsMetadata = citationsMetadata.filter(
+    ((seen) => item => !seen.has(item.site_url) && seen.add(item.site_url))(new Set())
+    );
+
     const firstCitation = citationsMetadata[0];
     const remainingCount = citationsMetadata.length - 1;
     const remainingText = remainingCount > 0 ? ` +${remainingCount}` : '';
@@ -272,7 +276,8 @@ function getMainTextAndCitationsHtml(trimmedLine, citationsMetadata) {
     if (citationNumbers.length > 0) {
         // FILTER OUT CITATIONS METADATA BASE ON EXTRACTED CITATION NUMBERS
         const citationsMetadataFiltered = citationNumbers.map(number => citationsMetadata[number - 1])
-        citationsHtml = getCitationHtml(citationsMetadataFiltered)
+        // citationsHtml = getCitationHtml(citationsMetadataFiltered)
+        citationsHtml = ""
     }
     return [mainText, citationsHtml];
 }
