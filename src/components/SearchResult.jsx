@@ -9,8 +9,10 @@ import { useEffect, useState } from "react";
 import { showCustomToast } from "../utils/customToast";
 import { useAuthUtils } from "../utils/useAuthUtils";
 
-export default function SearchResult({ response, prompt, pk: initPk, onSearch, threadId }) {
-  const [pk, setPk] = useState(initPk)
+export default function SearchResult({ response: initResponse, prompt: initPrompt, pk, threadId }) {
+  // const [pk, setPk] = useState(initPk)
+  const [response, setResponse] = useState(initResponse)
+  const [prompt, setPrompt] = useState(initPrompt)
 
   const { chatId } = useParams();
 
@@ -77,7 +79,7 @@ export default function SearchResult({ response, prompt, pk: initPk, onSearch, t
     response.citations_metadata ?? []
   ) : null;
 
-
+  const image_url = response.content?.[0]?.image_url
 
 
 
@@ -90,18 +92,18 @@ export default function SearchResult({ response, prompt, pk: initPk, onSearch, t
               query={prompt}
               uniqueId={uniqueId}
               searchResultId={pk}
-              onSearch={onSearch}
+              threadId={threadId}
+              chatId={chatId}
             />
 
             <SearchImagesContainer images={images} />
 
-            <SearchResponseContainer content={content} uniqueId={uniqueId} searchResultId={response.pk} />
+            <SearchResponseContainer content={content} imageURL={image_url} uniqueId={uniqueId} searchResultId={pk} />
             {!chatId &&
               <SearchExportOptions
                 searchResultId={pk}
                 uniqueId={uniqueId}
                 response={response}
-                onSearch={onSearch}
                 prompt={prompt}
                 threadId={threadId}
               />
@@ -111,7 +113,6 @@ export default function SearchResult({ response, prompt, pk: initPk, onSearch, t
             <RelatedQuestionsContainer
               relatedQuestions={response.related_questions}
               searchResultId={pk}
-              onSearch={onSearch}
             />
           }
         </div>

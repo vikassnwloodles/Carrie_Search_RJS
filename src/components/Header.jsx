@@ -54,7 +54,7 @@ const Header = () => {
                 {isAuthenticated && (
                     <button
                         onClick={handleLogout}
-                        className="text-gray-600 hover:text-black font-medium transition-colors block py-2 md:py-0 bg-transparent border-none md:mr-6"
+                        className="text-gray-600 hover:text-black cursor-pointer font-medium transition-colors block py-2 md:py-0 bg-transparent border-none md:mr-6"
                     >
                         Logout
                     </button>

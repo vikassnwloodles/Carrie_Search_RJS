@@ -1,13 +1,29 @@
+import { useState } from "react";
 import { useSearch } from "../context/SearchContext";
+import { showCustomToast } from "../utils/customToast";
+import { flushSync } from "react-dom";
+
 
 export function useFireSearch() {
     const {
         setSearchHistoryContainer,
         searchInputData,
-        setSearchStarted
+        setSearchInputData,
+        setSearchStarted,
+        setStreamStarted,
+        setThreadsContainer,
+        setIsImageGeneration
     } = useSearch();
 
-    const fireSearch = async (prompt, search_result_id, thread_id) => {
+
+
+    const fireSearch = async (prompt, search_result_id, thread_id, isFirstSearchOfThread) => {
+        setSearchStarted(true)
+        setSearchInputData(prev => ({ ...prev, search_result_id }))
+
+        let fullText = "";
+        let imageUrl = "";
+
         try {
             if (search_result_id) {
                 setSearchHistoryContainer(prev =>
@@ -18,20 +34,22 @@ export function useFireSearch() {
                                 prompt: prompt,
                                 response: {
                                     ...item.response,
-                                    content: [{ text: "Thinking..." }]
+                                    content: [{ text: fullText, image_url: imageUrl }]
                                 },
                             }
                             : item
                     )
                 );
             } else {
+
                 setSearchHistoryContainer(prev => [
                     ...prev,
                     {
                         id: null,
+                        _key: crypto.randomUUID(),
                         prompt: prompt,
                         response: {
-                            content: [{ text: "Thinking..." }]
+                            content: [{ text: fullText, image_url: imageUrl }]
                         },
                     },
                 ]);
@@ -56,61 +74,133 @@ export function useFireSearch() {
             // ✅ STREAM HANDLING
             const reader = res.body.getReader();
             const decoder = new TextDecoder();
-            let fullText = "";
+            let buffer = "";
             let first_chunk_captured = false
-            let first_chunk = ""
             let extracted_pk = null
+            let is_image_generation = false
 
             while (true) {
                 const { value, done } = await reader.read();
                 if (done) break;
 
                 const chunk = decoder.decode(value, { stream: true });
+                buffer += chunk
+
                 // [INFO] CAPTURING FIRST CHUNK AND EXTRACTING PK
                 if (!first_chunk_captured) {
-                    first_chunk = chunk
-                    first_chunk_captured = true
+                    const idx = buffer.indexOf("\n\n");
+                    if (idx !== -1) {
+                        const meta = buffer.slice(0, idx);
+                        buffer = buffer.slice(idx + 2);
 
-                    extracted_pk = JSON.parse(first_chunk).search_result_id
+                        const parsed = JSON.parse(meta);
+                        extracted_pk = parsed.search_result_id
+                        is_image_generation = parsed.is_image_generation
+
+                        if(is_image_generation) setIsImageGeneration(true)
+
+                        first_chunk_captured = true;
+                    }
 
                     continue
                 }
 
-                fullText += chunk;
+                if (is_image_generation) {
+                    imageUrl += chunk
+                } else {
+                    fullText += chunk
+                }
+
+                // if (is_image_generation) {
+                //     setIsImageGeneration(true)
+                //     flushSync(() => {
+                //         setSearchHistoryContainer(prev =>
+                //             prev.map(item =>
+                //                 item.id === search_result_id
+                //                     ? {
+                //                         ...item,
+                //                         _key: crypto.randomUUID(),
+                //                         prompt: prompt,
+                //                         response: {
+                //                             ...item.response,
+                //                             content: [{ text: "", image_url: chunk }]
+                //                         },
+                //                     }
+                //                     : item
+                //             )
+                //         );
+                //     });
+                //     break
+                // }
+
+                // setStreamStarted(true)
+
+                // fullText += chunk;
 
                 // 🔴 live UI update
+                if (fullText.length % 20 === 0) {
+                    flushSync(() => {
+                        setSearchHistoryContainer(prev =>
+                            prev.map(item =>
+                                item.id === search_result_id
+                                    ? {
+                                        ...item,
+                                        _key: crypto.randomUUID(),
+                                        prompt: prompt,
+                                        response: {
+                                            ...item.response,
+                                            content: [{ text: fullText, image_url: imageUrl }]
+                                        },
+                                    }
+                                    : item
+                            )
+                        );
+                    });
+                }
+            }
+
+            flushSync(() => {
                 setSearchHistoryContainer(prev =>
                     prev.map(item =>
                         item.id === search_result_id
                             ? {
                                 ...item,
+                                _key: crypto.randomUUID(),
                                 prompt: prompt,
                                 response: {
                                     ...item.response,
-                                    content: [{ text: fullText }]
+                                    content: [{ text: fullText, image_url: imageUrl }]
                                 },
                             }
                             : item
                     )
                 );
-            }
+            });
 
+            // ASSIGN ID(extracted_pk) COMING FROM BACKEND TO THE NEW SEARCH ITEM
             if (!search_result_id) {
+                // setSearchHistoryContainer(prev => prev.length ? [...prev.slice(0, -1), { ...prev[prev.length - 1], id: clientKey }] : prev);
                 setSearchHistoryContainer(prev => prev.length ? [...prev.slice(0, -1), { ...prev[prev.length - 1], id: extracted_pk }] : prev);
             }
 
-            // ✅ After stream completes
-            const finalResponse = {
-                content: [{ text: fullText }]
-            };
-
-            return finalResponse;
+            // INCLUDING THE FIRST SEARCH OF A NEW THREAD IN THE SIDEBAR
+            if (isFirstSearchOfThread) {
+                setThreadsContainer(prev => ([{
+                    id: extracted_pk,
+                    prompt: prompt,
+                    response: {
+                        content: [{ text: fullText, image_url: imageUrl }]
+                    },
+                    thread_id: thread_id
+                }, ...prev]))
+            }
         } catch (err) {
             console.error(err);
             showCustomToast({ message: "Something went wrong" }, { type: "error" });
         } finally {
             setSearchStarted(false);
-            // setPk(null);
+            setStreamStarted(false)
+            setIsImageGeneration(false)
         }
     };
 

@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { showCustomToast } from "../utils/customToast";
 import { useAuthUtils } from "../utils/useAuthUtils";
 import { useNavigate } from "react-router-dom";
+import { useSearch } from "../context/SearchContext";
 
 /* -----------------------------
    Time ago helper
@@ -33,7 +34,8 @@ function timeAgo(isoDate) {
   return "just now";
 }
 
-export default function LibraryPage({ setShowImg }) {
+export default function LibraryPage() {
+  const { setShowImg } = useSearch()
   const navigate = useNavigate();
   const { logoutAndNavigate } = useAuthUtils();
 
@@ -202,13 +204,12 @@ export default function LibraryPage({ setShowImg }) {
           return (
             <div
               key={id}
-              className={`py-4 flex gap-3 cursor-pointer hover:bg-gray-50 ${
-                checked ? "bg-gray-50" : ""
-              }`}
+              className={`py-4 flex gap-3 cursor-pointer hover:bg-gray-50 ${checked ? "bg-gray-50" : ""
+                }`}
               onClick={() =>
                 selectMode
                   ? toggleSelect(id)
-                  : navigate(`/search/${thread.thread_id}`)
+                  : navigate(`/thread/${thread.thread_id}`)
               }
             >
               {selectMode && (

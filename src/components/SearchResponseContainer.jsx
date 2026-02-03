@@ -1,12 +1,11 @@
-import { useEffect, useRef } from "react";
+import { useRef } from "react";
 import { showCustomToast } from "../utils/customToast";
+import ThinkingLoader from "./ThinkingLoader";
+import { useSearch } from "../context/SearchContext";
 
-export default function SearchResponseContainer({ content, uniqueId, searchResultId }) {
+export default function SearchResponseContainer({ content, imageURL, uniqueId, searchResultId }) {
   const responseContainerRef = useRef(null);
-
-  useEffect(() => {
-    // attachEventHandlers(uniqueId)
-  }, [uniqueId]);
+  const { searchStarted, searchInputData, streamStarted, isImageGeneration } = useSearch()
 
   /* ---------- COPY TO CLIPBOARD ---------- */
   const copyResponseToClipboard = async () => {
@@ -16,11 +15,12 @@ export default function SearchResponseContainer({ content, uniqueId, searchResul
 
     try {
       await navigator.clipboard.writeText(text);
-      showCustomToast("Copied to clipboard!", {type: "success"});
+      showCustomToast("Copied to clipboard!", { type: "success" });
     } catch (err) {
       console.error("Failed to copy response:", err);
     }
   };
+
 
   return (
     <div className="bg-white p-6 rounded-lg border border-gray-200 mb-4 relative">
@@ -30,7 +30,8 @@ export default function SearchResponseContainer({ content, uniqueId, searchResul
           type="button"
           onClick={copyResponseToClipboard}
           id={`copy-icon-${uniqueId}`}
-          className="p-2 border rounded-md cursor-pointer"
+          className="p-2 rounded-md cursor-pointer text-xl text-gray-600"
+          // className="p-2 border rounded-md cursor-pointer"
           title="Copy response"
         >
           <i className="far fa-copy" />
@@ -38,11 +39,18 @@ export default function SearchResponseContainer({ content, uniqueId, searchResul
       </div>
 
       {/* Rendered response */}
-      <div
-        ref={responseContainerRef}
-        id={`response-text-inner-${uniqueId}`}
-        dangerouslySetInnerHTML={{ __html: content }}
-      />
+      {/* {searchStarted && searchResultId === searchInputData.search_result_id && !streamStarted && <ThinkingLoader />} */}
+      {/* {searchStarted && searchResultId === searchInputData.search_result_id && !content && <ThinkingLoader />} */}
+      {(searchStarted && searchResultId === searchInputData.search_result_id) ? (isImageGeneration ? <ThinkingLoader text={`Generating...`} /> : (!content ? <ThinkingLoader text={`Thinking...`} /> : null)) : null}
+      {imageURL ?
+        <img src={imageURL} alt="Generated Image" className="max-w-sm object-cover rounded-md" />
+        :
+        <div
+          ref={responseContainerRef}
+          id={`response-text-inner-${uniqueId}`}
+          dangerouslySetInnerHTML={{ __html: content }}
+        />
+      }
     </div>
   );
 }

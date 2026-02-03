@@ -12,13 +12,16 @@ export function SearchProvider({ children }) {
         image_url: "",
         search_mode: "web",
         checkedAIModelValues: localStorage.getItem("model") || "best",
+        search_result_id: null
     });
 
     // Example future states
     const [searchResults, setSearchResults] = useState(null);
     const [searchStarted, setSearchStarted] = useState(false);
+    const [streamStarted, setStreamStarted] = useState(false)
     const [showImg, setShowImg] = useState(true);
     const [threadsContainer, setThreadsContainer] = useState([]);
+    const [isImageGeneration, setIsImageGeneration] = useState(false)
 
     return (
         <SearchContext.Provider value={{
@@ -30,10 +33,14 @@ export function SearchProvider({ children }) {
             setSearchResults,
             searchStarted,
             setSearchStarted,
+            streamStarted,
+            setStreamStarted,
             showImg,
             setShowImg,
             threadsContainer,
-            setThreadsContainer
+            setThreadsContainer,
+            isImageGeneration,
+            setIsImageGeneration
         }}>
             {children}
         </SearchContext.Provider>

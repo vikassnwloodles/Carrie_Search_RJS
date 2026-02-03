@@ -1,14 +1,15 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { useSearch } from '../context/SearchContext';
 import SearchResultContainer from '../components/SearchResultContainer';
 import SearchForm from '../components/Home/SearchForm';
-import { useLocation, useParams } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 
 function Thread() {
     // const [threadId, setThreadId] = useState(window.location.pathname.split("/")[2] || null);
     const { threadId } = useParams();
     const location = useLocation();
-
+    const navigate = useNavigate();
+    const bottomRef = useRef(null);
     const shouldFetchThread = location.state?.shouldFetchThread;
 
     const { setShowImg, setSearchHistoryContainer } = useSearch()
@@ -46,21 +47,31 @@ function Thread() {
 
     useEffect(() => {
         setShowImg(false)
-        return () => setShowImg(true)
+        return () => {
+            setShowImg(true)
+            setSearchHistoryContainer([])
+        }
     }, [])
 
     useEffect(() => {
-        if (shouldFetchThread !== false) fetchThread()
+        if (shouldFetchThread !== false) {
+            fetchThread()
+        }
+        // Clear state after using
+        navigate(location.pathname, {
+            replace: true,
+            state: null
+        });
     }, [threadId])
 
-    // useEffect(() => {
-    //     if (!performScroll) return
-    //     const t = setTimeout(() => {
-    //         bottomRef.current?.scrollIntoView({ behavior: "auto" });
-    //     }, 0);
+    useEffect(() => {
+        if (!performScroll) return
+        const t = setTimeout(() => {
+            bottomRef.current?.scrollIntoView({ behavior: "auto" });
+        }, 0);
 
-    //     return () => clearTimeout(t);
-    // }, [performScroll])
+        return () => clearTimeout(t);
+    }, [performScroll])
 
 
 
@@ -69,9 +80,9 @@ function Thread() {
         <>
             <div className="w-full flex flex-col items-center">
 
-                <SearchResultContainer />
+                <SearchResultContainer ref={bottomRef} threadId={threadId} />
 
-                <SearchForm isThreadPage={true} />
+                <SearchForm isThreadPage={true} threadId={threadId} />
 
             </div >
 

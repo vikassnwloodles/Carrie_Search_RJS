@@ -1,8 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 import { showCustomToast } from "../utils/customToast";
+import { useFireSearch } from "../hooks/useFireSearch";
 
-export default function SearchQueryContainer({ query, uniqueId, searchResultId, onSearch }) {
-  // alert(query)
+export default function SearchQueryContainer({ query, uniqueId, searchResultId, threadId, chatId }) {
+  const fireSearch = useFireSearch()
+
   const promptContainerRef = useRef(null);
 
   const [isPromptContainerExpanded, setIsPromptContainerExpanded] = useState(false);
@@ -12,10 +14,6 @@ export default function SearchQueryContainer({ query, uniqueId, searchResultId, 
   useEffect(() => {
     setEditedQuery(query)
   }, [query])
-
-  useEffect(() => {
-    // attachEventHandlers(uniqueId, searchResultId)
-  }, [uniqueId, searchResultId]);
 
   /* ---------- COPY TO CLIPBOARD ---------- */
   const copyPromptToClipboard = async () => {
@@ -34,9 +32,9 @@ export default function SearchQueryContainer({ query, uniqueId, searchResultId, 
   /* ---------- EDIT HANDLERS ---------- */
   const handleConfirmEdit = () => {
     setIsEditBtnClicked(false);
-    showCustomToast("Prompt updated", { type: "success" });
+    // showCustomToast("Prompt updated", { type: "success" });
     const text = promptContainerRef.current.value;
-    onSearch(text, searchResultId)
+    fireSearch(text, searchResultId, threadId)
   };
 
   const handleCancelEdit = () => {
@@ -77,7 +75,8 @@ export default function SearchQueryContainer({ query, uniqueId, searchResultId, 
       )}
 
       {/* Icons */}
-      <div className="pdf-hide absolute bottom-0 right-0 flex space-x-2">
+      {/* <div className="pdf-hide absolute bottom-0 right-0 flex space-x-2"> */}
+      <div className="pdf-hide absolute bottom-0 right-0 flex">
         <IconButton
           onClick={copyPromptToClipboard}
           id={`query-copy-icon-${uniqueId}`}
@@ -85,7 +84,8 @@ export default function SearchQueryContainer({ query, uniqueId, searchResultId, 
           title="Copy"
           hidden={isEditBtnClicked}
         />
-        {onSearch &&
+        {/* {onSearch && */}
+        {!chatId &&
           <>
             <IconButton
               onClick={() => setIsEditBtnClicked(true)}
@@ -136,7 +136,8 @@ function IconButton({ id, icon, hidden, onClick, ...props }) {
       id={id}
       type="button"
       onClick={onClick}
-      className={`p-2 border rounded-md cursor-pointer ${hidden ? "hidden" : ""}`}
+      className={`p-2 text-xl text-gray-600 rounded-md cursor-pointer ${hidden ? "hidden" : ""}`}
+      // className={`p-2 border rounded-md cursor-pointer ${hidden ? "hidden" : ""}`}
       {...props}
     >
       <i className={icon} />

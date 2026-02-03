@@ -1,40 +1,18 @@
 import { useEffect, useState } from "react";
-import { toJpeg } from "html-to-image";
-import jsPDF from "jspdf";
-import { Document, Packer, Paragraph, TextRun } from "docx";
-import { saveAs } from "file-saver";
 import { showCustomToast } from "../utils/customToast";
 import { useAuthUtils } from "../utils/useAuthUtils";
+import { useFireSearch } from "../hooks/useFireSearch";
 
 
 
 
 
-export default function SearchExportOptions({ searchResultId, uniqueId, response, onSearch, prompt, threadId }) {
+export default function SearchExportOptions({ searchResultId, uniqueId, response, prompt, threadId }) {
 
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const { logoutAndNavigate } = useAuthUtils()
 
-
-  /* ---------------- CLEAN UI FOR PDF ---------------- */
-  function cleanUIForPdf(root) {
-    /* Remove elements explicitly marked for PDF hide */
-    root.querySelectorAll(".pdf-hide").forEach((el) => el.remove());
-
-    /* Expand truncated / collapsed text */
-    root.querySelectorAll("*").forEach((el) => {
-      el.style.maxHeight = "none";
-      el.style.height = "auto";
-      el.style.overflow = "visible";
-
-      // Handle Tailwind line-clamp
-      if (el.style.webkitLineClamp) {
-        el.style.webkitLineClamp = "unset";
-        el.style.display = "block";
-      }
-    });
-  }
-
+  const fireSearch = useFireSearch()
 
   /* ---------------- EXPORT PDF ---------------- */
   async function handleChatExportAsPDF(searchResultId) {
@@ -61,89 +39,7 @@ export default function SearchExportOptions({ searchResultId, uniqueId, response
 
     a.remove()
     window.URL.revokeObjectURL(url)
-
-
-
-    return
-    const source = document.getElementById(searchResultId);
-    if (!source) return;
-
-    /* Clone DOM (never touch live UI) */
-    const clone = source.cloneNode(true);
-
-    /* Clean for PDF */
-    cleanUIForPdf(clone);
-
-    /* Mount offscreen */
-    const sandbox = document.createElement("div");
-    sandbox.style.position = "fixed";
-    sandbox.style.left = "-99999px";
-    sandbox.style.top = "0";
-    sandbox.style.width = source.offsetWidth + "px";
-    sandbox.appendChild(clone);
-    document.body.appendChild(sandbox);
-
-    try {
-      /* Render image */
-      const dataUrl = await toJpeg(clone, {
-        quality: 0.98,
-        backgroundColor: "#ffffff",
-        cacheBust: true,
-        skipFonts: true, // avoids CORS warnings
-      });
-
-      /* Create PDF */
-      const pdf = new jsPDF("p", "mm", "a4");
-
-      const pageWidth = pdf.internal.pageSize.getWidth();
-      const pageHeight = pdf.internal.pageSize.getHeight();
-      const margin = 15; // 👈 PDF padding in mm
-
-      const usableWidth = pageWidth - margin * 2;
-
-      const img = new Image();
-      img.src = dataUrl;
-      await new Promise((res) => (img.onload = res));
-
-      const imgHeight = (img.height * usableWidth) / img.width;
-
-      let heightLeft = imgHeight;
-      let position = margin;
-
-      while (heightLeft > 0) {
-        pdf.addImage(
-          img,
-          "JPEG",
-          margin,
-          position,
-          usableWidth,
-          imgHeight
-        );
-
-        heightLeft -= pageHeight - margin * 2;
-
-        if (heightLeft > 0) {
-          pdf.addPage();
-          position = margin - heightLeft;
-        }
-      }
-
-      pdf.save("document.pdf");
-    } finally {
-      document.body.removeChild(sandbox);
-    }
   }
-
-
-  function extractPlainTextFromDOM(element) {
-    const clone = element.cloneNode(true);
-
-    // Remove UI-only elements
-    clone.querySelectorAll(".pdf-hide, button, svg").forEach(el => el.remove());
-
-    return clone.innerText.trim();
-  }
-
 
 
   async function handleChatExportAsMarkdown(searchResultId) {
@@ -171,28 +67,6 @@ export default function SearchExportOptions({ searchResultId, uniqueId, response
 
     a.remove()
     window.URL.revokeObjectURL(url)
-
-    return
-    //     const source = document.getElementById(searchResultId);
-    //     if (!source) return;
-
-    //     const text = extractPlainTextFromDOM(source);
-
-    //     const markdown =
-    //       `# Exported Chat
-
-    // ${text}
-    // `;
-
-    //     const blob = new Blob([markdown], { type: "text/markdown;charset=utf-8" });
-    //     const url = URL.createObjectURL(blob);
-
-    //     const a = document.createElement("a");
-    //     a.href = url;
-    //     a.download = "document.md";
-    //     a.click();
-
-    //     URL.revokeObjectURL(url);
   }
 
 
@@ -221,31 +95,6 @@ export default function SearchExportOptions({ searchResultId, uniqueId, response
 
     a.remove()
     window.URL.revokeObjectURL(url)
-
-    // return
-
-    // const source = document.getElementById(searchResultId);
-    // if (!source) return;
-
-    // const text = extractPlainTextFromDOM(source);
-
-    // const paragraphs = text.split("\n").map(
-    //   line =>
-    //     new Paragraph({
-    //       children: [new TextRun(line)],
-    //     })
-    // );
-
-    // const doc = new Document({
-    //   sections: [
-    //     {
-    //       children: paragraphs,
-    //     },
-    //   ],
-    // });
-
-    // const blob = await Packer.toBlob(doc);
-    // saveAs(blob, "document.docx");
   }
 
   async function handleShareChat(response_id) {
@@ -318,7 +167,7 @@ export default function SearchExportOptions({ searchResultId, uniqueId, response
 
 
   const handleRewrite = () => {
-    onSearch(prompt, searchResultId, threadId)
+    fireSearch(prompt, searchResultId, threadId)
   };
 
 
@@ -406,7 +255,8 @@ export default function SearchExportOptions({ searchResultId, uniqueId, response
       {/* ================= SHARE ================= */}
       <div className="relative group">
         <div
-          onClick={() => handleShareChat(response.id)}
+          // onClick={() => handleShareChat(response.id)}
+          onClick={() => handleShareChat(searchResultId)}
           className="flex items-center gap-1 p-2 bg-white h-8 rounded-md text-gray-600 hover:text-teal-600 cursor-pointer"
         >
           <svg

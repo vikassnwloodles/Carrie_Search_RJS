@@ -8,7 +8,7 @@ import { useFireSearch } from '../../hooks/useFireSearch';
 import { useSearch } from '../../context/SearchContext';
 
 
-const SearchForm = ({isThreadPage}) => {
+const SearchForm = ({isThreadPage, threadId}) => {
 
     const {
         searchStarted,
@@ -279,7 +279,6 @@ const SearchForm = ({isThreadPage}) => {
 
 
     async function handleSearchSubmit() {
-        alert("setting search suggestions to empty array...")
         setSearchSuggestions([])
         const text = normalizePrompt(searchBoxRef.current.innerText);
         if (!text) {
@@ -321,13 +320,13 @@ const SearchForm = ({isThreadPage}) => {
         }
 
         if (isThreadPage) {
-            fireSearch(text, null, isThreadPage, imageUrl, docContent)
+            // fireSearch(searchQuery, null, threadId, imageUrl, docContent)
+            await fireSearch(searchQuery, null, threadId, imageUrl, docContent)
         } else {
-            const newisThreadPage = crypto.randomUUID();
-            setSearchInputData(prev => ({...prev, thread_id: newisThreadPage}))
-            alert(`new thread id: ${newisThreadPage}`)
-            navigate(`/thread/${newisThreadPage}`, {state: {shouldFetchThread: false}})
-            fireSearch(searchQuery, null, newisThreadPage)
+            const newThreadId = crypto.randomUUID();
+            // setSearchInputData(prev => ({...prev, thread_id: newThreadId}))
+            navigate(`/thread/${newThreadId}`, {state: {shouldFetchThread: false}})
+            await fireSearch(searchQuery, null, newThreadId, true)
         }
     }
 
