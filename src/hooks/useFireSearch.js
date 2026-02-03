@@ -12,12 +12,15 @@ export function useFireSearch() {
         setSearchStarted,
         setStreamStarted,
         setThreadsContainer,
-        setIsImageGeneration
+        setImageGenerationStarted
     } = useSearch();
 
 
 
     const fireSearch = async (prompt, search_result_id, thread_id, isFirstSearchOfThread) => {
+        prompt = prompt.trim()
+        if (!prompt) return
+
         setSearchStarted(true)
         setSearchInputData(prev => ({ ...prev, search_result_id }))
 
@@ -31,6 +34,7 @@ export function useFireSearch() {
                         item.id === search_result_id
                             ? {
                                 ...item,
+                                _key: crypto.randomUUID(),
                                 prompt: prompt,
                                 response: {
                                     ...item.response,
@@ -78,6 +82,9 @@ export function useFireSearch() {
             let first_chunk_captured = false
             let extracted_pk = null
             let is_image_generation = false
+            let is_error = false
+            let imageData = ""
+            let errorData = ""
 
             while (true) {
                 const { value, done } = await reader.read();
@@ -95,20 +102,26 @@ export function useFireSearch() {
 
                         const parsed = JSON.parse(meta);
                         extracted_pk = parsed.search_result_id
-                        is_image_generation = parsed.is_image_generation
-
-                        if(is_image_generation) setIsImageGeneration(true)
-
+                        if ("error" in parsed && parsed["error"] === true) {
+                            is_error = true
+                        } else {
+                            is_image_generation = parsed.is_image_generation
+                            if (is_image_generation) setImageGenerationStarted(true)
+                        }
                         first_chunk_captured = true;
                     }
 
-                    continue
+                    else continue
                 }
 
-                if (is_image_generation) {
-                    imageUrl += chunk
+                if (is_error) {
+                    errorData = buffer
+                    continue
+                } else if (is_image_generation) {
+                    imageData = buffer
+                    continue
                 } else {
-                    fullText += chunk
+                    fullText = buffer
                 }
 
                 // if (is_image_generation) {
@@ -159,6 +172,17 @@ export function useFireSearch() {
                 }
             }
 
+            if (is_error) {
+                fullText = errorData
+            } else if (is_image_generation) {
+                imageData = JSON.parse(imageData)
+                if ("error" in imageData) {
+                    fullText = imageData["error"]
+                } else {
+                    imageUrl = imageData["img_url"]
+                }
+            }
+
             flushSync(() => {
                 setSearchHistoryContainer(prev =>
                     prev.map(item =>
@@ -200,7 +224,7 @@ export function useFireSearch() {
         } finally {
             setSearchStarted(false);
             setStreamStarted(false)
-            setIsImageGeneration(false)
+            setImageGenerationStarted(false)
         }
     };
 

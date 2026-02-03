@@ -5,13 +5,13 @@ import { useSearch } from "../context/SearchContext";
 
 export default function SearchResponseContainer({ content, imageURL, uniqueId, searchResultId }) {
   const responseContainerRef = useRef(null);
-  const { searchStarted, searchInputData, streamStarted, isImageGeneration } = useSearch()
+  const { searchStarted, searchInputData, streamStarted, imageGenerationStarted } = useSearch()
 
   /* ---------- COPY TO CLIPBOARD ---------- */
   const copyResponseToClipboard = async () => {
-    if (!responseContainerRef.current) return;
+    // if (!responseContainerRef.current) return;
 
-    const text = responseContainerRef.current.innerText;
+    const text = imageURL || responseContainerRef.current.innerText;
 
     try {
       await navigator.clipboard.writeText(text);
@@ -41,7 +41,7 @@ export default function SearchResponseContainer({ content, imageURL, uniqueId, s
       {/* Rendered response */}
       {/* {searchStarted && searchResultId === searchInputData.search_result_id && !streamStarted && <ThinkingLoader />} */}
       {/* {searchStarted && searchResultId === searchInputData.search_result_id && !content && <ThinkingLoader />} */}
-      {(searchStarted && searchResultId === searchInputData.search_result_id) ? (isImageGeneration ? <ThinkingLoader text={`Generating...`} /> : (!content ? <ThinkingLoader text={`Thinking...`} /> : null)) : null}
+      {(searchStarted && searchResultId === searchInputData.search_result_id) ? (imageGenerationStarted ? <ThinkingLoader text={`Generating...`} /> : (!content ? <ThinkingLoader text={`Thinking...`} /> : null)) : null}
       {imageURL ?
         <img src={imageURL} alt="Generated Image" className="max-w-sm object-cover rounded-md" />
         :

@@ -8,7 +8,7 @@ import { useFireSearch } from '../../hooks/useFireSearch';
 import { useSearch } from '../../context/SearchContext';
 
 
-const SearchForm = ({isThreadPage, threadId}) => {
+const SearchForm = ({ isThreadPage, threadId }) => {
 
     const {
         searchStarted,
@@ -281,6 +281,7 @@ const SearchForm = ({isThreadPage, threadId}) => {
     async function handleSearchSubmit() {
         setSearchSuggestions([])
         const text = normalizePrompt(searchBoxRef.current.innerText);
+
         if (!text) {
             return;
         }
@@ -321,12 +322,12 @@ const SearchForm = ({isThreadPage, threadId}) => {
 
         if (isThreadPage) {
             // fireSearch(searchQuery, null, threadId, imageUrl, docContent)
-            await fireSearch(searchQuery, null, threadId, imageUrl, docContent)
+            await fireSearch(text, null, threadId, imageUrl, docContent)
         } else {
             const newThreadId = crypto.randomUUID();
             // setSearchInputData(prev => ({...prev, thread_id: newThreadId}))
-            navigate(`/thread/${newThreadId}`, {state: {shouldFetchThread: false}})
-            await fireSearch(searchQuery, null, newThreadId, true)
+            navigate(`/thread/${newThreadId}`, { state: { shouldFetchThread: false } })
+            await fireSearch(text, null, newThreadId, true)
         }
     }
 
@@ -1096,7 +1097,11 @@ const SearchForm = ({isThreadPage, threadId}) => {
                         </button>
                     </div>
                 </div >
-                <SearchSuggestionsBox searchSuggestions={searchSuggestions} mt={1} ref={searchBoxRef} handleSearchSubmit={handleSearchSubmit} />
+                <SearchSuggestionsBox
+                    ref={searchBoxRef}
+                    searchSuggestions={searchSuggestions}
+                    mt={1}
+                    handleSearchSubmit={handleSearchSubmit} />
             </form >
         </>
     )

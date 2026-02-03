@@ -68,6 +68,8 @@ export default function AlertsForm() {
           if (resp.status === 401) {
             showCustomToast("Session expired. Please log in again.", { type: "warn" });
             logoutAndNavigate()
+          } else if (resp.status === 404) {
+            // PREFERENCES NOT RETRIEVED SINCE NOT SAVED BY THE USER YET
           } else {
             showCustomToast(respJson, { type: "error" });
           }
