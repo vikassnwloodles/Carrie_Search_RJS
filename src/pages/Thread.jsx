@@ -3,6 +3,7 @@ import { useSearch } from '../context/SearchContext';
 import SearchResultContainer from '../components/SearchResultContainer';
 import SearchForm from '../components/Home/SearchForm';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
+import { showCustomToast } from '../utils/customToast';
 
 function Thread() {
     // const [threadId, setThreadId] = useState(window.location.pathname.split("/")[2] || null);
