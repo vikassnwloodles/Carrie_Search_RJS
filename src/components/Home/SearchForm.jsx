@@ -6,10 +6,11 @@ import SearchSuggestionsBox from '../SearchSuggestionsBox/SearchSuggestionsBox';
 import { fetchSearchSuggestions } from '../SearchSuggestionsBox/fetchSearchSuggestions'
 import { useFireSearch } from '../../hooks/useFireSearch';
 import { useSearch } from '../../context/SearchContext';
+import { useAuthUtils } from '../../utils/useAuthUtils';
 
 
 const SearchForm = ({ isThreadPage, threadId }) => {
-
+    const { logoutAndNavigate } = useAuthUtils();
     const {
         searchStarted,
         threadsContainer,

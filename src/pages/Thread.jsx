@@ -4,8 +4,10 @@ import SearchResultContainer from '../components/SearchResultContainer';
 import SearchForm from '../components/Home/SearchForm';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { showCustomToast } from '../utils/customToast';
+import { useAuthUtils } from '../utils/useAuthUtils';
 
 function Thread() {
+      const { logoutAndNavigate } = useAuthUtils();
     // const [threadId, setThreadId] = useState(window.location.pathname.split("/")[2] || null);
     const { threadId } = useParams();
     const location = useLocation();

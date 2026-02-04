@@ -10,6 +10,7 @@ import { showCustomToast } from "../utils/customToast";
 import { useAuthUtils } from "../utils/useAuthUtils";
 
 export default function SearchResult({ response: initResponse, prompt: initPrompt, pk, threadId }) {
+  const { logoutAndNavigate } = useAuthUtils();
   // const [pk, setPk] = useState(initPk)
   const [response, setResponse] = useState(initResponse)
   const [prompt, setPrompt] = useState(initPrompt)
@@ -52,13 +53,6 @@ export default function SearchResult({ response: initResponse, prompt: initPromp
   }, [])
 
   // return null
-
-
-
-
-
-
-  const { logoutAndNavigate } = useAuthUtils();
 
   const uniqueId = Date.now() + Math.floor(Math.random() * 1000);
 
