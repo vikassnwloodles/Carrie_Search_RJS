@@ -7,7 +7,7 @@ import { useSearch } from "../context/SearchContext";
 const SearchResultContainer = forwardRef(({threadId}, ref) => {
   const { searchHistoryContainer, searchStarted, searchInputData } = useSearch()
   
-  console.log(searchHistoryContainer)
+  // console.log(searchHistoryContainer)
 
   const dynamicText =
     "Thinking... Working Your Request.";

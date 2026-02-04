@@ -83,7 +83,7 @@ const SearchForm = ({ isThreadPage, threadId }) => {
     ];
 
 
-    const [uploadedFile, setUploadedFile] = useState(null);
+    const [uploadedFiles, setUploadedFiles] = useState([]);
 
     const pickerLoadedRef = useRef(false);
 
@@ -168,8 +168,7 @@ const SearchForm = ({ isThreadPage, threadId }) => {
                 type: blob.type || file.mimeType
             });
 
-            setUploadedFile(fileObject);
-            setShowFileMetadata(true);
+            setUploadedFiles((prev) => [...prev, fileObject]);
 
             sessionStorage.setItem("uploadType", "local");
             sessionStorage.setItem("uploadTypeURL", file.url);
@@ -194,7 +193,6 @@ const SearchForm = ({ isThreadPage, threadId }) => {
     const sourceDropdownRef = useRef(null);
     const attachmentDropdownRef = useRef(null);
     const fileInputRef = useRef(null);
-    const [showFileMetadata, setShowFileMetadata] = useState(false);
     const [main2DropdownOpen, setMain2DropdownOpen] = useState(false);
     const [main3DropdownOpen, setMain3DropdownOpen] = useState(false);
     const [mainDropdownOpen, setMainDropdownOpen] = useState(false);
@@ -280,7 +278,7 @@ const SearchForm = ({ isThreadPage, threadId }) => {
 
     async function handleSearchSubmit() {
         setSearchSuggestions([])
-        const text = normalizePrompt(searchBoxRef.current.innerText);
+        let text = normalizePrompt(searchBoxRef.current.innerText);
 
         if (!text) {
             return;
@@ -296,33 +294,59 @@ const SearchForm = ({ isThreadPage, threadId }) => {
         // ✅ CLEAR SEARCH BOX
         searchBoxRef.current.innerHTML = "";
 
-        // VALIDATE SELECTED FILE AND CALL UPLOAD IMAGE API
-        let imageUrl = "";
-        let docContent = "";
-        if (uploadedFile) {
-            if (uploadedFile?.type.startsWith("image/")) {
-                // CALL UPLOAD IMAGE API
-                imageUrl = await callUploadImageApi(uploadedFile)
-            } else if (
-                uploadedFile?.type !== "application/pdf" &&
-                uploadedFile?.type !== "text/plain" &&
-                uploadedFile?.type !== "text/csv" &&
-                uploadedFile?.type !== "application/vnd.openxmlformats-officedocument.wordprocessingml.document" &&
-                uploadedFile?.type !== "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" &&
-                uploadedFile?.type !== "application/vnd.openxmlformats-officedocument.presentationml.presentation"
-            ) {
+        // VALIDATE SELECTED FILES AND CALL UPLOAD API
+        let uploadedImages = [];
+        let uploadedDocs = [];
 
-                showCustomToast("Only PDF, DOCX, TXT, XLSX, CSV and image files are allowed.", { type: "warn", title: "Invalid File Type" })
-                return
-            } else {
-                // CALL UPLOAD DOC API
-                docContent = await callUploadDocApi(uploadedFile)
+        if (uploadedFiles && uploadedFiles.length > 0) {
+            for (const file of uploadedFiles) {
+                if (file.type.startsWith("image/")) {
+                    // CALL UPLOAD IMAGE API
+                    try {
+                        const imageUrl = await callUploadImageApi(file);
+                        uploadedImages.push(imageUrl);
+                    } catch (err) {
+                        console.error("Image upload failed:", file.name, err);
+                    }
+                } else if (
+                    file.type !== "application/pdf" &&
+                    file.type !== "text/plain" &&
+                    file.type !== "text/csv" &&
+                    file.type !==
+                    "application/vnd.openxmlformats-officedocument.wordprocessingml.document" &&
+                    file.type !==
+                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" &&
+                    file.type !==
+                    "application/vnd.openxmlformats-officedocument.presentationml.presentation"
+                ) {
+                    showCustomToast(
+                        `File "${file.name}" is not allowed. Only PDF, DOCX, TXT, XLSX, CSV, and image files are accepted.`,
+                        { type: "warn", title: "Invalid File Type" }
+                    );
+                } else {
+                    // CALL UPLOAD DOC API
+                    try {
+                        const docContent = await callUploadDocApi(file);
+                        uploadedDocs.push({ name: file.name, content: docContent });
+                    } catch (err) {
+                        console.error("Doc upload failed:", file.name, err);
+                    }
+                }
             }
         }
 
+        // uploadedImages -> array of uploaded image URLs
+        // uploadedDocs   -> array of objects: { name, content }
+        let extractedText = ""
+        let i = 0
+        for (let uploadedDoc of uploadedDocs) {
+            i += 1
+            extractedText += `# Attached Doc ${i}\n## Doc Metadata\nDoc Name: ${uploadedDoc.name}\n## Doc Content\n${uploadedDoc.content}\n\n---\n\n`
+        }
+        if (extractedText) text = `${extractedText}# User Query\n${text}`
         if (isThreadPage) {
             // fireSearch(searchQuery, null, threadId, imageUrl, docContent)
-            await fireSearch(text, null, threadId, imageUrl, docContent)
+            await fireSearch(text, null, threadId, false)
         } else {
             const newThreadId = crypto.randomUUID();
             // setSearchInputData(prev => ({...prev, thread_id: newThreadId}))
@@ -402,20 +426,18 @@ const SearchForm = ({ isThreadPage, threadId }) => {
     }
 
     function onFileInputChange(e) {
-        const f = e.target.files?.[0];
-        if (!f) return;
+        const files = Array.from(e.target.files)
+        if (!files) return;
         // setUploadedFile({
         //     name: f.name,
         //     size: f.size,
         //     type: f.type,
         // });
-        setUploadedFile(f);
-        setShowFileMetadata(true);
+        setUploadedFiles((prev) => [...prev, ...files]);
     }
 
     function closeUploadedFileMetadata() {
-        setUploadedFile(null);
-        setShowFileMetadata(false);
+        setUploadedFiles([]);
         if (fileInputRef.current) fileInputRef.current.value = "";
     }
 
@@ -681,8 +703,7 @@ const SearchForm = ({ isThreadPage, threadId }) => {
                     fileInputRef.current.files = dt.files;
 
                     // 🔹 Update UI
-                    setUploadedFile(fileObject);
-                    setShowFileMetadata(true);
+                    setUploadedFiles((prev) => [...prev, fileObject]);
 
                 } catch (err) {
                     console.error(err);
@@ -747,7 +768,7 @@ const SearchForm = ({ isThreadPage, threadId }) => {
                                 text-lg bg-white focus:outline-none
                                 whitespace-pre-wrap overflow-y-auto
                                 transition-all
-                                ${showFileMetadata ? "pt-20" : "pt-2"}
+                                ${uploadedFiles.length > 0 ? "pt-20" : "pt-2"}
                                 `}
 
                             style={{ minHeight: "50px" }}
@@ -788,49 +809,70 @@ const SearchForm = ({ isThreadPage, threadId }) => {
                     </div> */}
                     <div
                         id="file-metadata-box"
-                        className={`absolute top-3 left-3 z-10
-                            flex items-center gap-3
-                            p-2 bg-white border border-gray-300
-                            rounded-xl shadow-sm
-                            ${showFileMetadata ? "" : "hidden"}
-                        `}
+                        className={`absolute top-0 left-0 z-10
+                                    flex flex-row gap-2
+                                    p-2 rounded-t-xl max-w-full
+                                    ${uploadedFiles.length > 0 ? "" : "hidden"}
+                                `}
                     >
-                        <div className="bg-teal-600 rounded-md w-10 h-10 flex items-center justify-center shrink-0">
-                            {uploadedFile?.type === "application/pdf" ?
-                                <i className="fas fa-file-pdf text-white text-xl" />
-                                : uploadedFile?.type === "text/plain" ?
-                                    <i className="fas fa-file-lines text-white text-xl" />
-                                    : uploadedFile?.type === "text/csv" ?
-                                        <i className="fas fa-file-csv text-white text-xl" />
-                                        : uploadedFile?.type.startsWith("image/") ?
+                        <div className='gap-2 flex flex-row overflow-x-auto 
+                                        scrollbar-hide scroll-smooth rounded-lg'>
+                            {uploadedFiles.map((file, index) => (
+                                <div
+                                    key={index}
+                                    className="flex items-center gap-3 p-2 bg-gray-100 rounded-lg"
+                                >
+                                    {/* File icon */}
+                                    <div className="bg-teal-600 rounded-md w-10 h-10 flex items-center justify-center shrink-0">
+                                        {file.type === "application/pdf" ? (
+                                            <i className="fas fa-file-pdf text-white text-xl" />
+                                        ) : file.type === "text/plain" ? (
+                                            <i className="fas fa-file-lines text-white text-xl" />
+                                        ) : file.type === "text/csv" ? (
+                                            <i className="fas fa-file-csv text-white text-xl" />
+                                        ) : file.type.startsWith("image/") ? (
                                             <i className="fas fa-file-image text-white text-xl" />
-                                            : uploadedFile?.type === "application/vnd.openxmlformats-officedocument.wordprocessingml.document" ?
-                                                <i className="fas fa-file-word text-white text-xl" />
-                                                : uploadedFile?.type === "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" ?
-                                                    <i className="fas fa-file-excel text-white text-xl" />
-                                                    : uploadedFile?.type === "application/vnd.openxmlformats-officedocument.presentationml.presentation" ?
-                                                        <i className="fas fa-file-powerpoint text-white text-xl" />
-                                                        : <i className="fas fa-file text-white text-xl" />
-                            }
-                        </div>
+                                        ) : file.type ===
+                                            "application/vnd.openxmlformats-officedocument.wordprocessingml.document" ? (
+                                            <i className="fas fa-file-word text-white text-xl" />
+                                        ) : file.type ===
+                                            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" ? (
+                                            <i className="fas fa-file-excel text-white text-xl" />
+                                        ) : file.type ===
+                                            "application/vnd.openxmlformats-officedocument.presentationml.presentation" ? (
+                                            <i className="fas fa-file-powerpoint text-white text-xl" />
+                                        ) : (
+                                            <i className="fas fa-file text-white text-xl" />
+                                        )}
+                                    </div>
 
-                        <div className="min-w-0">
-                            <div className="text-xs text-gray-700 font-semibold truncate max-w-[180px]">
-                                {uploadedFile?.name}
-                            </div>
-                            <div className="text-xs text-gray-500">
-                                {(uploadedFile?.size / 1024).toFixed(1)} KB
-                            </div>
-                        </div>
+                                    {/* File metadata */}
+                                    <div className="min-w-0 flex-1">
+                                        <div className="text-xs text-gray-700 font-semibold truncate">
+                                            {(file.name.length > 10) ? file.name.slice(0, 10) + `...` : file.name}
+                                        </div>
+                                        <div className="text-xs text-gray-500">
+                                            {(file.size / 1024).toFixed(1)} KB
+                                        </div>
+                                    </div>
 
-                        <button
-                            type="button"
-                            onClick={closeUploadedFileMetadata}
-                            className="text-gray-500 hover:text-gray-800"
-                        >
-                            <i className="fas fa-times" />
-                        </button>
+                                    {/* Remove file */}
+                                    <button
+                                        type="button"
+                                        onClick={() =>
+                                            setUploadedFiles((prev) =>
+                                                prev.filter((_, i) => i !== index)
+                                            )
+                                        }
+                                        className="text-gray-500 hover:text-gray-800"
+                                    >
+                                        <i className="fas fa-times" />
+                                    </button>
+                                </div>
+                            ))}
+                        </div>
                     </div>
+
 
 
                     {/* Right controls */}
@@ -898,14 +940,42 @@ const SearchForm = ({ isThreadPage, threadId }) => {
                                         DeepSeek {searchInputData.checkedAIModelValues === "deepseek" && <i className="fa fa-angle-left text-gray-500 float-right aiFlapperSelected" />}
                                     </button>
 
-                                    {/* Grok 3 */}
+                                    {/* Grok 4.1 */}
                                     <button
                                         type="button"
                                         className="w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100"
-                                        onClick={(e) => changeAIModel(e, "grok-3")}
+                                        onClick={(e) => changeAIModel(e, "grok-4_1")}
                                     >
-                                        Grok 3 {searchInputData.checkedAIModelValues === "grok-3" && <i className="fa fa-angle-left text-gray-500 float-right aiFlapperSelected" />}
+                                        Grok 4.1 {searchInputData.checkedAIModelValues === "grok-4_1" && <i className="fa fa-angle-left text-gray-500 float-right aiFlapperSelected" />}
                                     </button>
+
+                                    {/* Gemini 3 Flash */}
+                                    <button
+                                        type="button"
+                                        className="w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100"
+                                        onClick={(e) => changeAIModel(e, "gemini-3-flash")}
+                                    >
+                                        Gemini 3 Flash {searchInputData.checkedAIModelValues === "gemini-3-flash" && <i className="fa fa-angle-left text-gray-500 float-right aiFlapperSelected" />}
+                                    </button>
+
+                                    {/* Gemini 3 Pro */}
+                                    <button
+                                        type="button"
+                                        className="w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100"
+                                        onClick={(e) => changeAIModel(e, "gemini-3-pro")}
+                                    >
+                                        Gemini 3 Pro {searchInputData.checkedAIModelValues === "gemini-3-pro" && <i className="fa fa-angle-left text-gray-500 float-right aiFlapperSelected" />}
+                                    </button>
+
+                                    {/* Kimi K2.5 */}
+                                    <button
+                                        type="button"
+                                        className="w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100"
+                                        onClick={(e) => changeAIModel(e, "kimi-k-2_5")}
+                                    >
+                                        Kimi K2.5 {searchInputData.checkedAIModelValues === "kimi-k-2_5" && <i className="fa fa-angle-left text-gray-500 float-right aiFlapperSelected" />}
+                                    </button>
+
                                 </div>
                             </div>
                         </div>
@@ -1013,7 +1083,7 @@ const SearchForm = ({ isThreadPage, threadId }) => {
                                 <i className="fas fa-paperclip text-base sm:text-xl" />
                             </button>
 
-                            <input id="file-upload" ref={fileInputRef} type="file" className="hidden" onChange={onFileInputChange} />
+                            <input id="file-upload" ref={fileInputRef} type="file" multiple className="hidden" onChange={onFileInputChange} />
 
                             <div id="mainDropdown" className={`${mainDropdownOpen ? "" : "hidden"} absolute right-0 w-56 bg-white rounded shadow-lg z-10 ${isThreadPage ? "bottom-full mb-2" : "mt-2"}`}>
                                 <div className="p-1">
