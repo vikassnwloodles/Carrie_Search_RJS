@@ -8,8 +8,9 @@ import { useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { showCustomToast } from "../utils/customToast";
 import { useAuthUtils } from "../utils/useAuthUtils";
+import FileMetadataBox from "./FileMetadataBox";
 
-export default function SearchResult({ response: initResponse, prompt: initPrompt, pk, threadId }) {
+export default function SearchResult({ response: initResponse, prompt: initPrompt, pk, threadId, uploadedFiles, setSelectedText }) {
   const { logoutAndNavigate } = useAuthUtils();
   // const [pk, setPk] = useState(initPk)
   const [response, setResponse] = useState(initResponse)
@@ -82,17 +83,25 @@ export default function SearchResult({ response: initResponse, prompt: initPromp
       {response && (
         <div id={pk}>
           <div className="animate-fade-in text-left mb-8 p-6 bg-white rounded-lg border border-gray-200 relative">
+            <FileMetadataBox uploadedFiles={uploadedFiles} setUploadedFiles={null} styles={{ position: "relative", pt: "pt-0" }} />
             <SearchQueryContainer
               query={prompt}
               uniqueId={uniqueId}
               searchResultId={pk}
               threadId={threadId}
               chatId={chatId}
+              uploadedFiles={uploadedFiles}
             />
 
             <SearchImagesContainer images={images} />
 
-            <SearchResponseContainer content={content} imageURL={image_url} uniqueId={uniqueId} searchResultId={pk} />
+            <SearchResponseContainer
+              content={content}
+              imageURL={image_url}
+              uniqueId={uniqueId}
+              searchResultId={pk}
+              setSelectedText={setSelectedText}
+            />
             {!chatId &&
               <SearchExportOptions
                 searchResultId={pk}

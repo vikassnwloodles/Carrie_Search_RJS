@@ -4,9 +4,9 @@ import ThinkingLoader from "./ThinkingLoader";
 import { useSearch } from "../context/SearchContext";
 
 
-const SearchResultContainer = forwardRef(({threadId}, ref) => {
+const SearchResultContainer = forwardRef(({ threadId, setSelectedText }, ref) => {
   const { searchHistoryContainer, searchStarted, searchInputData } = useSearch()
-  
+
   // console.log(searchHistoryContainer)
 
   const dynamicText =
@@ -35,7 +35,7 @@ const SearchResultContainer = forwardRef(({threadId}, ref) => {
   return (
     <div className="w-full flex flex-col items-center">
       <div id="search-results-container" className={`w-full max-w-4xl`}>
-      {/* <div id="search-results-container" className={`${searchStarted ? "!mb-[35rem]" : ""} w-full max-w-4xl`}> */}
+        {/* <div id="search-results-container" className={`${searchStarted ? "!mb-[35rem]" : ""} w-full max-w-4xl`}> */}
 
         {searchHistoryContainer.map((item) => {
           return (
@@ -46,6 +46,13 @@ const SearchResultContainer = forwardRef(({threadId}, ref) => {
               prompt={item.prompt}
               pk={item.id}
               threadId={threadId}
+              uploadedFiles={item.uploaded_files?.map(file => ({
+                ...file,                 // keep everything
+                type: file.content_type, // add/override
+                name: file.file_name,
+                size: file.file_size,
+              }))}
+              setSelectedText={setSelectedText}
             />
           );
         })}

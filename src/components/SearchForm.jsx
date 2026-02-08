@@ -1,20 +1,21 @@
 import { useEffect, useRef, useState } from 'react'
-import { useAuth } from '../../context/AuthContext';
+import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import { showCustomToast } from '../../utils/customToast';
-import SearchSuggestionsBox from '../SearchSuggestionsBox/SearchSuggestionsBox';
-import { fetchSearchSuggestions } from '../SearchSuggestionsBox/fetchSearchSuggestions'
-import { useFireSearch } from '../../hooks/useFireSearch';
-import { useSearch } from '../../context/SearchContext';
-import { useAuthUtils } from '../../utils/useAuthUtils';
+import { showCustomToast } from '../utils/customToast';
+import SearchSuggestionsBox from './SearchForm/SearchSuggestionsBox/SearchSuggestionsBox';
+import SelectedTextContainer from './SearchForm/SelectedTextContainer';
+import { fetchSearchSuggestions } from './SearchForm/SearchSuggestionsBox/fetchSearchSuggestions'
+import { useFireSearch } from '../hooks/useFireSearch';
+import { useSearch } from '../context/SearchContext';
+import { useAuthUtils } from '../utils/useAuthUtils';
+import FileMetadataBox from './FileMetadataBox';
 
 
-const SearchForm = ({ isThreadPage, threadId }) => {
+const SearchForm = ({ isThreadPage, threadId, selectedText="", setSelectedText }) => {
+
     const { logoutAndNavigate } = useAuthUtils();
     const {
         searchStarted,
-        threadsContainer,
-        setThreadsContainer,
         searchInputData,
         setSearchInputData,
     } = useSearch();
@@ -43,7 +44,7 @@ const SearchForm = ({ isThreadPage, threadId }) => {
 
     // ================ CALLING `fetchSearchSuggestions` API AS USER STARTS TYPING ================
     useEffect(() => {
-        if (!searchQuery || isThreadPage) {
+        if (!searchQuery || isThreadPage || searchQuery.length > 100) {
             setSearchSuggestions([]);
             return;
         }
@@ -292,6 +293,8 @@ const SearchForm = ({ isThreadPage, threadId }) => {
         // ✅ CLEAR SELECTED FILE METADATA BOX
         closeUploadedFileMetadata()
 
+        if (setSelectedText) setSelectedText("")
+
         // ✅ CLEAR SEARCH BOX
         searchBoxRef.current.innerHTML = "";
 
@@ -303,12 +306,12 @@ const SearchForm = ({ isThreadPage, threadId }) => {
             for (const file of uploadedFiles) {
                 if (file.type.startsWith("image/")) {
                     // CALL UPLOAD IMAGE API
-                    try {
-                        const imageUrl = await callUploadImageApi(file);
-                        uploadedImages.push(imageUrl);
-                    } catch (err) {
-                        console.error("Image upload failed:", file.name, err);
-                    }
+                    // try {
+                    //     const imageUrl = await callUploadImageApi(file);
+                    //     uploadedImages.push(imageUrl);
+                    // } catch (err) {
+                    //     console.error("Image upload failed:", file.name, err);
+                    // }
                 } else if (
                     file.type !== "application/pdf" &&
                     file.type !== "text/plain" &&
@@ -326,33 +329,33 @@ const SearchForm = ({ isThreadPage, threadId }) => {
                     );
                 } else {
                     // CALL UPLOAD DOC API
-                    try {
-                        const docContent = await callUploadDocApi(file);
-                        uploadedDocs.push({ name: file.name, content: docContent });
-                    } catch (err) {
-                        console.error("Doc upload failed:", file.name, err);
-                    }
+                    // try {
+                    //     const docContent = await callUploadDocApi(file);
+                    //     uploadedDocs.push({ name: file.name, content: docContent });
+                    // } catch (err) {
+                    //     console.error("Doc upload failed:", file.name, err);
+                    // }
                 }
             }
         }
 
         // uploadedImages -> array of uploaded image URLs
         // uploadedDocs   -> array of objects: { name, content }
-        let extractedText = ""
-        let i = 0
-        for (let uploadedDoc of uploadedDocs) {
-            i += 1
-            extractedText += `# Attached Doc ${i}\n## Doc Metadata\nDoc Name: ${uploadedDoc.name}\n## Doc Content\n${uploadedDoc.content}\n\n---\n\n`
-        }
-        if (extractedText) text = `${extractedText}# User Query\n${text}`
+        // let extractedText = ""
+        // let i = 0
+        // for (let uploadedDoc of uploadedDocs) {
+        //     i += 1
+        //     extractedText += `# Attached Doc ${i}\n## Doc Metadata\nDoc Name: ${uploadedDoc.name}\n## Doc Content\n${uploadedDoc.content}\n\n---\n\n`
+        // }
+        // if (extractedText) text = `${extractedText}# User Query\n${text}`
         if (isThreadPage) {
             // fireSearch(searchQuery, null, threadId, imageUrl, docContent)
-            await fireSearch(text, null, threadId, false)
+            await fireSearch(text, null, threadId, false, uploadedFiles, selectedText)
         } else {
             const newThreadId = crypto.randomUUID();
             // setSearchInputData(prev => ({...prev, thread_id: newThreadId}))
             navigate(`/thread/${newThreadId}`, { state: { shouldFetchThread: false } })
-            await fireSearch(text, null, newThreadId, true)
+            await fireSearch(text, null, newThreadId, true, uploadedFiles)
         }
     }
 
@@ -718,6 +721,29 @@ const SearchForm = ({ isThreadPage, threadId }) => {
         });
     }
 
+    const handlePaste = (e) => {
+        e.preventDefault();
+
+        const clipboard = e.clipboardData;
+        const html = clipboard.getData("text/html");
+        const text = clipboard.getData("text/plain");
+
+        // If a link was copied → extract href
+        if (html) {
+            const doc = new DOMParser().parseFromString(html, "text/html");
+            const anchor = doc.querySelector("a[href]");
+
+            if (anchor?.href) {
+                document.execCommand("insertText", false, anchor.href);
+                setSearchQuery(prev => prev + anchor.href);
+                return;
+            }
+        }
+
+        // Fallback: normal text
+        document.execCommand("insertText", false, text);
+        setSearchQuery(prev => prev + text);
+    };
 
 
 
@@ -756,6 +782,8 @@ const SearchForm = ({ isThreadPage, threadId }) => {
                         <div
                             id="ai_search"
                             ref={searchBoxRef}
+                            onPaste={handlePaste}
+                            suppressContentEditableWarning
                             contentEditable={true}
                             data-placeholder="Search, Ask, or Write Anything!"
                             name="prompt"
@@ -769,7 +797,7 @@ const SearchForm = ({ isThreadPage, threadId }) => {
                                 text-lg bg-white focus:outline-none
                                 whitespace-pre-wrap overflow-y-auto
                                 transition-all
-                                ${uploadedFiles.length > 0 ? "pt-20" : "pt-2"}
+                                ${(selectedText.trim() && uploadedFiles.length > 0) ? "pt-40" : (selectedText.trim() ? "pt-20" : (uploadedFiles.length > 0 ? "pt-20" : "pt-2"))}
                                 `}
 
                             style={{ minHeight: "50px" }}
@@ -808,72 +836,14 @@ const SearchForm = ({ isThreadPage, threadId }) => {
                             <i className="fas fa-times text-gray-600 text-base" />
                         </button>
                     </div> */}
-                    <div
-                        id="file-metadata-box"
-                        className={`absolute top-0 left-0 z-10
-                                    flex flex-row gap-2
-                                    p-2 rounded-t-xl max-w-full
-                                    ${uploadedFiles.length > 0 ? "" : "hidden"}
-                                `}
-                    >
-                        <div className='gap-2 flex flex-row overflow-x-auto 
-                                        scrollbar-hide scroll-smooth rounded-lg'>
-                            {uploadedFiles.map((file, index) => (
-                                <div
-                                    key={index}
-                                    className="flex items-center gap-3 p-2 bg-gray-100 rounded-lg"
-                                >
-                                    {/* File icon */}
-                                    <div className="bg-teal-600 rounded-md w-10 h-10 flex items-center justify-center shrink-0">
-                                        {file.type === "application/pdf" ? (
-                                            <i className="fas fa-file-pdf text-white text-xl" />
-                                        ) : file.type === "text/plain" ? (
-                                            <i className="fas fa-file-lines text-white text-xl" />
-                                        ) : file.type === "text/csv" ? (
-                                            <i className="fas fa-file-csv text-white text-xl" />
-                                        ) : file.type.startsWith("image/") ? (
-                                            <i className="fas fa-file-image text-white text-xl" />
-                                        ) : file.type ===
-                                            "application/vnd.openxmlformats-officedocument.wordprocessingml.document" ? (
-                                            <i className="fas fa-file-word text-white text-xl" />
-                                        ) : file.type ===
-                                            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" ? (
-                                            <i className="fas fa-file-excel text-white text-xl" />
-                                        ) : file.type ===
-                                            "application/vnd.openxmlformats-officedocument.presentationml.presentation" ? (
-                                            <i className="fas fa-file-powerpoint text-white text-xl" />
-                                        ) : (
-                                            <i className="fas fa-file text-white text-xl" />
-                                        )}
-                                    </div>
 
-                                    {/* File metadata */}
-                                    <div className="min-w-0 flex-1">
-                                        <div className="text-xs text-gray-700 font-semibold truncate">
-                                            {(file.name.length > 10) ? file.name.slice(0, 10) + `...` : file.name}
-                                        </div>
-                                        <div className="text-xs text-gray-500">
-                                            {(file.size / 1024).toFixed(1)} KB
-                                        </div>
-                                    </div>
 
-                                    {/* Remove file */}
-                                    <button
-                                        type="button"
-                                        onClick={() =>
-                                            setUploadedFiles((prev) =>
-                                                prev.filter((_, i) => i !== index)
-                                            )
-                                        }
-                                        className="text-gray-500 hover:text-gray-800"
-                                    >
-                                        <i className="fas fa-times" />
-                                    </button>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
+                    {isThreadPage && selectedText.trim() && <SelectedTextContainer selectedText={selectedText} setSelectedText={setSelectedText} />}
 
+                    <FileMetadataBox
+                        uploadedFiles={uploadedFiles}
+                        setUploadedFiles={setUploadedFiles}
+                    />
 
 
                     {/* Right controls */}
@@ -920,7 +890,7 @@ const SearchForm = ({ isThreadPage, threadId }) => {
                                         className="w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100"
                                         onClick={(e) => changeAIModel(e, "claude-opus-4_5")}
                                     >
-                                        Claude Opus 4.5 {searchInputData.checkedAIModelValues === "claude-opus-4_5" && <i className="fa fa-angle-left text-gray-500 float-right aiFlapperSelected" />}
+                                        Claude Opus 4.6 {searchInputData.checkedAIModelValues === "claude-opus-4_5" && <i className="fa fa-angle-left text-gray-500 float-right aiFlapperSelected" />}
                                     </button>
 
                                     {/* Claude Sonnet 4.5 */}
@@ -1166,13 +1136,15 @@ const SearchForm = ({ isThreadPage, threadId }) => {
                         >
                             <i className={`fas ${searchStarted ? "fa-stop" : "fa-arrow-right"} text-base sm:text-xl`} />
                         </button>
+
                     </div>
                 </div >
                 <SearchSuggestionsBox
                     ref={searchBoxRef}
                     searchSuggestions={searchSuggestions}
                     mt={1}
-                    handleSearchSubmit={handleSearchSubmit} />
+                    handleSearchSubmit={handleSearchSubmit}
+                />
             </form >
         </>
     )

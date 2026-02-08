@@ -46,6 +46,7 @@ export default function SignupForm({ apiEndpoint, onSuccess }) {
 
   function clientValidate() {
     if (!form.email) return "Email is required.";
+    if (!form.phone) return "Phone is required.";
     if (!form.username) return "Username is required.";
     if (!form.password) return "Password is required.";
     if (form.password !== form.confirm_password) return "Passwords do not match.";
@@ -211,6 +212,7 @@ export default function SignupForm({ apiEndpoint, onSuccess }) {
             id="mobile-phone"
             name="phone"
             type="tel"
+            required
             placeholder="(123) 456-7890"
             value={form.phone}
             onChange={handleChange}

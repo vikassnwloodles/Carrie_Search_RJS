@@ -8,10 +8,11 @@ import { useAuthUtils } from "../utils/useAuthUtils";
 
 // COMPONENTS
 import ResetPasswordModal from "../components/ResetPasswordModal";
-import SearchForm from "../components/Home/SearchForm";
+import SearchForm from "../components/SearchForm";
 import AlertsForm from "../components/Home/AlertsForm";
 import AppPurpose from "../components/Home/AppPurpose";
 import { useSearch } from "../context/SearchContext";
+import EncryptedBadge from "../components/Home/EncryptedBadge";
 
 
 
@@ -106,6 +107,7 @@ export default function Home() {
         {!threadId && (
           // {false && (
           <>
+            <EncryptedBadge />
             <AppPurpose />
             <AlertsForm />
           </>

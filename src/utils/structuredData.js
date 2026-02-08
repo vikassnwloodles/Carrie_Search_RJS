@@ -203,7 +203,7 @@ function getCitationHtml(citationsMetadata) {
     }, 0);
 
     citationsMetadata = citationsMetadata.filter(
-    ((seen) => item => !seen.has(item.site_url) && seen.add(item.site_url))(new Set())
+        ((seen) => item => !seen.has(item.site_url) && seen.add(item.site_url))(new Set())
     );
 
     const firstCitation = citationsMetadata[0];
@@ -267,20 +267,52 @@ function getCitationHtml(citationsMetadata) {
 }
 
 
-function getMainTextAndCitationsHtml(trimmedLine, citationsMetadata) {
-    // EXTRACT CITATION NUMBERS SUCH AS 1, 2... FROM `trimmedLine`
-    let citationNumbers = (trimmedLine.match(/\[(\d+)\]/g) || []).map(c => parseInt(c.replace(/\[|\]/g, ""), 10));
-    // REMOVE THE [n] MARKERS FROM THE MAIN TEXT
-    const mainText = trimmedLine.replace(/\[\d+\]/g, "").trim();
-    let citationsHtml = "";
-    if (citationNumbers.length > 0) {
-        // FILTER OUT CITATIONS METADATA BASE ON EXTRACTED CITATION NUMBERS
-        const citationsMetadataFiltered = citationNumbers.map(number => citationsMetadata[number - 1])
-        // citationsHtml = getCitationHtml(citationsMetadataFiltered)
-        citationsHtml = ""
+// function getMainTextAndCitationsHtml(trimmedLine, citationsMetadata) {
+//     // EXTRACT CITATION NUMBERS SUCH AS 1, 2... FROM `trimmedLine`
+//     let citationNumbers = (trimmedLine.match(/\[(\d+)\]/g) || []).map(c => parseInt(c.replace(/\[|\]/g, ""), 10));
+//     // REMOVE THE [n] MARKERS FROM THE MAIN TEXT
+//     const mainText = trimmedLine.replace(/\[\d+\]/g, "").trim();
+//     let citationsHtml = "";
+//     if (citationNumbers.length > 0) {
+//         // FILTER OUT CITATIONS METADATA BASE ON EXTRACTED CITATION NUMBERS
+//         const citationsMetadataFiltered = citationNumbers.map(number => citationsMetadata[number - 1])
+//         // citationsHtml = getCitationHtml(citationsMetadataFiltered)
+//         citationsHtml = ""
+//     }
+//     return [mainText, citationsHtml];
+// }
+
+
+function getMainTextAndCitationsHtml(trimmedLine, citationsMetadata = []) {
+    let extractedCitations = [];
+
+    // Match markdown links inside parentheses:
+    // Example: ([aajtak.in](https://example.com))
+    const markdownCitationRegex = /\(\[([^\]]+)\]\((https?:\/\/[^\)]+)\)\)/g;
+
+    let cleanedText = trimmedLine.replace(markdownCitationRegex, (_, title, url) => {
+        const domain = getDomain(url);
+
+        extractedCitations.push({
+            title: title,
+            site_url: url,
+            domain_short: domain.replace(/^www\./, '')
+        });
+
+        return ''; // remove from visible text
+    });
+
+    cleanedText = cleanedText.trim();
+
+    let citationsHtml = '';
+
+    if (extractedCitations.length > 0) {
+        citationsHtml = getCitationHtml(extractedCitations);
     }
-    return [mainText, citationsHtml];
+
+    return [cleanedText, citationsHtml];
 }
+
 
 
 function parseItalic(text) {
@@ -294,46 +326,46 @@ function parsebold(text) {
 
 
 // function attachEventHandlers(uniqueId) {
-    // let hideTimeout; // store timeout ID
-    // const $badge = $(`#citation-badge-${uniqueId}`);
-    // const $anchor = $badge.find('a');
-    // const citationBadgeWidth = $anchor.outerWidth()
-    // const citationTooltipWidth = 320
+// let hideTimeout; // store timeout ID
+// const $badge = $(`#citation-badge-${uniqueId}`);
+// const $anchor = $badge.find('a');
+// const citationBadgeWidth = $anchor.outerWidth()
+// const citationTooltipWidth = 320
 
-    // const $tooltip = $(`#citation-tooltip-${uniqueId}`);
+// const $tooltip = $(`#citation-tooltip-${uniqueId}`);
 
 
-    // // Show tooltip when hovering badge OR tooltip itself
-    // // $badge.add($tooltip).hover(
-    // //     function () {
-    // $(document).on("mouseenter", `#citation-badge-${uniqueId}, #citation-tooltip-${uniqueId}`, function () {
-    //     const badgeOffset = $badge.offset().left;       // left relative to document
-    //     const $badgeAncestor = $badge.closest('[id^="response-text-"]:not([id^="response-text-inner-"])')
-    //     const ancestorOffset = $badgeAncestor.offset().left; // left relative to document
-    //     const badgeRelativeLeft = badgeOffset - ancestorOffset;
-    //     let requiredShiftFromLeft = badgeRelativeLeft - ((citationTooltipWidth / 2) - (citationBadgeWidth / 2))
+// // Show tooltip when hovering badge OR tooltip itself
+// // $badge.add($tooltip).hover(
+// //     function () {
+// $(document).on("mouseenter", `#citation-badge-${uniqueId}, #citation-tooltip-${uniqueId}`, function () {
+//     const badgeOffset = $badge.offset().left;       // left relative to document
+//     const $badgeAncestor = $badge.closest('[id^="response-text-"]:not([id^="response-text-inner-"])')
+//     const ancestorOffset = $badgeAncestor.offset().left; // left relative to document
+//     const badgeRelativeLeft = badgeOffset - ancestorOffset;
+//     let requiredShiftFromLeft = badgeRelativeLeft - ((citationTooltipWidth / 2) - (citationBadgeWidth / 2))
 
-    //     // prevent tooltip from going past the left edge
-    //     requiredShiftFromLeft = requiredShiftFromLeft >= 0 ? requiredShiftFromLeft : 0;
+//     // prevent tooltip from going past the left edge
+//     requiredShiftFromLeft = requiredShiftFromLeft >= 0 ? requiredShiftFromLeft : 0;
 
-    //     // prevent tooltip from going past the right edge
-    //     const badgeParentContainerWidth = $badgeAncestor.outerWidth(); // parent container of the badge
-    //     if ((requiredShiftFromLeft + citationTooltipWidth) > badgeParentContainerWidth) {
-    //         requiredShiftFromLeft = (badgeParentContainerWidth - citationTooltipWidth)
-    //     }
+//     // prevent tooltip from going past the right edge
+//     const badgeParentContainerWidth = $badgeAncestor.outerWidth(); // parent container of the badge
+//     if ((requiredShiftFromLeft + citationTooltipWidth) > badgeParentContainerWidth) {
+//         requiredShiftFromLeft = (badgeParentContainerWidth - citationTooltipWidth)
+//     }
 
-    //     $tooltip.css({
-    //         // left: `${badgeOffset.left-tooltipOffset.left}px`,
-    //         left: `${requiredShiftFromLeft}px`
-    //     })
+//     $tooltip.css({
+//         // left: `${badgeOffset.left-tooltipOffset.left}px`,
+//         left: `${requiredShiftFromLeft}px`
+//     })
 
-    //     clearTimeout(hideTimeout);
-    //     $tooltip.removeClass("opacity-0 invisible").addClass("opacity-100 visible");
-    // }).on("mouseleave", `#citation-badge-${uniqueId}, #citation-tooltip-${uniqueId}`, function () {
-    //     hideTimeout = setTimeout(() => {
-    //         $tooltip.removeClass("opacity-100 visible").addClass("opacity-0 invisible");
-    //     }, 100);
-    // })
+//     clearTimeout(hideTimeout);
+//     $tooltip.removeClass("opacity-0 invisible").addClass("opacity-100 visible");
+// }).on("mouseleave", `#citation-badge-${uniqueId}, #citation-tooltip-${uniqueId}`, function () {
+//     hideTimeout = setTimeout(() => {
+//         $tooltip.removeClass("opacity-100 visible").addClass("opacity-0 invisible");
+//     }, 100);
+// })
 // }
 function attachEventHandlers(uniqueId) {
     const badge = document.getElementById(`citation-badge-${uniqueId}`);

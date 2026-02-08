@@ -17,7 +17,7 @@ export function useFireSearch() {
 
 
 
-    const fireSearch = async (prompt, search_result_id, thread_id, isFirstSearchOfThread) => {
+    const fireSearch = async (prompt, search_result_id, thread_id, isFirstSearchOfThread, uploadedFiles, selected_text) => {
         prompt = prompt.trim()
         if (!prompt) return
 
@@ -55,19 +55,31 @@ export function useFireSearch() {
                         response: {
                             content: [{ text: fullText, image_url: imageUrl }]
                         },
+                        uploaded_files: uploadedFiles.map(file => ({
+                            file_name: file.name,
+                            file_size: file.size,
+                            content_type: file.type,
+                        }))
                     },
                 ]);
             }
 
-            const payload = JSON.stringify({ ...searchInputData, prompt, search_result_id, thread_id });
+            const payload = { ...searchInputData, prompt, search_result_id, thread_id, selected_text }
+            const formData = new FormData();
+            uploadedFiles.forEach((file) => {
+                formData.append("files", file);
+            });
+            Object.entries(payload).forEach(([key, value]) => {
+                if (value === null || value === undefined) return;
+                formData.append(key, value);
+            });
 
             const res = await fetch(`${import.meta.env.VITE_API_URL}/search/`, {
                 method: "POST",
                 headers: {
-                    "Content-Type": "application/json",
                     Authorization: `Bearer ${localStorage.getItem("authToken")}`,
                 },
-                body: payload,
+                body: formData,
             });
 
             if (!res.ok) {

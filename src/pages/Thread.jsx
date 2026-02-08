@@ -1,13 +1,17 @@
 import { useEffect, useState, useRef } from 'react'
 import { useSearch } from '../context/SearchContext';
 import SearchResultContainer from '../components/SearchResultContainer';
-import SearchForm from '../components/Home/SearchForm';
+import SearchForm from '../components/SearchForm';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { showCustomToast } from '../utils/customToast';
 import { useAuthUtils } from '../utils/useAuthUtils';
 
 function Thread() {
-      const { logoutAndNavigate } = useAuthUtils();
+
+    // const selectedTextRef = useRef("")
+    const [selectedText, setSelectedText] = useState("")
+
+    const { logoutAndNavigate } = useAuthUtils();
     // const [threadId, setThreadId] = useState(window.location.pathname.split("/")[2] || null);
     const { threadId } = useParams();
     const location = useLocation();
@@ -83,9 +87,18 @@ function Thread() {
         <>
             <div className="w-full flex flex-col items-center">
 
-                <SearchResultContainer ref={bottomRef} threadId={threadId} />
+                <SearchResultContainer
+                    ref={bottomRef}
+                    threadId={threadId}
+                    setSelectedText={setSelectedText}
+                />
 
-                <SearchForm isThreadPage={true} threadId={threadId} />
+                <SearchForm
+                    isThreadPage={true}
+                    threadId={threadId}
+                    selectedText={selectedText}
+                    setSelectedText={setSelectedText}
+                />
 
             </div >
 
