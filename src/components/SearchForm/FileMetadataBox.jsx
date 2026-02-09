@@ -3,14 +3,14 @@ import React from 'react'
 function FileMetadataBox({ uploadedFiles, setUploadedFiles, styles={position: "absolute", pt: "pt-2"} }) {
     if (uploadedFiles?.length) {
         return (
-            <div
-                id="file-metadata-box"
-                className={`${styles.position} top-0 left-0 z-10
-                                    flex flex-row gap-2
-                                    p-2 ${styles.pt} rounded-t-xl max-w-full
-                                    ${uploadedFiles.length > 0 ? "" : "hidden"}
-                                `}
-            >
+            // <div
+            //     id="file-metadata-box"
+            //     className={`${styles.position} top-0 left-0 z-10
+            //                         flex flex-row gap-2
+            //                         p-2 ${styles.pt} rounded-t-xl max-w-full
+            //                         ${uploadedFiles.length > 0 ? "" : "hidden"}
+            //                     `}
+            // >
                 <div className='gap-2 flex flex-row overflow-x-auto 
                                         scrollbar-hide scroll-smooth rounded-lg'>
                     {uploadedFiles.map((file, index) => (
@@ -69,7 +69,7 @@ function FileMetadataBox({ uploadedFiles, setUploadedFiles, styles={position: "a
                         </div>
                     ))}
                 </div>
-            </div>
+            // </div>
         )
     } else {
         return <></>

@@ -8,9 +8,10 @@ import { useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { showCustomToast } from "../utils/customToast";
 import { useAuthUtils } from "../utils/useAuthUtils";
-import FileMetadataBox from "./FileMetadataBox";
+import FileMetadataBox from "./SearchForm/FileMetadataBox";
+import SelectedTextContainer from "./SearchForm/SelectedTextContainer";
 
-export default function SearchResult({ response: initResponse, prompt: initPrompt, pk, threadId, uploadedFiles, setSelectedText }) {
+export default function SearchResult({ response: initResponse, prompt: initPrompt, pk, threadId, uploadedFiles, setSelectedText, selected_text }) {
   const { logoutAndNavigate } = useAuthUtils();
   // const [pk, setPk] = useState(initPk)
   const [response, setResponse] = useState(initResponse)
@@ -83,7 +84,14 @@ export default function SearchResult({ response: initResponse, prompt: initPromp
       {response && (
         <div id={pk}>
           <div className="animate-fade-in text-left mb-8 p-6 bg-white rounded-lg border border-gray-200 relative">
-            <FileMetadataBox uploadedFiles={uploadedFiles} setUploadedFiles={null} styles={{ position: "relative", pt: "pt-0" }} />
+            {selected_text &&
+              <div className="mb-2">
+                <SelectedTextContainer selectedText={selected_text} />
+              </div>
+            }
+            <div className="mb-2">
+              <FileMetadataBox uploadedFiles={uploadedFiles} setUploadedFiles={null} />
+            </div>
             <SearchQueryContainer
               query={prompt}
               uniqueId={uniqueId}

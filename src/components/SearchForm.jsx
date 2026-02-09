@@ -8,10 +8,10 @@ import { fetchSearchSuggestions } from './SearchForm/SearchSuggestionsBox/fetchS
 import { useFireSearch } from '../hooks/useFireSearch';
 import { useSearch } from '../context/SearchContext';
 import { useAuthUtils } from '../utils/useAuthUtils';
-import FileMetadataBox from './FileMetadataBox';
+import FileMetadataBox from './SearchForm/FileMetadataBox';
 
 
-const SearchForm = ({ isThreadPage, threadId, selectedText="", setSelectedText }) => {
+const SearchForm = ({ isThreadPage, threadId, selectedText = "", setSelectedText }) => {
 
     const { logoutAndNavigate } = useAuthUtils();
     const {
@@ -838,13 +838,19 @@ const SearchForm = ({ isThreadPage, threadId, selectedText="", setSelectedText }
                     </div> */}
 
 
-                    {isThreadPage && selectedText.trim() && <SelectedTextContainer selectedText={selectedText} setSelectedText={setSelectedText} />}
+                    <div
+                        className={`absolute top-0 left-0 z-10
+                                    flex flex-col gap-2
+                                    p-2 rounded-t-xl max-w-full
+                                `}
+                    >
+                        {isThreadPage && selectedText.trim() && <SelectedTextContainer selectedText={selectedText} setSelectedText={setSelectedText} />}
 
-                    <FileMetadataBox
-                        uploadedFiles={uploadedFiles}
-                        setUploadedFiles={setUploadedFiles}
-                    />
-
+                        <FileMetadataBox
+                            uploadedFiles={uploadedFiles}
+                            setUploadedFiles={setUploadedFiles}
+                        />
+                    </div>
 
                     {/* Right controls */}
                     <div className="absolute right-4 flex items-center space-x-1 sm:space-x-2">

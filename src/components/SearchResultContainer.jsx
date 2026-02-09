@@ -27,7 +27,7 @@ const SearchResultContainer = forwardRef(({ threadId, setSelectedText }, ref) =>
   }, [searchStarted]);
 
 
-  // let item = { id: crypto.randomUUID(), response: { content: [{ text: liveAnswer }] }, prompt: prompt }
+  // console.log(searchHistoryContainer)
 
 
 
@@ -53,6 +53,7 @@ const SearchResultContainer = forwardRef(({ threadId, setSelectedText }, ref) =>
                 size: file.file_size,
               }))}
               setSelectedText={setSelectedText}
+              selected_text={item.selected_text}
             />
           );
         })}

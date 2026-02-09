@@ -59,7 +59,8 @@ export function useFireSearch() {
                             file_name: file.name,
                             file_size: file.size,
                             content_type: file.type,
-                        }))
+                        })),
+                        selected_text: selected_text
                     },
                 ]);
             }
