@@ -1,5 +1,34 @@
 // src/utils/structuredData.js
 
+
+
+
+function linkify(text) {
+    const parts = text.split(/(<code[\s\S]*?<\/code>)/g);
+
+    return parts.map(part => {
+        if (part.startsWith('<code')) {
+            return part; // skip code blocks
+        }
+
+        return part.replace(
+            /(https?:\/\/[^\s<]+)/g,
+            (url) => {
+                const cleanedUrl = url.replace(/[.,!?;:]+$/, '');
+                const trailing = url.substring(cleanedUrl.length);
+
+                return `<a href="${cleanedUrl}" target="_blank" rel="noopener noreferrer"
+                            class="text-blue-600 hover:underline break-words">
+                            ${cleanedUrl}
+                        </a>${trailing}`;
+            }
+        );
+    }).join('');
+}
+
+
+
+
 export function structuredData(rawText, citationsMetadata) {
     // Remove <think> blocks
     rawText = rawText.replace(/<think>.*?<\/think>/gs, '');
@@ -31,9 +60,19 @@ export function structuredData(rawText, citationsMetadata) {
         });
     }
 
+    // function processInlineFormatting(text) {
+    //     return handleInlineCode(parseItalic(parsebold(text)));
+    // }
     function processInlineFormatting(text) {
-        return handleInlineCode(parseItalic(parsebold(text)));
+        return linkify(
+            handleInlineCode(
+                parseItalic(
+                    parsebold(text)
+                )
+            )
+        );
     }
+
 
     function closeOpenBlocks() {
         if (inList) {
@@ -81,13 +120,19 @@ export function structuredData(rawText, citationsMetadata) {
         // Code block start / end
         if (trimmedLine.startsWith('```')) {
             if (inCodeBlock) {
-                htmlBuilder.push(
-                    `<pre class="bg-gray-800 text-white p-4 rounded-md overflow-x-auto my-2">
-                        <code class="language-${codeLang}">
-${currentCodeLines.join('\n')}
-                        </code>
-                     </pre>`
-                );
+                const codeContent = currentCodeLines.join('\n');
+                htmlBuilder.push(`
+<div class="relative group my-2">
+    <button
+        onclick="copyCode(this)"
+        class="absolute top-2 right-2 opacity-100 group-hover:opacity-100
+               text-gray-400 hover:text-white transition cursor-pointer text-sm"
+    >
+        <i class="fa-regular fa-copy"></i> Copy
+    </button>
+    <pre class="bg-gray-800 text-white p-4 pt-8 rounded-md overflow-x-auto my-2"><code class="language-${codeLang}">${currentCodeLines.join('\n')}</code></pre>
+</div>
+                `);
                 currentCodeLines = [];
                 inCodeBlock = false;
                 codeLang = '';
@@ -419,9 +464,19 @@ function buildTable(rows, citationsMetadata) {
         });
     }
 
+    // function processInlineFormatting(text) {
+    //     return handleInlineCode(parseItalic(parsebold(removeFootnotes(text))));
+    // }
     function processInlineFormatting(text) {
-        return handleInlineCode(parseItalic(parsebold(removeFootnotes(text))));
+        return linkify(
+            handleInlineCode(
+                parseItalic(
+                    parsebold(removeFootnotes(text))
+                )
+            )
+        );
     }
+
 
     let tableHtml =
         '<table class="min-w-full divide-y divide-gray-200 border border-gray-200 rounded-lg overflow-hidden">';
@@ -469,3 +524,18 @@ function buildTable(rows, citationsMetadata) {
 
     return tableHtml;
 }
+
+
+
+window.copyCode = function (btn) {
+    const code = btn.closest('.group').querySelector('code').innerText;
+
+    navigator.clipboard.writeText(code).then(() => {
+        const original = btn.innerHTML;
+        btn.innerHTML = '✓ Copied';
+
+        setTimeout(() => {
+            btn.innerHTML = original;
+        }, 1500);
+    });
+};
