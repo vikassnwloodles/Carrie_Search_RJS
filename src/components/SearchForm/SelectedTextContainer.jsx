@@ -1,6 +1,6 @@
 import React from 'react'
 
-function SelectedTextContainer({ selectedText, setSelectedText, styles = { position: "absolute", pt: "pt-2" } }) {
+function SelectedTextContainer({ selectedText, setSelectedText, styles = null }) {
     if (!selectedText?.trim()) return <></>
     return (
         // <div
@@ -10,8 +10,8 @@ function SelectedTextContainer({ selectedText, setSelectedText, styles = { posit
         //                             p-2 ${styles.pt} rounded-t-xl max-w-full
         //                         `}
         // >
-        <div className='gap-2 flex flex-row overflow-x-auto 
-                                        scrollbar-hide scroll-smooth rounded-lg'>
+        <div className={`gap-2 flex flex-row overflow-x-auto 
+                                        scrollbar-hide scroll-smooth rounded-lg ${styles}`}>
             <div
                 className="flex items-center gap-3 p-2 bg-gray-100 rounded-lg"
             >

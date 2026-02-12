@@ -87,11 +87,18 @@ export default function SearchResult({ response: initResponse, prompt: initPromp
           <div className="animate-fade-in text-left mb-8 p-6 rounded-lg relative">
             {selected_text &&
               <div className="mb-2">
-                <SelectedTextContainer selectedText={selected_text} />
+                <SelectedTextContainer
+                  selectedText={selected_text}
+                  styles={`max-w-3/4 ml-auto `}
+                />
               </div>
             }
             <div className="mb-2">
-              <FileMetadataBox uploadedFiles={uploadedFiles} setUploadedFiles={null} />
+              <FileMetadataBox
+                uploadedFiles={uploadedFiles}
+                setUploadedFiles={null}
+                styles={`max-w-3/4 ml-auto`}
+              />
             </div>
             <SearchQueryContainer
               query={prompt}
@@ -100,7 +107,7 @@ export default function SearchResult({ response: initResponse, prompt: initPromp
               threadId={threadId}
               chatId={chatId}
               uploadedFiles={uploadedFiles}
-              // width={`w-96`}
+            // width={`w-96`}
             />
 
             <SearchImagesContainer images={images} />

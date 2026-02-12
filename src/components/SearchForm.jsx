@@ -785,6 +785,7 @@ const SearchForm = ({ isThreadPage, threadId, selectedText = "", setSelectedText
                         setMain2DropdownOpen={setMain2DropdownOpen}
                         setSearchInputData={setSearchInputData}
                         setMainDropdownOpen={setMainDropdownOpen}
+                        setShowConnectSubmenu={setShowConnectSubmenu}
                     />
                 </div >
                 <SearchSuggestionsBox

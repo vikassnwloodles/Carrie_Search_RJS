@@ -21,7 +21,8 @@ function RightControls({
     searchStarted,
     setMain2DropdownOpen,
     setSearchInputData,
-    setMainDropdownOpen
+    setMainDropdownOpen,
+    setShowConnectSubmenu
 }) {
 
     // AI model change stub

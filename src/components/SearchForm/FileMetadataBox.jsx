@@ -1,6 +1,6 @@
 import React from 'react'
 
-function FileMetadataBox({ uploadedFiles, setUploadedFiles, styles={position: "absolute", pt: "pt-2"} }) {
+function FileMetadataBox({ uploadedFiles, setUploadedFiles, styles=null }) {
     if (uploadedFiles?.length) {
         return (
             // <div
@@ -11,8 +11,8 @@ function FileMetadataBox({ uploadedFiles, setUploadedFiles, styles={position: "a
             //                         ${uploadedFiles.length > 0 ? "" : "hidden"}
             //                     `}
             // >
-                <div className='gap-2 flex flex-row overflow-x-auto 
-                                        scrollbar-hide scroll-smooth rounded-lg'>
+                <div className={`gap-2 flex flex-row overflow-x-auto 
+                                        scrollbar-hide scroll-smooth rounded-lg ${styles}`}>
                     {uploadedFiles.map((file, index) => (
                         <div
                             key={index}
