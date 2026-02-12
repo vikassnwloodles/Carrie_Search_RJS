@@ -1,5 +1,18 @@
 // src/utils/structuredData.js
 
+function parseMarkdownLinks(text) {
+    return text.replace(
+        /\[([^\]]+)\]\(\s*(https?:\/\/[^\s)]+)\s*\)/g,
+        (_, label, url) => {
+            return `<a href="${url}" target="_blank" rel="noopener noreferrer"
+                        class="text-blue-600 hover:underline break-words">
+                        ${label}
+                    </a>`;
+        }
+    );
+}
+
+
 
 
 
@@ -12,17 +25,18 @@ function linkify(text) {
         }
 
         return part.replace(
-            /(https?:\/\/[^\s<]+)/g,
-            (url) => {
+            /(^|[\s>])(https?:\/\/[^\s<"]+)/g,
+            (match, prefix, url) => {
                 const cleanedUrl = url.replace(/[.,!?;:]+$/, '');
                 const trailing = url.substring(cleanedUrl.length);
 
-                return `<a href="${cleanedUrl}" target="_blank" rel="noopener noreferrer"
-                            class="text-blue-600 hover:underline break-words">
-                            ${cleanedUrl}
-                        </a>${trailing}`;
+                return `${prefix}<a href="${cleanedUrl}" target="_blank" rel="noopener noreferrer"
+                    class="text-blue-600 hover:underline break-words">
+                    ${cleanedUrl}
+                </a>${trailing}`;
             }
         );
+
     }).join('');
 }
 
@@ -67,10 +81,12 @@ export function structuredData(rawText, citationsMetadata) {
         return linkify(
             handleInlineCode(
                 parseItalic(
-                    parsebold(text)
+                    parsebold(
+                        parseMarkdownLinks(text)
+                    )
                 )
             )
-        );
+        )
     }
 
 
@@ -416,25 +432,25 @@ function parsebold(text) {
 
 function attachEventHandlers(uniqueId) {
     let hideTimeout; // store timeout ID
-    
+
     const badge = document.getElementById(`citation-badge-${uniqueId}`);
     const wrapper = document.getElementById(`citation-wrapper-${uniqueId}`);
     const tooltip = document.getElementById(`citation-tooltip-${uniqueId}`);
-    
+
     if (!badge || !wrapper || !tooltip) return;
-    
+
     const citationBadgeWidth = badge.offsetWidth;
     const citationTooltipWidth = 320;
 
     const showTooltip = () => {
         const badgeRect = badge.getBoundingClientRect();
         const ancestor = badge.closest('[id^="response-text-"]:not([id^="response-text-inner-"])');
-        
+
         if (!ancestor) return;
-        
+
         const ancestorRect = ancestor.getBoundingClientRect();
         const badgeRelativeLeft = badgeRect.left - ancestorRect.left;
-        
+
         // Center tooltip under badge
         let requiredShiftFromLeft = badgeRelativeLeft - ((citationTooltipWidth / 2) - (citationBadgeWidth / 2));
 
@@ -448,7 +464,7 @@ function attachEventHandlers(uniqueId) {
         }
 
         tooltip.style.left = `${requiredShiftFromLeft}px`;
-        
+
         clearTimeout(hideTimeout);
         tooltip.classList.remove("opacity-0", "invisible");
         tooltip.classList.add("opacity-100", "visible");
@@ -524,15 +540,15 @@ function buildTable(rows, citationsMetadata) {
     // function processInlineFormatting(text) {
     //     return handleInlineCode(parseItalic(parsebold(removeFootnotes(text))));
     // }
-    function processInlineFormatting(text) {
-        return linkify(
-            handleInlineCode(
-                parseItalic(
-                    parsebold(removeFootnotes(text))
-                )
-            )
-        );
-    }
+    // function processInlineFormatting(text) {
+    //     return linkify(
+    //         handleInlineCode(
+    //             parseItalic(
+    //                 parsebold(removeFootnotes(text))
+    //             )
+    //         )
+    //     );
+    // }
 
 
     let tableHtml =
