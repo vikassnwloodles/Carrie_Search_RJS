@@ -52,7 +52,7 @@ export default function SearchQueryContainer({ query, uniqueId, searchResultId, 
   return (
     <div
       id={`text-container-${uniqueId}`}
-      className="w-full border border-gray-200 bg-white rounded-xl pl-4 pt-4 pb-8 pr-2 mb-8 group relative"
+      className="max-w-3/4 bg-white border border-gray-200 rounded-xl pl-4 pt-4 pb-8 pr-2 mb-8 group relative ml-auto"
     >
       {/* Prompt container */}
       {!isEditBtnClicked ? (

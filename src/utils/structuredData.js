@@ -412,34 +412,91 @@ function parsebold(text) {
 //     }, 100);
 // })
 // }
+
+
 function attachEventHandlers(uniqueId) {
+    let hideTimeout; // store timeout ID
+    
     const badge = document.getElementById(`citation-badge-${uniqueId}`);
-    const tooltip = document.getElementById(`citation-tooltip-${uniqueId}`);
     const wrapper = document.getElementById(`citation-wrapper-${uniqueId}`);
-
-    if (!badge || !tooltip || !wrapper) return;
-
-    let hideTimeout;
+    const tooltip = document.getElementById(`citation-tooltip-${uniqueId}`);
+    
+    if (!badge || !wrapper || !tooltip) return;
+    
+    const citationBadgeWidth = badge.offsetWidth;
+    const citationTooltipWidth = 320;
 
     const showTooltip = () => {
+        const badgeRect = badge.getBoundingClientRect();
+        const ancestor = badge.closest('[id^="response-text-"]:not([id^="response-text-inner-"])');
+        
+        if (!ancestor) return;
+        
+        const ancestorRect = ancestor.getBoundingClientRect();
+        const badgeRelativeLeft = badgeRect.left - ancestorRect.left;
+        
+        // Center tooltip under badge
+        let requiredShiftFromLeft = badgeRelativeLeft - ((citationTooltipWidth / 2) - (citationBadgeWidth / 2));
+
+        // Prevent tooltip from going past the left edge
+        requiredShiftFromLeft = Math.max(0, requiredShiftFromLeft);
+
+        // Prevent tooltip from going past the right edge
+        const ancestorWidth = ancestor.offsetWidth;
+        if ((requiredShiftFromLeft + citationTooltipWidth) > ancestorWidth) {
+            requiredShiftFromLeft = ancestorWidth - citationTooltipWidth;
+        }
+
+        tooltip.style.left = `${requiredShiftFromLeft}px`;
+        
         clearTimeout(hideTimeout);
-        tooltip.classList.remove('opacity-0', 'invisible');
-        tooltip.classList.add('opacity-100', 'visible');
+        tooltip.classList.remove("opacity-0", "invisible");
+        tooltip.classList.add("opacity-100", "visible");
     };
 
     const hideTooltip = () => {
         hideTimeout = setTimeout(() => {
-            tooltip.classList.add('opacity-0', 'invisible');
-            tooltip.classList.remove('opacity-100', 'visible');
-        }, 100); // small delay prevents flicker
+            tooltip.classList.remove("opacity-100", "visible");
+            tooltip.classList.add("opacity-0", "invisible");
+        }, 100);
     };
 
-    badge.addEventListener('mouseenter', showTooltip);
-    badge.addEventListener('mouseleave', hideTooltip);
-
-    tooltip.addEventListener('mouseenter', showTooltip);
-    tooltip.addEventListener('mouseleave', hideTooltip);
+    // Attach event listeners
+    badge.addEventListener("mouseenter", showTooltip);
+    badge.addEventListener("mouseleave", hideTooltip);
+    tooltip.addEventListener("mouseenter", showTooltip);
+    tooltip.addEventListener("mouseleave", hideTooltip);
 }
+
+
+// function attachEventHandlers(uniqueId) {
+//     const badge = document.getElementById(`citation-badge-${uniqueId}`);
+//     const tooltip = document.getElementById(`citation-tooltip-${uniqueId}`);
+//     const wrapper = document.getElementById(`citation-wrapper-${uniqueId}`);
+
+//     if (!badge || !tooltip || !wrapper) return;
+
+//     let hideTimeout;
+
+//     const showTooltip = () => {
+//         clearTimeout(hideTimeout);
+//         tooltip.classList.remove('opacity-0', 'invisible');
+//         tooltip.classList.add('opacity-100', 'visible');
+//     };
+
+//     const hideTooltip = () => {
+//         hideTimeout = setTimeout(() => {
+//             tooltip.classList.add('opacity-0', 'invisible');
+//             tooltip.classList.remove('opacity-100', 'visible');
+//         }, 100); // small delay prevents flicker
+//     };
+
+//     badge.addEventListener('mouseenter', showTooltip);
+//     badge.addEventListener('mouseleave', hideTooltip);
+
+//     tooltip.addEventListener('mouseenter', showTooltip);
+//     tooltip.addEventListener('mouseleave', hideTooltip);
+// }
 
 
 

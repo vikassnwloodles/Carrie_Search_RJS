@@ -9,7 +9,9 @@ export default function SearchResponseContainer({
   imageURL,
   uniqueId,
   searchResultId,
-  setSelectedText
+  setSelectedText,
+  docUrl,
+  docName
 }) {
   const responseContainerRef = useRef(null);
   const selectedTextRef = useRef("")
@@ -18,7 +20,8 @@ export default function SearchResponseContainer({
   const {
     searchStarted,
     searchInputData,
-    imageGenerationStarted
+    imageGenerationStarted,
+    fileGenerationStarted
   } = useSearch();
 
   /* ---------- COPY TO CLIPBOARD ---------- */
@@ -88,8 +91,25 @@ export default function SearchResponseContainer({
     console.log("Check sources:", selectedTextRef.current);
   };
 
+
+  const handleDownload = async () => {
+    const response = await fetch(docUrl);
+    const blob = await response.blob();
+
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = docName;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    window.URL.revokeObjectURL(url);
+  };
+
+
+
   return (
-    <div className="relative bg-white p-6 rounded-lg border border-gray-200 mb-4">
+    <div id={`response-text-${uniqueId}`} className="relative p-6 rounded-lg mb-4">
 
       {/* Floating Selection Toolbar (NO STATE) */}
       {createPortal(
@@ -140,9 +160,10 @@ export default function SearchResponseContainer({
         searchResultId === searchInputData.search_result_id) ? (
         imageGenerationStarted ? (
           <ThinkingLoader text="Generating..." />
-        ) : !content ? (
-          <ThinkingLoader text="Thinking..." />
-        ) : null
+        ) : fileGenerationStarted ? <ThinkingLoader text="Generating File..." />
+          : !content ? (
+            <ThinkingLoader text="Thinking..." />
+          ) : null
       ) : null}
 
       {/* Content */}
@@ -152,13 +173,20 @@ export default function SearchResponseContainer({
           alt="Generated"
           className="max-w-sm object-cover rounded-md"
         />
-      ) : (
-        <div
-          ref={responseContainerRef}
-          id={`response-text-inner-${uniqueId}`}
-          dangerouslySetInnerHTML={{ __html: content }}
-        />
-      )}
+      ) : docUrl ?
+        <button
+          onClick={handleDownload}
+          className="text-blue-600 underline"
+        >
+          📄 {docName}
+        </button>
+        : (
+          <div
+            ref={responseContainerRef}
+            id={`response-text-inner-${uniqueId}`}
+            dangerouslySetInnerHTML={{ __html: content }}
+          />
+        )}
     </div>
   );
 }

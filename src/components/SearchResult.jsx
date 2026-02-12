@@ -76,14 +76,15 @@ export default function SearchResult({ response: initResponse, prompt: initPromp
   ) : null;
 
   const image_url = response.content?.[0]?.image_url
-
+  const doc_url = response.content?.[0]?.doc_url
+  const doc_name = response.content?.[0]?.doc_name
 
 
   return (
     <>
       {response && (
         <div id={pk}>
-          <div className="animate-fade-in text-left mb-8 p-6 bg-white rounded-lg border border-gray-200 relative">
+          <div className="animate-fade-in text-left mb-8 p-6 rounded-lg relative">
             {selected_text &&
               <div className="mb-2">
                 <SelectedTextContainer selectedText={selected_text} />
@@ -99,6 +100,7 @@ export default function SearchResult({ response: initResponse, prompt: initPromp
               threadId={threadId}
               chatId={chatId}
               uploadedFiles={uploadedFiles}
+              // width={`w-96`}
             />
 
             <SearchImagesContainer images={images} />
@@ -109,6 +111,8 @@ export default function SearchResult({ response: initResponse, prompt: initPromp
               uniqueId={uniqueId}
               searchResultId={pk}
               setSelectedText={setSelectedText}
+              docUrl={doc_url}
+              docName={doc_name}
             />
             {!chatId &&
               <SearchExportOptions

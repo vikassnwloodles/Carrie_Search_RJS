@@ -190,7 +190,7 @@ export default function SearchExportOptions({ searchResultId, uniqueId, response
       <div className="relative">
         <button
           onClick={() => setDropdownOpen((v) => !v)}
-          className="flex items-center gap-1 p-2 bg-white h-8 rounded-md text-gray-600 hover:text-teal-600 transition-colors cursor-pointer"
+          className="flex items-center gap-1 p-2 h-8 rounded-md text-gray-600 hover:text-teal-600 transition-colors cursor-pointer"
         >
           {/* Export Icon */}
           <svg
@@ -257,7 +257,7 @@ export default function SearchExportOptions({ searchResultId, uniqueId, response
         <div
           // onClick={() => handleShareChat(response.id)}
           onClick={() => handleShareChat(searchResultId)}
-          className="flex items-center gap-1 p-2 bg-white h-8 rounded-md text-gray-600 hover:text-teal-600 cursor-pointer"
+          className="flex items-center gap-1 p-2 h-8 rounded-md text-gray-600 hover:text-teal-600 cursor-pointer"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -288,7 +288,7 @@ export default function SearchExportOptions({ searchResultId, uniqueId, response
         <div
           onClick={() => handleRewrite()}
           id={`rewrite-btn-${uniqueId}`}
-          className="flex items-center gap-1 p-2 bg-white h-8 rounded-md text-gray-600 hover:text-teal-600 cursor-pointer"
+          className="flex items-center gap-1 p-2 h-8 rounded-md text-gray-600 hover:text-teal-600 cursor-pointer"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"

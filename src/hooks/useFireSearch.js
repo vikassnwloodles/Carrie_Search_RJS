@@ -12,7 +12,8 @@ export function useFireSearch() {
         setSearchStarted,
         setStreamStarted,
         setThreadsContainer,
-        setImageGenerationStarted
+        setImageGenerationStarted,
+        setFileGenerationStarted
     } = useSearch();
 
 
@@ -26,6 +27,8 @@ export function useFireSearch() {
 
         let fullText = "";
         let imageUrl = "";
+        let docUrl = "";
+        let docName = ""
 
         try {
             if (search_result_id) {
@@ -38,7 +41,7 @@ export function useFireSearch() {
                                 prompt: prompt,
                                 response: {
                                     ...item.response,
-                                    content: [{ text: fullText, image_url: imageUrl }]
+                                    content: [{ text: fullText, image_url: imageUrl, doc_url: docUrl, doc_name: docName }]
                                 },
                             }
                             : item
@@ -53,7 +56,7 @@ export function useFireSearch() {
                         _key: crypto.randomUUID(),
                         prompt: prompt,
                         response: {
-                            content: [{ text: fullText, image_url: imageUrl }]
+                            content: [{ text: fullText, image_url: imageUrl, doc_url: docUrl, doc_name: docName }]
                         },
                         uploaded_files: uploadedFiles.map(file => ({
                             file_name: file.name,
@@ -95,8 +98,10 @@ export function useFireSearch() {
             let first_chunk_captured = false
             let extracted_pk = null
             let is_image_generation = false
+            let is_downloadable_file_generation = false
             let is_error = false
             let imageData = ""
+            let docData = ""
             let errorData = ""
 
             while (true) {
@@ -120,6 +125,9 @@ export function useFireSearch() {
                         } else {
                             is_image_generation = parsed.is_image_generation
                             if (is_image_generation) setImageGenerationStarted(true)
+
+                            is_downloadable_file_generation = parsed.is_downloadable_file_generation
+                            if (is_downloadable_file_generation) setFileGenerationStarted(true)
                         }
                         first_chunk_captured = true;
                     }
@@ -133,7 +141,11 @@ export function useFireSearch() {
                 } else if (is_image_generation) {
                     imageData = buffer
                     continue
-                } else {
+                } else if (is_downloadable_file_generation) {
+                    docData = buffer
+                    continue
+                }
+                else {
                     fullText = buffer
                 }
 
@@ -175,7 +187,7 @@ export function useFireSearch() {
                                         prompt: prompt,
                                         response: {
                                             ...item.response,
-                                            content: [{ text: fullText, image_url: imageUrl }]
+                                            content: [{ text: fullText, image_url: imageUrl, doc_url: docUrl, doc_name: docName }]
                                         },
                                     }
                                     : item
@@ -194,6 +206,14 @@ export function useFireSearch() {
                 } else {
                     imageUrl = imageData["img_url"]
                 }
+            } else if (is_downloadable_file_generation) {
+                docData = JSON.parse(docData)
+                if ("error" in docData) {
+                    fullText = docData["error"]
+                } else {
+                    docUrl = docData["doc_url"]
+                    docName = docData["doc_name"]
+                }
             }
 
             flushSync(() => {
@@ -206,7 +226,7 @@ export function useFireSearch() {
                                 prompt: prompt,
                                 response: {
                                     ...item.response,
-                                    content: [{ text: fullText, image_url: imageUrl }]
+                                    content: [{ text: fullText, image_url: imageUrl, doc_url: docUrl, doc_name: docName }]
                                 },
                             }
                             : item
@@ -226,7 +246,7 @@ export function useFireSearch() {
                     id: extracted_pk,
                     prompt: prompt,
                     response: {
-                        content: [{ text: fullText, image_url: imageUrl }]
+                        content: [{ text: fullText, image_url: imageUrl, doc_url: docUrl, doc_name: docName }]
                     },
                     thread_id: thread_id
                 }, ...prev]))
@@ -238,6 +258,7 @@ export function useFireSearch() {
             setSearchStarted(false);
             setStreamStarted(false)
             setImageGenerationStarted(false)
+            setFileGenerationStarted(false)
         }
     };
 

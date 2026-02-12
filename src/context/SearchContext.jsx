@@ -22,6 +22,8 @@ export function SearchProvider({ children }) {
     const [showImg, setShowImg] = useState(true);
     const [threadsContainer, setThreadsContainer] = useState([]);
     const [imageGenerationStarted, setImageGenerationStarted] = useState(false)
+    const [fileGenerationStarted, setFileGenerationStarted] = useState(false)
+
 
     return (
         <SearchContext.Provider value={{
@@ -40,7 +42,9 @@ export function SearchProvider({ children }) {
             threadsContainer,
             setThreadsContainer,
             imageGenerationStarted,
-            setImageGenerationStarted
+            setImageGenerationStarted,
+            fileGenerationStarted,
+            setFileGenerationStarted
         }}>
             {children}
         </SearchContext.Provider>
