@@ -17,38 +17,52 @@ import EncryptedBadge from "../components/Home/EncryptedBadge";
 
 const testimonial_data = [
   {
-    "id": 1,
-    "name": "Aarav Mehta",
-    "role": "Product Manager",
-    "company": "TechNova",
-    "rating": 5,
-    "testimonial": "This platform completely streamlined our workflow. The automation features saved us hours every week."
+    id: 1,
+    name: "Michael Torres",
+    role: "AI Product Lead",
+    company: "NextWave Systems",
+    rating: 5,
+    testimonial:
+      "The ability to switch between GPT, Grok, and Gemini inside Ask Carrie is a game changer. We test outputs across models instantly without switching platforms. It’s like having multiple AI brains in one workspace."
   },
   {
-    "id": 2,
-    "name": "Sophie Williams",
-    "role": "Marketing Lead",
-    "company": "BrightEdge",
-    "rating": 5,
-    "testimonial": "The analytics and summarization tools are incredibly powerful. It feels like having an AI assistant on the team."
+    id: 2,
+    name: "Priya Nair",
+    role: "Operations Manager",
+    company: "ScaleBridge",
+    rating: 5,
+    testimonial:
+      "Uploading PDFs and spreadsheets directly into Ask Carrie has transformed how we analyze data. It reads, summarizes, and extracts insights from our files in seconds — no manual processing needed."
   },
   {
-    "id": 3,
-    "name": "Rahul Sharma",
-    "role": "Founder",
-    "company": "LaunchLabs",
-    "rating": 4,
-    "testimonial": "Very intuitive interface and great performance. The support team is responsive and helpful."
+    id: 3,
+    name: "Daniel Brooks",
+    role: "Creative Director",
+    company: "Visionary Labs",
+    rating: 5,
+    testimonial:
+      "The image understanding and editing features are incredibly powerful. We can analyze visuals, generate new designs, and refine them — all within the same AI interface. It’s streamlined our entire creative workflow."
   },
   {
-    "id": 4,
-    "name": "Emily Chen",
-    "role": "UX Designer",
-    "company": "PixelCraft",
-    "rating": 5,
-    "testimonial": "Clean design, fast results, and seamless integrations. It’s now a core tool in our daily operations."
+    id: 4,
+    name: "Samantha Lee",
+    role: "Business Analyst",
+    company: "InsightCore",
+    rating: 4,
+    testimonial:
+      "Generating structured reports in PDF, DOCX, and XLSX directly from AI responses saves us hours every week. Ask Carrie doesn’t just give answers — it produces ready-to-use business documents."
+  },
+  {
+    id: 5,
+    name: "Arjun Malhotra",
+    role: "Founder",
+    company: "DataForge",
+    rating: 5,
+    testimonial:
+      "Ask Carrie stands out because it combines multi-model AI, file uploads, image processing, and document generation in one clean interface. It’s not just a chatbot — it’s a complete AI productivity suite."
   }
-]
+];
+
 
 
 
@@ -179,21 +193,21 @@ export default function Home() {
                         </div>
 
                         {/* Rating */}
-                        <div className="flex mb-3">
+                        {/* <div className="flex mb-3">
                           {[...Array(item.rating)].map((_, i) => (
                             <i key={i} className="fa fa-star text-yellow-400 mr-1"></i>
                           ))}
-                        </div>
+                        </div> */}
 
                         {/* User Info */}
-                        <div className="text-left">
+                        {/* <div className="text-left">
                           <div className="font-semibold text-[#652F74]">
                             {item.name}
                           </div>
                           <div className="text-sm text-gray-500">
                             {item.role} • {item.company}
                           </div>
-                        </div>
+                        </div> */}
                       </div>
                     );
                   })}
