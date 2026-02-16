@@ -376,9 +376,15 @@ function getMainTextAndCitationsHtml(trimmedLine, citationsMetadata = []) {
 
 
 
+// function parseItalic(text) {
+//     return text.replace(/\*(.*?)\*/g, '<em>$1</em>');
+// }
+
 function parseItalic(text) {
-    return text.replace(/\*(.*?)\*/g, '<em>$1</em>');
+    // Match either *text* or _text_ patterns
+    return text.replace(/(?:\*|_)(.*?)(?:\*|_)/g, '<em>$1</em>');
 }
+
 
 
 function parsebold(text) {

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { showCustomToast } from "../utils/customToast";
 import { useAuthUtils } from "../utils/useAuthUtils";
 import { useFireSearch } from "../hooks/useFireSearch";
+import { fetchWithAuth } from "../utils/fetchWithAuth";
 
 
 
@@ -16,11 +17,10 @@ export default function SearchExportOptions({ searchResultId, uniqueId, response
 
   /* ---------------- EXPORT PDF ---------------- */
   async function handleChatExportAsPDF(searchResultId) {
-    const resp = await fetch(`${import.meta.env.VITE_API_URL}/download-llm-response/`, {
+    const resp = await fetchWithAuth(`${import.meta.env.VITE_API_URL}/download-llm-response/`, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+        'Content-Type': 'application/json'
       },
       body: JSON.stringify({
         searchResultId,
@@ -44,11 +44,10 @@ export default function SearchExportOptions({ searchResultId, uniqueId, response
 
   async function handleChatExportAsMarkdown(searchResultId) {
 
-    const resp = await fetch(`${import.meta.env.VITE_API_URL}/download-llm-response/`, {
+    const resp = await fetchWithAuth(`${import.meta.env.VITE_API_URL}/download-llm-response/`, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+        'Content-Type': 'application/json'
       },
       body: JSON.stringify({
         searchResultId,
@@ -72,11 +71,10 @@ export default function SearchExportOptions({ searchResultId, uniqueId, response
 
   async function handleChatExportAsDocx(searchResultId) {
 
-    const resp = await fetch(`${import.meta.env.VITE_API_URL}/download-llm-response/`, {
+    const resp = await fetchWithAuth(`${import.meta.env.VITE_API_URL}/download-llm-response/`, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+        'Content-Type': 'application/json'
       },
       body: JSON.stringify({
         searchResultId,
@@ -99,11 +97,10 @@ export default function SearchExportOptions({ searchResultId, uniqueId, response
 
   async function handleShareChat(response_id) {
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/make-chat-public/`, {
+      const res = await fetchWithAuth(`${import.meta.env.VITE_API_URL}/make-chat-public/`, {
         method: 'POST',
         headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${localStorage.getItem("authToken")}`
+          "Content-Type": "application/json"
         },
         body: JSON.stringify({
           "search-result-id": response_id

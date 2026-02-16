@@ -4,6 +4,7 @@ import { showCustomToast } from "../utils/customToast";
 import { useAuthUtils } from "../utils/useAuthUtils";
 import { useAuth } from "../context/AuthContext";
 import { timeLeft } from "../utils/utils";
+import { fetchWithAuth } from "../utils/fetchWithAuth";
 
 export default function Pricing() {
   const { isAuthenticated, setIsPro } = useAuth()
@@ -16,11 +17,10 @@ export default function Pricing() {
     async function getSubscriptionStatus() {
       const token = localStorage.getItem('authToken');
 
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/subscriptions/get-subscription-status/`, {
+      const res = await fetchWithAuth(`${import.meta.env.VITE_API_URL}/subscriptions/get-subscription-status/`, {
         method: 'GET',
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+          'Content-Type': 'application/json'
         }
       })
       const resJson = await res.json()
@@ -80,11 +80,10 @@ export default function Pricing() {
 
   async function startFreeTrial() {
     const token = localStorage.getItem('authToken');
-    const res = await fetch(`${import.meta.env.VITE_API_URL}/start-free-trial/`, {
+    const res = await fetchWithAuth(`${import.meta.env.VITE_API_URL}/start-free-trial/`, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
+        'Content-Type': 'application/json'
       }
     })
     const resJson = await res.json()
@@ -107,11 +106,10 @@ export default function Pricing() {
 
     setIsRedirectingToPayment(true)
 
-    const res = await fetch(`${import.meta.env.VITE_API_URL}/subscriptions/create-checkout-session/`, {
+    const res = await fetchWithAuth(`${import.meta.env.VITE_API_URL}/subscriptions/create-checkout-session/`, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
+        'Content-Type': 'application/json'
       }
     })
 
@@ -138,11 +136,10 @@ export default function Pricing() {
   async function handleManagePlanClick() {
     try {
       const token = localStorage.getItem('authToken');
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/subscriptions/stripe-portal/`, {
+      const res = await fetchWithAuth(`${import.meta.env.VITE_API_URL}/subscriptions/stripe-portal/`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+          'Content-Type': 'application/json'
         },
       })
       const resJson = await res.json()

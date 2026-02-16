@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 import { showCustomToast } from '../../utils/customToast';
 import { useAuthUtils } from '../../utils/useAuthUtils';
+import { fetchWithAuth } from '../../utils/fetchWithAuth';
 
 export default function AlertsForm() {
   const authToken = localStorage.getItem("authToken")
@@ -29,11 +30,10 @@ export default function AlertsForm() {
         showCustomToast("Login required!", { type: "error" });
         return
       }
-      const resp = await fetch(`${import.meta.env.VITE_API_URL}/save-alert-preferences/`, {
+      const resp = await fetchWithAuth(`${import.meta.env.VITE_API_URL}/save-alert-preferences/`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${authToken}`
+          'Content-Type': 'application/json'
         },
         body: JSON.stringify(formData)
       })
@@ -56,11 +56,10 @@ export default function AlertsForm() {
   useEffect(() => {
     async function fetch_alert_preferences() {
       try {
-        const resp = await fetch(`${import.meta.env.VITE_API_URL}/fetch-alert-preferences/`, {
+        const resp = await fetchWithAuth(`${import.meta.env.VITE_API_URL}/fetch-alert-preferences/`, {
           method: 'GET',
           headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${authToken}`
+            'Content-Type': 'application/json'
           }
         })
         const respJson = await resp.json()
@@ -93,52 +92,57 @@ export default function AlertsForm() {
 
 
   return (
-    <div className={`max-w-2xl mx-auto p-6 bg-white my-6 border border-gray-200 rounded-lg`}>
+    <div className={`p-6 bg-white my-6 border border-gray-200 rounded-2xl`}>
+      <div className='text-2xl mb-4 text-center text-[#652F74]'><span className='font-semibold'>Subscribe</span> to Ask Carrie Updates!</div>
       <div className="space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="flex flex-col">
-            <label className="text-sm font-medium mb-1">Name</label>
+            {/* <label className="text-sm font-medium mb-1">Name</label> */}
             <input
+              placeholder='Name'
               type="text"
               name="name"
               value={formData.name}
               onChange={handleChange}
-              className="border-2 border-indigo-600 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="border-2 border-[#652F74] px-3 py-2 focus:outline-none focus:ring-1 focus:ring-[#652F74]"
             />
           </div>
 
           <div className="flex flex-col">
-            <label className="text-sm font-medium mb-1">Mobile</label>
+            {/* <label className="text-sm font-medium mb-1">Mobile</label> */}
             <input
+              placeholder='Mobile'
               type="tel"
               name="mobile"
               value={formData.mobile}
               onChange={handleChange}
-              className="border-2 border-indigo-600 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="border-2 border-[#652F74] px-3 py-2 focus:outline-none focus:ring-1 focus:ring-[#652F74]"
             />
           </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="flex flex-col">
-            <label className="text-sm font-medium mb-1">Email</label>
+            {/* <label className="text-sm font-medium mb-1">Email</label> */}
             <input
+              placeholder='Email'
               type="email"
               name="email"
               value={formData.email}
               onChange={handleChange}
-              className="border-2 border-indigo-600 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="border-2 border-[#652F74] px-3 py-2 focus:outline-none focus:ring-1 focus:ring-[#652F74]"
             />
           </div>
 
           <div className="flex flex-col">
-            <label className="text-sm font-medium mb-1">ZIP</label>
+            {/* <label className="text-sm font-medium mb-1">ZIP</label> */}
             <input
+              placeholder='ZIP'
               type="text"
               name="zip_code"
               value={formData.zip_code}
               onChange={handleChange}
-              className="border-2 border-indigo-600 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="border-2 border-[#652F74] px-3 py-2 focus:outline-none focus:ring-1 focus:ring-[#652F74]"
             />
           </div>
         </div>
@@ -156,7 +160,7 @@ export default function AlertsForm() {
             placeholder="phone number to receive alerts"
             value={formData.phone}
             onChange={handleChange}
-            className="flex-1 border border-gray-300 px-3 py-2 rounded focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="flex-1 border border-gray-300 px-3 py-2 rounded focus:outline-none focus:ring-1 focus:ring-[#652F74]"
           />
         </div>
 
@@ -167,10 +171,10 @@ export default function AlertsForm() {
             id="textAlerts"
             checked={formData.text_alerts}
             onChange={handleChange}
-            className="mt-1 w-4 h-4 border-2 border-gray-400 focus:ring-2 focus:ring-indigo-500"
+            className="mt-1 w-4 h-4 border-2 border-gray-400 focus:ring-1 focus:ring-[#652F74]"
           />
           <label htmlFor="textAlerts" className="text-sm">
-            <span className="font-bold">Text me with alerts</span>
+            <span className="font-bold text-[#652F74]">Text me with alerts</span>
             <br />
             <span className="text-gray-700">
               By checking this box, you agree to receive marketing and promotional messages
@@ -181,7 +185,7 @@ export default function AlertsForm() {
 
         <button
           onClick={handleSubmit}
-          className="w-full md:w-auto px-6 py-2 bg-indigo-600 text-white font-medium rounded hover:bg-indigo-700 transition-colors"
+          className="w-full md:w-auto px-6 py-2 bg-[#652F74] text-white font-medium rounded hover:bg-indigo-700 transition-colors"
         >
           Submit
         </button>

@@ -3,6 +3,7 @@ import { showCustomToast } from "../utils/customToast";
 import { useAuthUtils } from "../utils/useAuthUtils";
 import { useNavigate } from "react-router-dom";
 import { useSearch } from "../context/SearchContext";
+import { fetchWithAuth } from "../utils/fetchWithAuth";
 
 /* -----------------------------
    Time ago helper
@@ -50,13 +51,12 @@ export default function LibraryPage() {
   ------------------------------*/
   async function fetchThreads() {
     try {
-      const res = await fetch(
+      const res = await fetchWithAuth(
         `${import.meta.env.VITE_API_URL}/threads/`,
         {
           method: "GET",
           headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+            "Content-Type": "application/json"
           },
         }
       );
@@ -224,11 +224,11 @@ export default function LibraryPage() {
 
               <div className="flex-1">
                 <h3 className="font-medium text-gray-900 line-clamp-1">
-                  {thread.prompt ?? "Untitled thread"}
+                  {thread.title ?? "Untitled thread"}
                 </h3>
 
                 <p className="text-sm text-gray-600 line-clamp-2 mt-1">
-                  {thread.response?.choices?.[0]?.message?.content ?? ""}
+                  {thread.first_message ?? ""}
                 </p>
 
                 <div className="text-xs text-gray-500 mt-2 flex items-center gap-1">

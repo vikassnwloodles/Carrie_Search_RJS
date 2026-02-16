@@ -10,9 +10,10 @@ import { useSearch } from '../context/SearchContext';
 import { useAuthUtils } from '../utils/useAuthUtils';
 import FileMetadataBox from './SearchForm/FileMetadataBox';
 import RightControls from './SearchForm/RightControls';
+import { fetchWithAuth } from '../utils/fetchWithAuth';
 
 
-const SearchForm = ({ isThreadPage, threadId, selectedText = "", setSelectedText }) => {
+const SearchForm = ({ isThreadPage, threadId, selectedText = "", setSelectedText, styles, spaceId=null, showSearchSuggestions=false }) => {
 
     const { logoutAndNavigate } = useAuthUtils();
     const {
@@ -46,7 +47,7 @@ const SearchForm = ({ isThreadPage, threadId, selectedText = "", setSelectedText
 
     // ================ CALLING `fetchSearchSuggestions` API AS USER STARTS TYPING ================
     useEffect(() => {
-        if (!searchQuery || isThreadPage || searchQuery.length > 100) {
+        if (!searchQuery || isThreadPage || searchQuery.length > 100 || !showSearchSuggestions) {
             setSearchSuggestions([]);
             return;
         }
@@ -157,8 +158,8 @@ const SearchForm = ({ isThreadPage, threadId, selectedText = "", setSelectedText
         }
 
         try {
-            const res = await fetch(fetchUrl, {
-                headers: { Authorization: `Bearer ${accessToken}` }
+            const res = await fetchWithAuth(fetchUrl, {
+                headers: {  }
             });
 
             const blob = await res.blob();
@@ -219,10 +220,10 @@ const SearchForm = ({ isThreadPage, threadId, selectedText = "", setSelectedText
         try {
             const formData = new FormData();
             formData.append("image", uploadedFile);
-            const res = await fetch(`${import.meta.env.VITE_API_URL}/upload-image/`, {
+            const res = await fetchWithAuth(`${import.meta.env.VITE_API_URL}/upload-image/`, {
                 method: 'POST',
                 headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+
                 },
                 body: formData
             })
@@ -252,10 +253,10 @@ const SearchForm = ({ isThreadPage, threadId, selectedText = "", setSelectedText
         try {
             const formData = new FormData();
             formData.append("file", uploadedFile);
-            const res = await fetch(`${import.meta.env.VITE_API_URL}/upload-doc/`, {
+            const res = await fetchWithAuth(`${import.meta.env.VITE_API_URL}/upload-doc/`, {
                 method: 'POST',
                 headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+
                 },
                 body: formData
             })
@@ -352,12 +353,12 @@ const SearchForm = ({ isThreadPage, threadId, selectedText = "", setSelectedText
         // if (extractedText) text = `${extractedText}# User Query\n${text}`
         if (isThreadPage) {
             // fireSearch(searchQuery, null, threadId, imageUrl, docContent)
-            await fireSearch(text, null, threadId, false, uploadedFiles, selectedText)
+            await fireSearch(text, null, threadId, false, uploadedFiles, selectedText, spaceId)
         } else {
             const newThreadId = crypto.randomUUID();
             // setSearchInputData(prev => ({...prev, thread_id: newThreadId}))
             navigate(`/thread/${newThreadId}`, { state: { shouldFetchThread: false } })
-            await fireSearch(text, null, newThreadId, true, uploadedFiles)
+            await fireSearch(text, null, newThreadId, true, uploadedFiles, null, spaceId)
         }
     }
 
@@ -668,11 +669,11 @@ const SearchForm = ({ isThreadPage, threadId, selectedText = "", setSelectedText
                     handleSearchSubmit();
                 }}
             >
-                <div className={`relative flex items-center rounded-xl ${isThreadPage ? "!w-full !left-0" : ""}`} id="search-width">
+                <div className={`relative flex items-center rounded-xl ${isThreadPage ? "!w-full !left-0" : ""} ${styles}`} id="search-width">
                     <div
                         id="searchbox_parent_div"
                         // className={`w-full border border-gray-200 rounded-xl p-2 pb-12 bg-white shadow-sm transition-shadow focus-within:outline-none focus-within:ring-2 focus-within:ring-teal-500`}
-                        className={`w-full border border-gray-200 ${searchSuggestions && searchSuggestions.length > 0 ? "rounded-t-xl" : "rounded-xl"}  p-2 pb-12 bg-white shadow-sm transition-shadow focus-within:outline-none focus-within:ring-2 focus-within:ring-teal-500`}
+                        className={`w-full border border-gray-200 ${searchSuggestions && searchSuggestions.length > 0 ? "rounded-t-xl" : "rounded-xl"}  p-2 pb-12 bg-white shadow-sm transition-shadow focus-within:outline-none focus-within:ring-2 focus-within:ring-[#652F74]`}
                         onMouseDown={(e) => {
                             const el = searchBoxRef.current;
                             if (!el) return;

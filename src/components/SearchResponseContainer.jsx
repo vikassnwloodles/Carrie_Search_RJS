@@ -3,6 +3,7 @@ import { createPortal } from "react-dom";
 import { showCustomToast } from "../utils/customToast";
 import ThinkingLoader from "./ThinkingLoader";
 import { useSearch } from "../context/SearchContext";
+import { fetchWithAuth } from "../utils/fetchWithAuth";
 
 export default function SearchResponseContainer({
   content,
@@ -93,7 +94,7 @@ export default function SearchResponseContainer({
 
 
   const handleDownload = async () => {
-    const response = await fetch(docUrl);
+    const response = await fetchWithAuth(docUrl);
     const blob = await response.blob();
 
     const url = window.URL.createObjectURL(blob);

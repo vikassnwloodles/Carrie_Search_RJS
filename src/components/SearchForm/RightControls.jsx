@@ -1,4 +1,5 @@
 import React, { useEffect, useRef } from 'react'
+import { fetchWithAuth } from '../../utils/fetchWithAuth';
 
 function RightControls({
     modelDropdownRef,
@@ -127,7 +128,7 @@ function RightControls({
                 const file = files[0];
 
                 try {
-                    const res = await fetch(file.link);
+                    const res = await fetchWithAuth(file.link);
                     const blob = await res.blob();
 
                     const fileObject = new File(
@@ -443,7 +444,7 @@ function RightControls({
                 disabled={searchStarted}
                 type="submit"
                 id="search-form-btn"
-                className="bg-teal-600 text-white rounded-lg w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center hover:bg-teal-700 transition-colors"
+                className="bg-[#652F74] text-white rounded-lg w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center hover:bg-teal-700 transition-colors"
             >
                 <i className={`fas ${searchStarted ? "fa-stop" : "fa-arrow-right"} text-base sm:text-xl`} />
             </button>

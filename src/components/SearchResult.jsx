@@ -10,6 +10,7 @@ import { showCustomToast } from "../utils/customToast";
 import { useAuthUtils } from "../utils/useAuthUtils";
 import FileMetadataBox from "./SearchForm/FileMetadataBox";
 import SelectedTextContainer from "./SearchForm/SelectedTextContainer";
+import { fetchWithAuth } from "../utils/fetchWithAuth";
 
 export default function SearchResult({ response: initResponse, prompt: initPrompt, pk, threadId, uploadedFiles, setSelectedText, selected_text }) {
   const { logoutAndNavigate } = useAuthUtils();
@@ -21,11 +22,10 @@ export default function SearchResult({ response: initResponse, prompt: initPromp
 
   async function fetchSharedChat(chatId) {
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/public-chat/${chatId}/`, {
+      const res = await fetchWithAuth(`${import.meta.env.VITE_API_URL}/public-chat/${chatId}/`, {
         method: 'GET',
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+          'Content-Type': 'application/json'
         }
       })
       const resJson = await res.json()

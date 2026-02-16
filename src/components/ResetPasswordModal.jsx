@@ -1,5 +1,6 @@
 import { useState } from "react"
 import { showCustomToast } from "../utils/customToast"
+import { fetchWithAuth } from "../utils/fetchWithAuth"
 
 const ResetPasswordModal = ({ setShowResetPasswordModal, eventUidb64, eventToken }) => {
     const [btnTxt, setBtnTxt] = useState("Reset Password")
@@ -15,7 +16,7 @@ const ResetPasswordModal = ({ setShowResetPasswordModal, eventUidb64, eventToken
             }
 
             setBtnTxt("Resetting...")
-            const res = await fetch(`${import.meta.env.VITE_API_URL}/password-reset-confirm/${eventUidb64}/${eventToken}/`, {
+            const res = await fetchWithAuth(`${import.meta.env.VITE_API_URL}/password-reset-confirm/${eventUidb64}/${eventToken}/`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

@@ -10,7 +10,7 @@ const ForgotPassword = () => {
         try {
             setBtnTxt("Sending...")
 
-            const res = await fetch(`${import.meta.env.VITE_API_URL}/request-password-reset/`, {
+            const res = await fetchWithAuth(`${import.meta.env.VITE_API_URL}/request-password-reset/`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

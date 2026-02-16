@@ -21,6 +21,7 @@ export function SearchProvider({ children }) {
     const [streamStarted, setStreamStarted] = useState(false)
     const [showImg, setShowImg] = useState(true);
     const [threadsContainer, setThreadsContainer] = useState([]);
+    const [spacesContainer, setSpacesContainer] = useState([]);
     const [imageGenerationStarted, setImageGenerationStarted] = useState(false)
     const [fileGenerationStarted, setFileGenerationStarted] = useState(false)
 
@@ -44,7 +45,9 @@ export function SearchProvider({ children }) {
             imageGenerationStarted,
             setImageGenerationStarted,
             fileGenerationStarted,
-            setFileGenerationStarted
+            setFileGenerationStarted,
+            spacesContainer,
+            setSpacesContainer
         }}>
             {children}
         </SearchContext.Provider>

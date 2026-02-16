@@ -4,6 +4,7 @@ import ChangePasswordModal from './ChangePasswordModal';
 import ProfileModal from './ProfileModal';
 import { showCustomToast } from '../utils/customToast';
 import { useAuthUtils } from '../utils/useAuthUtils';
+import { fetchWithAuth } from '../utils/fetchWithAuth';
 
 const BottomUserProfileSection = () => {
   const { logoutAndNavigate } = useAuthUtils()
@@ -21,11 +22,10 @@ const BottomUserProfileSection = () => {
     try {
       setLoadingManagePlan(true)
       const token = localStorage.getItem('authToken');
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/subscriptions/stripe-portal/`, {
+      const res = await fetchWithAuth(`${import.meta.env.VITE_API_URL}/subscriptions/stripe-portal/`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+          'Content-Type': 'application/json'
         },
       })
       const resJson = await res.json()

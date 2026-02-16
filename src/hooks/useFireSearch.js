@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useSearch } from "../context/SearchContext";
 import { showCustomToast } from "../utils/customToast";
 import { flushSync } from "react-dom";
+import { fetchWithAuth } from "../utils/fetchWithAuth";
 
 
 export function useFireSearch() {
@@ -18,7 +19,7 @@ export function useFireSearch() {
 
 
 
-    const fireSearch = async (prompt, search_result_id, thread_id, isFirstSearchOfThread, uploadedFiles, selected_text) => {
+    const fireSearch = async (prompt, search_result_id, thread_id, isFirstSearchOfThread, uploadedFiles, selected_text, space_id) => {
         prompt = prompt.trim()
         if (!prompt) return
 
@@ -68,9 +69,9 @@ export function useFireSearch() {
                 ]);
             }
 
-            const payload = { ...searchInputData, prompt, search_result_id, thread_id, selected_text }
+            const payload = { ...searchInputData, prompt, search_result_id, thread_id, selected_text, space_id }
             const formData = new FormData();
-            uploadedFiles.forEach((file) => {
+            uploadedFiles?.forEach((file) => {
                 formData.append("files", file);
             });
             Object.entries(payload).forEach(([key, value]) => {
@@ -78,12 +79,9 @@ export function useFireSearch() {
                 formData.append(key, value);
             });
 
-            const res = await fetch(`${import.meta.env.VITE_API_URL}/search/`, {
+            const res = await fetchWithAuth(`${import.meta.env.VITE_API_URL}/search/`, {
                 method: "POST",
-                headers: {
-                    Authorization: `Bearer ${localStorage.getItem("authToken")}`,
-                },
-                body: formData,
+                body: formData
             });
 
             if (!res.ok) {
@@ -241,16 +239,48 @@ export function useFireSearch() {
             }
 
             // INCLUDING THE FIRST SEARCH OF A NEW THREAD IN THE SIDEBAR
-            if (isFirstSearchOfThread) {
-                setThreadsContainer(prev => ([{
+            // if (isFirstSearchOfThread) {
+            //     setThreadsContainer(prev => ([{
+            //         id: extracted_pk,
+            //         title: prompt,
+            //         response: {
+            //             content: [{ text: fullText, image_url: imageUrl, doc_url: docUrl, doc_name: docName }]
+            //         },
+            //         thread_id: thread_id
+            //     }, ...prev]))
+            // }
+            setThreadsContainer(prev => {
+                const existingThread = prev.find(t => t.thread_id === thread_id);
+
+                // If thread already exists → just move it to top
+                if (existingThread) {
+                    const filtered = prev.filter(t => t.thread_id !== thread_id);
+                    return [existingThread, ...filtered];
+                }
+
+                // If thread does not exist → create new one
+                const newThread = {
                     id: extracted_pk,
-                    prompt: prompt,
+                    title: prompt,
                     response: {
-                        content: [{ text: fullText, image_url: imageUrl, doc_url: docUrl, doc_name: docName }]
+                        content: [
+                            {
+                                text: fullText,
+                                image_url: imageUrl,
+                                doc_url: docUrl,
+                                doc_name: docName
+                            }
+                        ]
                     },
                     thread_id: thread_id
-                }, ...prev]))
-            }
+                };
+
+                return [newThread, ...prev];
+            });
+
+
+
+
         } catch (err) {
             console.error(err);
             showCustomToast({ message: "Something went wrong" }, { type: "error" });

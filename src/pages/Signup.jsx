@@ -1,5 +1,6 @@
 // src/components/SignupForm.jsx
 import React, { useState } from "react";
+import { fetchWithAuth } from "../utils/fetchWithAuth";
 import.meta.env.VITE_API_URL
 
 /**
@@ -79,7 +80,7 @@ export default function SignupForm({ apiEndpoint, onSuccess }) {
         consent_to_communications: form.consent_to_communications,
       };
 
-      const res = await fetch(endpoint, {
+      const res = await fetchWithAuth(endpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),

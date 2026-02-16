@@ -15,6 +15,42 @@ import { useSearch } from "../context/SearchContext";
 import EncryptedBadge from "../components/Home/EncryptedBadge";
 
 
+const testimonial_data = [
+  {
+    "id": 1,
+    "name": "Aarav Mehta",
+    "role": "Product Manager",
+    "company": "TechNova",
+    "rating": 5,
+    "testimonial": "This platform completely streamlined our workflow. The automation features saved us hours every week."
+  },
+  {
+    "id": 2,
+    "name": "Sophie Williams",
+    "role": "Marketing Lead",
+    "company": "BrightEdge",
+    "rating": 5,
+    "testimonial": "The analytics and summarization tools are incredibly powerful. It feels like having an AI assistant on the team."
+  },
+  {
+    "id": 3,
+    "name": "Rahul Sharma",
+    "role": "Founder",
+    "company": "LaunchLabs",
+    "rating": 4,
+    "testimonial": "Very intuitive interface and great performance. The support team is responsive and helpful."
+  },
+  {
+    "id": 4,
+    "name": "Emily Chen",
+    "role": "UX Designer",
+    "company": "PixelCraft",
+    "rating": 5,
+    "testimonial": "Clean design, fast results, and seamless integrations. It’s now a core tool in our daily operations."
+  }
+]
+
+
 
 export default function Home() {
 
@@ -94,22 +130,77 @@ export default function Home() {
 
     <>
       <div className="w-full flex flex-col items-center">
-
+        <div className="flex flex-col items-center w-120 px-8 gap-2 pb-4">
+          <span className="text-4xl text-[#652F74] font-semibold">How can I help today?</span>
+          <span className="text-sm font-medium text-gray-400">Try out new features: Search, Analyze, and Summarize their own files and online content</span>
+        </div>
         {/* SEARCH FORM GOES HERE */}
         <SearchForm
           threadId={threadId}
           setThreadId={setThreadId}
           threadsContainer={threadsContainer}
           setThreadsContainer={setThreadsContainer}
+          showSearchSuggestions={true}
         />
 
         {/* --- GOOGLE VERIFICATION: APP PURPOSE SECTION --- */}
         {!threadId && (
           // {false && (
           <>
-            <EncryptedBadge />
-            <AppPurpose />
-            <AlertsForm />
+            {/* <EncryptedBadge /> */}
+            <div className="max-w-6xl bg-stone-100 flex flex-row p-6">
+              <AppPurpose />
+              <AlertsForm />
+
+            </div>
+            <div className="flex flex-col my-12 text-center gap-8">
+              <div className="text-gray-400 text-lg font-semibold">TESTIMONIAL</div>
+              <div className="text-[#652F74] text-4xl font-semibold">What our Users are saying</div>
+              <div className="relative w-full max-w-6xl">
+
+                {/* Scroll Container */}
+                <div
+                  className="flex gap-6 overflow-x-auto scroll-smooth snap-x snap-mandatory scrollbar-hide px-2"
+                >
+                  {testimonial_data.map((item) => {
+                    return (
+                      <div
+                        key={item.id}
+                        className="min-w-80 max-w-80 snap-start border border-gray-300 p-6 rounded-xl bg-stone-100 flex-shrink-0"
+                      >
+                        {/* Quote Icon */}
+                        <div className="text-left mb-3">
+                          <i className="fa fa-quote-left font-bold text-3xl text-[#652F74]"></i>
+                        </div>
+
+                        {/* Testimonial */}
+                        <div className="text-left text-gray-600 mb-4">
+                          {item.testimonial}
+                        </div>
+
+                        {/* Rating */}
+                        <div className="flex mb-3">
+                          {[...Array(item.rating)].map((_, i) => (
+                            <i key={i} className="fa fa-star text-yellow-400 mr-1"></i>
+                          ))}
+                        </div>
+
+                        {/* User Info */}
+                        <div className="text-left">
+                          <div className="font-semibold text-[#652F74]">
+                            {item.name}
+                          </div>
+                          <div className="text-sm text-gray-500">
+                            {item.role} • {item.company}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+            </div>
           </>
         )}
 

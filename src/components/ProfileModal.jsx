@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { showCustomToast } from '../utils/customToast';
 import { useAuthUtils } from '../utils/useAuthUtils';
+import { fetchWithAuth } from '../utils/fetchWithAuth';
 
 const ProfileModal = ({ profileModalOpen, setProfileModalOpen }) => {
     const { logoutAndNavigate } = useAuthUtils();
@@ -62,11 +63,10 @@ const ProfileModal = ({ profileModalOpen, setProfileModalOpen }) => {
 
     useEffect(() => {
         async function fetchProfile() {
-            const res = await fetch(`${import.meta.env.VITE_API_URL}/user/fetch-profile/`, {
+            const res = await fetchWithAuth(`${import.meta.env.VITE_API_URL}/user/fetch-profile/`, {
                 method: 'GET',
                 headers: {
-                    'Content-Type': 'application/json',
-                    "Authorization": `Bearer ${localStorage.getItem("authToken")}`
+                    'Content-Type': 'application/json'
                 }
             });
 
@@ -141,11 +141,10 @@ const ProfileModal = ({ profileModalOpen, setProfileModalOpen }) => {
 
     async function handleProfileUpdate(e) {
         e.preventDefault()
-        const res = await fetch(`${import.meta.env.VITE_API_URL}/user/update-profile/`, {
+        const res = await fetchWithAuth(`${import.meta.env.VITE_API_URL}/user/update-profile/`, {
             method: 'PATCH',
             headers: {
-                'Content-Type': 'application/json',
-                "Authorization": `Bearer ${localStorage.getItem("authToken")}`
+                'Content-Type': 'application/json'
             },
             body: JSON.stringify({ first_name: profile.firstName, last_name: profile.lastName })
         });
@@ -176,11 +175,10 @@ const ProfileModal = ({ profileModalOpen, setProfileModalOpen }) => {
             setEmailBtnTxt("Sending Link...")
             setDisableUpdateEmailBtn(true)
             await new Promise(r => setTimeout(r, 500));  // INTENTIONAL DELAY: This is a common UX trick to make state transitions feel smoother. 
-            const res = await fetch(`${import.meta.env.VITE_API_URL}/send-verification-email/`, {
+            const res = await fetchWithAuth(`${import.meta.env.VITE_API_URL}/send-verification-email/`, {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json',
-                    "Authorization": `Bearer ${localStorage.getItem("authToken")}`
+                    'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({ new_email: profile.email })
             });
@@ -214,11 +212,10 @@ const ProfileModal = ({ profileModalOpen, setProfileModalOpen }) => {
     }
 
     async function handlePhoneUpdate() {
-        const res = await fetch(`${import.meta.env.VITE_API_URL}/user/update-profile/`, {
+        const res = await fetchWithAuth(`${import.meta.env.VITE_API_URL}/user/update-profile/`, {
             method: 'PATCH',
             headers: {
-                'Content-Type': 'application/json',
-                "Authorization": `Bearer ${localStorage.getItem("authToken")}`
+                'Content-Type': 'application/json'
             },
             body: JSON.stringify({ phone: profile.phone })
         });
@@ -249,11 +246,10 @@ const ProfileModal = ({ profileModalOpen, setProfileModalOpen }) => {
             setDisableUpdatePhoneBtn(true)
             setPhoneBtnTxt("Sending OTP...")
             await new Promise(r => setTimeout(r, 500));  // INTENTIONAL DELAY: This is a common UX trick to make state transitions feel smoother. 
-            const res = await fetch(`${import.meta.env.VITE_API_URL}/send-otp/`, {
+            const res = await fetchWithAuth(`${import.meta.env.VITE_API_URL}/send-otp/`, {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json',
-                    "Authorization": `Bearer ${localStorage.getItem("authToken")}`
+                    'Content-Type': 'application/json'
                 },
             });
 
@@ -281,11 +277,10 @@ const ProfileModal = ({ profileModalOpen, setProfileModalOpen }) => {
 
     async function handleEnterOtp() {
         try {
-            const res = await fetch(`${import.meta.env.VITE_API_URL}/verify-otp/`, {
+            const res = await fetchWithAuth(`${import.meta.env.VITE_API_URL}/verify-otp/`, {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json',
-                    "Authorization": `Bearer ${localStorage.getItem("authToken")}`
+                    'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({ otp: profile.otp })
             });

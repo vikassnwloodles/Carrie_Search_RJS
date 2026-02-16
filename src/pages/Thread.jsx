@@ -5,6 +5,7 @@ import SearchForm from '../components/SearchForm';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { showCustomToast } from '../utils/customToast';
 import { useAuthUtils } from '../utils/useAuthUtils';
+import { fetchWithAuth } from '../utils/fetchWithAuth';
 
 function Thread() {
 
@@ -25,11 +26,11 @@ function Thread() {
 
     /* ---------------- FETCH THREAD ---------------- */
     async function fetchThread() {
-        const res = await fetch(
+        const res = await fetchWithAuth(
             `${import.meta.env.VITE_API_URL}/threads/${threadId}/`,
             {
                 headers: {
-                    Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+
                 },
             }
         );

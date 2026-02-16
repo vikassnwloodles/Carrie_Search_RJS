@@ -94,7 +94,7 @@ export function showCustomToast(payload, opts = {}) {
     toastOptions = {},
   } = opts;
 
-  const autoClose = normalizeTimeToMs(time);
+  const autoClose = normalizeTimeToMs(time) ?? 1400;
   const labels = { ...DEFAULT_FIELD_LABELS, ...fieldLabels };
 
   let errorsObj = {};
