@@ -92,7 +92,7 @@ export default function AlertsForm() {
 
 
   return (
-    <div className={`p-6 bg-white my-6 border border-gray-200 rounded-2xl`}>
+    <div className={`max-w-2xl p-6 bg-white my-6 border border-gray-200 rounded-2xl`}>
       <div className='text-2xl mb-4 text-center text-[#652F74]'><span className='font-semibold'>Subscribe</span> to Ask Carrie Updates!</div>
       <div className="space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

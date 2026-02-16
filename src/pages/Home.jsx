@@ -146,7 +146,7 @@ export default function Home() {
       <div className="w-full flex flex-col items-center">
         <div className="flex flex-col items-center w-120 px-8 gap-2 pb-4">
           <span className="text-4xl text-[#652F74] font-semibold">How can I help today?</span>
-          <span className="text-sm font-medium text-gray-400">Try out new features: Search, Analyze, and Summarize their own files and online content</span>
+          {/* <span className="text-sm font-medium text-gray-400">Try out new features: Search, Analyze, and Summarize their own files and online content</span> */}
         </div>
         {/* SEARCH FORM GOES HERE */}
         <SearchForm
@@ -162,11 +162,11 @@ export default function Home() {
           // {false && (
           <>
             {/* <EncryptedBadge /> */}
-            <div className="max-w-6xl bg-stone-100 flex flex-row p-6">
-              <AppPurpose />
+            {/* <div className="max-w-6xl bg-stone-100 flex flex-row p-6"> */}
+              {/* <AppPurpose /> */}
               <AlertsForm />
 
-            </div>
+            {/* </div> */}
             <div className="flex flex-col my-12 text-center gap-8">
               <div className="text-gray-400 text-lg font-semibold">TESTIMONIAL</div>
               <div className="text-[#652F74] text-4xl font-semibold">What our Users are saying</div>

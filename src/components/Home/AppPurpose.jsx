@@ -26,7 +26,7 @@ function AppPurpose() {
                 </p>
             </div>
 
-            <div className="mt-3 flex gap-4">
+            {/* <div className="mt-3 flex gap-4">
                 <Link
                     to="/privacy-policy"
                     target="_blank"
@@ -44,7 +44,7 @@ function AppPurpose() {
                 >
                     Terms & Conditions
                 </Link>
-            </div>
+            </div> */}
         </div>
     )
 }

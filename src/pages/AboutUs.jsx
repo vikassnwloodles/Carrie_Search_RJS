@@ -1,5 +1,6 @@
 // src/pages/AboutUs.jsx
 import React from "react";
+import AppPurpose from "../components/Home/AppPurpose";
 
 export default function AboutUs() {
     return (
@@ -21,6 +22,9 @@ export default function AboutUs() {
 
                 <br />
                 <br />
+
+                <AppPurpose />
+
                 <div className="mt-12 text-left">
                     <h2 className="text-3xl font-semibold text-gray-800 mb-3">Meet Carrie: Empowering People, Fueling Change</h2>
                     <p className="text-lg text-gray-700 leading-relaxed mb-4">
@@ -78,12 +82,12 @@ export default function AboutUs() {
                         subscription makes an immediate difference.
                     </p>
 
-                    Choose Carrie. Drive a future where lack of economic mobility never limits opportunity.[6]
-                    <p align="center">
+                    Choose Carrie. Drive a future where lack of economic mobility never limits opportunity.
+                    {/* <p align="center">
                         <br />
                         <b>
                             [Sign Up Now — Only $20/month]</b>
-                    </p>
+                    </p> */}
                     Be the change. Help uplift communities nationwide.
                 </div>
             </div>
