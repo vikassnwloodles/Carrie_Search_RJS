@@ -5,9 +5,7 @@ function parseMarkdownLinks(text) {
         /\[([^\]]+)\]\(\s*(https?:\/\/[^\s)]+)\s*\)/g,
         (_, label, url) => {
             return `<a href="${url}" target="_blank" rel="noopener noreferrer"
-                        class="text-blue-600 hover:underline break-words">
-                        ${label}
-                    </a>`;
+                        class="text-blue-600 hover:underline break-words">${label}</a>`;
         }
     );
 }
@@ -293,9 +291,10 @@ function getCitationHtml(citationsMetadata) {
         </a>`;
     }).join('');
 
+//     return `
+// <span id="citation-wrapper-${uniqueId}" class="relative inline-block">
     return `
-<span id="citation-wrapper-${uniqueId}" class="relative inline-block">
-    
+<span id="citation-wrapper-${uniqueId}" class="inline-block">
     <!-- Citation badge -->
     <a 
         href="${firstCitation.site_url}"
@@ -371,7 +370,8 @@ function getMainTextAndCitationsHtml(trimmedLine, citationsMetadata = []) {
         citationsHtml = getCitationHtml(extractedCitations);
     }
 
-    return [cleanedText, citationsHtml];
+    // return [cleanedText, citationsHtml];
+    return [trimmedLine, ""];
 }
 
 
@@ -451,14 +451,24 @@ function attachEventHandlers(uniqueId) {
     const showTooltip = () => {
         const badgeRect = badge.getBoundingClientRect();
         const ancestor = badge.closest('[id^="response-text-"]:not([id^="response-text-inner-"])');
-
+        // alert(ancestor.innerText)
         if (!ancestor) return;
 
         const ancestorRect = ancestor.getBoundingClientRect();
+        // const badgeRelativeLeft = badgeRect.left - ancestorRect.left;
+        // console.log(`ancestorRect.left: ${ancestorRect.left}`)
+        // console.log(`badgeRect.left: ${badgeRect.left}`)
+        // const badgeRelativeLeft = ancestorRect.left - badgeRect.left;
         const badgeRelativeLeft = badgeRect.left - ancestorRect.left;
+        // console.log(`badgeRelativeLeft: ${badgeRelativeLeft}`)
 
         // Center tooltip under badge
-        let requiredShiftFromLeft = badgeRelativeLeft - ((citationTooltipWidth / 2) - (citationBadgeWidth / 2));
+        // let requiredShiftFromLeft = badgeRelativeLeft - ((citationTooltipWidth / 2) - (citationBadgeWidth / 2));
+        // console.log(`citationTooltipWidth/2: ${citationTooltipWidth / 2}`)
+        // console.log(`citationBadgeWidth/2: ${citationBadgeWidth / 2}`)
+        // console.log(`badgeRelativeLeft: ${badgeRelativeLeft}`)
+        let requiredShiftFromLeft = badgeRelativeLeft - (citationTooltipWidth / 2) + (citationBadgeWidth / 2);
+        // console.log(`requiredShiftFromLeft: ${requiredShiftFromLeft}`)
 
         // Prevent tooltip from going past the left edge
         requiredShiftFromLeft = Math.max(0, requiredShiftFromLeft);

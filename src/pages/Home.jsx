@@ -13,6 +13,7 @@ import AlertsForm from "../components/Home/AlertsForm";
 import AppPurpose from "../components/Home/AppPurpose";
 import { useSearch } from "../context/SearchContext";
 import EncryptedBadge from "../components/Home/EncryptedBadge";
+import CarrieLogo from "../components/CarrieLogo";
 
 
 const testimonial_data = [
@@ -114,6 +115,9 @@ export default function Home() {
         setShowResetPasswordModal(true)
       }
     }
+    setShowImg(false)
+
+    return () => setShowImg(true)
   }, [])
 
 
@@ -144,18 +148,23 @@ export default function Home() {
 
     <>
       <div className="w-full flex flex-col items-center">
-        <div className="flex flex-col items-center w-120 px-8 gap-2 pb-4">
-          <span className="text-4xl text-[#652F74] font-semibold">How can I help today?</span>
-          {/* <span className="text-sm font-medium text-gray-400">Try out new features: Search, Analyze, and Summarize their own files and online content</span> */}
-        </div>
-        {/* SEARCH FORM GOES HERE */}
-        <SearchForm
-          threadId={threadId}
-          setThreadId={setThreadId}
-          threadsContainer={threadsContainer}
-          setThreadsContainer={setThreadsContainer}
-          showSearchSuggestions={true}
-        />
+        {/* <div className="bg-gray-900 flex flex-col items-center min-h-screen justify-center -mt-40"> */}
+        <section className="min-h-screen flex flex-col items-center justify-center -translate-y-[12vh]">
+          <CarrieLogo isHomePage={true} styles={`mb-6`} />
+          <div className="flex flex-col items-center w-120 px-8 gap-2 pb-4">
+            <span className="text-4xl text-[#652F74] font-semibold">How can I help today?</span>
+            {/* <span className="text-sm font-medium text-gray-400">Try out new features: Search, Analyze, and Summarize their own files and online content</span> */}
+          </div>
+          {/* SEARCH FORM GOES HERE */}
+          <SearchForm
+            threadId={threadId}
+            setThreadId={setThreadId}
+            threadsContainer={threadsContainer}
+            setThreadsContainer={setThreadsContainer}
+            showSearchSuggestions={true}
+          />
+        </section>
+        {/* </div> */}
 
         {/* --- GOOGLE VERIFICATION: APP PURPOSE SECTION --- */}
         {!threadId && (
@@ -163,12 +172,12 @@ export default function Home() {
           <>
             {/* <EncryptedBadge /> */}
             {/* <div className="max-w-6xl bg-stone-100 flex flex-row p-6"> */}
-              {/* <AppPurpose /> */}
-              <AlertsForm />
+            {/* <AppPurpose /> */}
+            <AlertsForm />
 
             {/* </div> */}
             <div className="flex flex-col my-12 text-center gap-8">
-              <div className="text-gray-400 text-lg font-semibold">TESTIMONIAL</div>
+              <div className="text-gray-400 text-lg font-semibold">TESTIMONIALS</div>
               <div className="text-[#652F74] text-4xl font-semibold">What our Users are saying</div>
               <div className="relative w-full max-w-6xl">
 
@@ -183,8 +192,9 @@ export default function Home() {
                         className="min-w-80 max-w-80 snap-start border border-gray-300 p-6 rounded-xl bg-stone-100 flex-shrink-0"
                       >
                         {/* Quote Icon */}
-                        <div className="text-left mb-3">
+                        <div className="text-left mb-3 gap-2 flex flex-row items-center">
                           <i className="fa fa-quote-left font-bold text-3xl text-[#652F74]"></i>
+                          <span className="text-xl">{item.name.split(" ")[0][0]}. {item.name.split(" ")[1]}</span>
                         </div>
 
                         {/* Testimonial */}

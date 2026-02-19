@@ -79,7 +79,7 @@ body {
 /* scroll-behavior: smooth; */
 /* } */
 #search-width{
-    width: 482px;
+    width: 650px;
     display: flex;
     justify-content: center;
     align-items: center;

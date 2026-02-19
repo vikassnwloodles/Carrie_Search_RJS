@@ -713,7 +713,7 @@ const SearchForm = ({ isThreadPage, threadId, selectedText = "", setSelectedText
                                 ${(selectedText.trim() && uploadedFiles.length > 0) ? "pt-40" : (selectedText.trim() ? "pt-20" : (uploadedFiles.length > 0 ? "pt-20" : "pt-2"))}
                                 `}
 
-                            style={{ minHeight: "50px" }}
+                            style={{ minHeight: "60px" }}
                         />
                     </div>
 

@@ -1,19 +1,19 @@
 import { useSearch } from '../context/SearchContext'
 
-function CarrieLogo() {
+function CarrieLogo({ isHomePage = false, styles=`mb-12` }) {
 
     const { showImg } = useSearch()
 
     return (<>
-        {showImg && <><img
-            className="Carrie-main-logo"
-            style={{ width: "100px" }}
+        {(showImg || isHomePage) && <><img
+            className={`Carrie-main-logo ${styles}`}
+            style={{ width: "380px" }}
             // style={{ width: "380px", marginLeft: "-32px" }}
-            src="/assets/images/pete_globe.png"
+            src="/assets/images/pete.png"
             alt="Carrie"
         />
-            <br />
-            <br />
+            {/* <br />
+            <br /> */}
         </>
         }
     </>
