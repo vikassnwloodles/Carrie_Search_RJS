@@ -1,12 +1,79 @@
 @import "tailwindcss";
 
+/* ---------------------------------------
+   Custom Scrollbar Utilities (Tailwind v4)
+   Works in Chrome, Edge, Safari, Firefox
+---------------------------------------- */
+
 @layer utilities {
+
+  /* ===============================
+     Hide Scrollbar (keep scrolling)
+  =============================== */
   .scrollbar-hide {
-    scrollbar-width: none;       /* Firefox */
-    -ms-overflow-style: none;    /* IE/Edge */
+    -ms-overflow-style: none;   /* IE + Edge */
+    scrollbar-width: none;      /* Firefox */
   }
+
   .scrollbar-hide::-webkit-scrollbar {
-    display: none;               /* Chrome/Safari */
+    display: none;              /* Chrome + Safari */
+  }
+
+
+  /* ===============================
+     Thin Scrollbar (Modern UI)
+  =============================== */
+  .scrollbar-thin {
+    scrollbar-width: thin;      /* Firefox */
+    scrollbar-color: rgba(156,163,175,.6) transparent;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background-color: rgba(156,163,175,.6); /* gray-400 */
+    border-radius: 9999px;
+    transition: background-color 0.2s ease;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(107,114,128,.8); /* gray-500 */
+  }
+
+
+  /* ===============================
+     Auto-hide style (Notion-like)
+     Appears only while hovering
+  =============================== */
+  .scrollbar-auto {
+    scrollbar-width: thin;
+    scrollbar-color: transparent transparent;
+  }
+
+  .scrollbar-auto::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  .scrollbar-auto::-webkit-scrollbar-thumb {
+    background-color: transparent;
+    border-radius: 9999px;
+    transition: background-color 0.2s ease;
+  }
+
+  .scrollbar-auto:hover::-webkit-scrollbar-thumb {
+    background-color: rgba(156,163,175,.6);
+  }
+
+  .scrollbar-auto:hover {
+    scrollbar-color: rgba(156,163,175,.6) transparent;
   }
 }
 

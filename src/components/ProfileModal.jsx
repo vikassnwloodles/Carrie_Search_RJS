@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { showCustomToast } from '../utils/customToast';
 import { useAuthUtils } from '../utils/useAuthUtils';
-import { fetchWithAuth } from '../utils/fetchWithAuth';
+import { fetchWithAuth } from '../api/fetchWithAuth';
 
 const ProfileModal = ({ profileModalOpen, setProfileModalOpen }) => {
     const { logoutAndNavigate } = useAuthUtils();

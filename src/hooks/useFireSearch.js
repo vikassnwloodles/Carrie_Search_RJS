@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useSearch } from "../context/SearchContext";
 import { showCustomToast } from "../utils/customToast";
 import { flushSync } from "react-dom";
-import { fetchWithAuth } from "../utils/fetchWithAuth";
+import { fetchWithAuth } from "../api/fetchWithAuth";
 
 
 export function useFireSearch() {
@@ -59,11 +59,17 @@ export function useFireSearch() {
                         response: {
                             content: [{ text: fullText, image_url: imageUrl, doc_url: docUrl, doc_name: docName }]
                         },
-                        uploaded_files: uploadedFiles.map(file => ({
-                            file_name: file.name,
-                            file_size: file.size,
-                            content_type: file.type,
-                        })),
+                        uploaded_files: uploadedFiles.map(file => {
+                            const base = {
+                                file_name: file.name,
+                                file_size: file.size,
+                                content_type: file.type,
+                            };
+                            if (file instanceof File && file.type?.startsWith("image/")) {
+                                base.url = URL.createObjectURL(file);
+                            }
+                            return base;
+                        }),
                         selected_text: selected_text
                     },
                 ]);

@@ -96,8 +96,9 @@ export default function Home() {
 
     if (emailVerificationStatus) {
       if (emailVerificationStatus === "success") {
-        toast.success("Email verified successfully 🎉")
+        toast.success("Email verified successfully 🎉", { autoClose: 1400 })
         localStorage.setItem("authToken", searchParams.get("access"));
+        localStorage.setItem("user", JSON.stringify({ "username": searchParams.get("username") }))
         navigate("/");
       } else if (emailVerificationStatus === "email_already_in_use") {
         toast.error(
@@ -149,7 +150,7 @@ export default function Home() {
     <>
       <div className="w-full flex flex-col items-center">
         {/* <div className="bg-gray-900 flex flex-col items-center min-h-screen justify-center -mt-40"> */}
-        <section className="min-h-screen flex flex-col items-center justify-center -translate-y-[12vh]">
+        <section className="min-h-screen flex flex-col items-center justify-center -translate-y-[18vh]">
           <CarrieLogo isHomePage={true} styles={`mb-6`} />
           <div className="flex flex-col items-center w-120 px-8 gap-2 pb-4">
             <span className="text-4xl text-[#652F74] font-semibold">How can I help today?</span>

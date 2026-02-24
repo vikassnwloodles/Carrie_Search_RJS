@@ -4,7 +4,7 @@ import ChangePasswordModal from './ChangePasswordModal';
 import ProfileModal from './ProfileModal';
 import { showCustomToast } from '../utils/customToast';
 import { useAuthUtils } from '../utils/useAuthUtils';
-import { fetchWithAuth } from '../utils/fetchWithAuth';
+import { fetchWithAuth } from '../api/fetchWithAuth';
 
 const BottomUserProfileSection = () => {
   const { logoutAndNavigate } = useAuthUtils()

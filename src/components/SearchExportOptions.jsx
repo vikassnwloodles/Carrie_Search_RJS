@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { showCustomToast } from "../utils/customToast";
 import { useAuthUtils } from "../utils/useAuthUtils";
 import { useFireSearch } from "../hooks/useFireSearch";
-import { fetchWithAuth } from "../utils/fetchWithAuth";
+import { fetchWithAuth } from "../api/fetchWithAuth";
 
 
 

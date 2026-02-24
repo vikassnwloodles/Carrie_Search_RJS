@@ -79,7 +79,7 @@ function ThreadsList({ threads, styles = "divide-y border-t" }) {
 
                                 <div className="text-xs text-gray-500 mt-2 flex items-center gap-1">
                                     <span>🕒</span>
-                                    <span>{timeAgo(thread.created_at)}</span>
+                                    <span>{timeAgo(thread.last_activity)}</span>
                                 </div>
                             </div>
                         </div>

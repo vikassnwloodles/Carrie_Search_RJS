@@ -3,11 +3,12 @@ import { createPortal } from "react-dom";
 import { showCustomToast } from "../utils/customToast";
 import ThinkingLoader from "./ThinkingLoader";
 import { useSearch } from "../context/SearchContext";
-import { fetchWithAuth } from "../utils/fetchWithAuth";
+import { fetchWithAuth } from "../api/fetchWithAuth";
 
 export default function SearchResponseContainer({
   content,
   imageURL,
+  imageDeleted,
   uniqueId,
   searchResultId,
   setSelectedText,
@@ -168,19 +169,27 @@ export default function SearchResponseContainer({
       ) : null}
 
       {/* Content */}
-      {imageURL ? (
+      {imageURL ? (!imageDeleted ? (
         <img
           src={imageURL}
           alt="Generated"
           className="max-w-sm object-cover rounded-md"
         />
+      ) :
+        (
+          <div className="max-w-sm h-48 flex items-center justify-center rounded-md bg-gray-100 text-gray-400">
+            Image deleted
+          </div>
+        )
       ) : docUrl ?
+      <>📄&nbsp;
         <button
           onClick={handleDownload}
-          className="text-blue-600 underline"
+          className="cursor-pointer text-blue-600 underline"
         >
-          📄 {docName}
+          {docName}
         </button>
+        </>
         : (
           <div
             ref={responseContainerRef}

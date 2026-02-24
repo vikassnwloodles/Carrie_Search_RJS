@@ -2,7 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 import { showCustomToast } from '../../utils/customToast';
 import { useAuthUtils } from '../../utils/useAuthUtils';
-import { fetchWithAuth } from '../../utils/fetchWithAuth';
+import { fetchWithAuth } from '../../api/fetchWithAuth';
+
 
 export default function AlertsForm() {
   const authToken = localStorage.getItem("authToken")

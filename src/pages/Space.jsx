@@ -2,12 +2,13 @@ import { useEffect, useRef, useState } from "react";
 import { useSearch } from "../context/SearchContext";
 import SearchForm from "../components/SearchForm";
 import EmojiPicker from "emoji-picker-react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { showCustomToast } from "../utils/customToast";
-import { fetchWithAuth } from "../utils/fetchWithAuth";
+import { fetchWithAuth } from "../api/fetchWithAuth";
 import ThreadsList from "../components/ThreadsList";
 import SettingsModal from "../components/Space/SettingsModal";
-import DeleteConfirmModal from "../components/Space/DeleteConfirmModal";
+import { useAddThreadToSpace } from "../hooks/useAddThreadToSpace";
+import DeleteConfirmModal from "../components/Modals/DeleteConfirmModal";
 
 const icons = {
     folder: (
@@ -123,9 +124,13 @@ function SidebarAction({ icon, label, onClick }) {
 }
 
 export default function Space() {
+    const location = useLocation();
+    const { thread } = location.state || {};
+
     const { setShowImg, setSpacesContainer } = useSearch()
     const { spaceId } = useParams();
     const navigate = useNavigate();
+    const { addThreadToSpace } = useAddThreadToSpace();
 
     const moreOptionsRef = useRef(null)
     const fileInputRef = useRef(null);
@@ -178,7 +183,12 @@ export default function Space() {
                 setDescription(respJson.space_description)
                 setText(respJson.space_emoji)
                 setInstructions(respJson.answer_instructions)
-                if (resp.status === 201) setSpacesContainer(prev => [respJson, ...prev])
+                if (resp.status === 201) {
+                    setSpacesContainer(prev => [respJson, ...prev])
+                    if (thread) {
+                        addThreadToSpace(thread.thread_id, spaceId)
+                    }
+                }
             }
         } catch (e) {
             // SOMETHING WENT WRONG
@@ -191,38 +201,64 @@ export default function Space() {
 
     async function update_space() {
         try {
-            const resp = await fetchWithAuth(`${import.meta.env.VITE_API_URL}/update-space/`, {
-                method: "PATCH",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
-                    "space_id": spaceId,
-                    "space_name": spaceName,
-                    "space_description": description,
-                    "space_emoji": text,
-                    "answer_instructions": instructions
-                })
-            })
+            const resp = await fetchWithAuth(
+                `${import.meta.env.VITE_API_URL}/update-space/`,
+                {
+                    method: "PATCH",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        space_id: spaceId,
+                        space_name: spaceName,
+                        space_description: description,
+                        space_emoji: text,
+                        answer_instructions: instructions
+                    })
+                }
+            );
 
-            const respJson = await resp.json()
+            const respJson = await resp.json().catch(() => null);
 
+            // ❌ API ERROR
             if (!resp.ok) {
                 if (resp.status === 401) {
-                    // SESSOIN EXPIRED
+                    // SESSION EXPIRED (handle later)
                 } else {
-                    showCustomToast(respJson, { type: "error" });
+                    showCustomToast(
+                        respJson?.detail || "Failed to update space",
+                        { type: "error" }
+                    );
                 }
-            } else {
-                // SUCCESS
-                setSpaceName(respJson.space_name)
-                setDescription(respJson.space_description)
-            }
-        } catch (e) {
-            // SOMETHING WENT WRONG
-            showCustomToast({ message: "Something went wrong" }, { type: "error" });
-        } finally {
 
+                return { success: false };
+            }
+
+            // ✅ SUCCESS — update local state
+            setSpaceName(respJson.space_name);
+            setDescription(respJson.space_description);
+
+            setSpacesContainer(prev =>
+                prev.map(space =>
+                    space.space_id === respJson.space_id
+                        ? {
+                            ...space,
+                            space_name: respJson.space_name,
+                            space_description: respJson.space_description,
+                        }
+                        : space
+                )
+            );
+
+            return {
+                success: true,
+                data: respJson
+            };
+
+        } catch (e) {
+            showCustomToast("Something went wrong", { type: "error" });
+
+            return { success: false };
         }
     }
 
@@ -264,22 +300,19 @@ export default function Space() {
             if (!resp.ok) {
                 const errorData = await resp.json().catch(() => null);
 
-                if (resp.status === 401) {
-                    // session expired
-                } else {
-                    showCustomToast(
-                        errorData?.detail || "Failed to delete space",
-                        { type: "error" }
-                    );
-                }
-                return;
+                showCustomToast(
+                    errorData?.detail || "Failed to delete space",
+                    { type: "error" }
+                );
+
+                return false; // ❗ important
             }
 
-            // SUCCESS (204 has no body)
             showCustomToast("Space deleted successfully", { type: "success" });
-
+            return true; // ✅ success
         } catch (e) {
             showCustomToast("Something went wrong", { type: "error" });
+            return false;
         }
     }
 
@@ -427,23 +460,35 @@ export default function Space() {
 
 
     const handleSave = async () => {
-        setLoading(true)
-        await update_space()
-        setLoading(false)
+        setLoading(true);
+
+        const result = await update_space();
+
+        setLoading(false);
+
+        if (!result.success) return;
+
+        // SUCCESS UI updates
         showCustomToast("Settings saved successfully", { type: "success" });
         setOpenSettingsModal(false);
     };
 
     const handleDelete = async () => {
         setLoading(true);
-        // await new Promise(resolve => setTimeout(resolve, 3000));
-        await delete_space(); // your API function
+
+        const success = await delete_space();
+
         setLoading(false);
+
+        if (!success) return; // ✅ stop here if failed
+
         setOpenDeleteConfirmModal(false);
+
         setSpacesContainer(prev =>
             prev.filter(space => space.space_id !== spaceId)
         );
-        navigate("/")
+
+        navigate("/");
     };
 
 
@@ -456,7 +501,7 @@ export default function Space() {
                     <div className="flex items-center gap-2 text-sm text-stone-500 ">
                         <span className="cursor-pointer text-stone-400 hover:text-stone-600 transition-colors">Spaces</span>
                         <span className="text-stone-300">›</span>
-                        <span className="text-stone-800 font-medium">{spaceName}</span>
+                        <span className="text-stone-800 font-medium line-clamp-1">{spaceName}</span>
                     </div>
                     <div className=" flex items-center gap-2.5">
                         <button

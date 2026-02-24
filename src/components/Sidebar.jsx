@@ -6,22 +6,35 @@ import BottomUserProfileSection from "./BottomUserProfileSection";
 import { showCustomToast } from "../utils/customToast";
 import { useAuthUtils } from "../utils/useAuthUtils";
 import { useSearch } from "../context/SearchContext";
-import { fetchWithAuth } from "../utils/fetchWithAuth";
+import { fetchWithAuth } from "../api/fetchWithAuth";
+import { useSpaces } from "../hooks/useSpaces";
+
+const SIDEBAR_PAGE_SIZE = 20;
 
 export default function Sidebar() {
   const navigate = useNavigate();
-  const { threadsContainer, setThreadsContainer, spacesContainer, setSpacesContainer } = useSearch();
+  const {
+    threadsContainer,
+    setThreadsContainer,
+    spacesContainer,
+  } = useSearch();
   const { logoutAndNavigate } = useAuthUtils();
   const { isAuthenticated } = useAuth();
+  const { fetchSpaces } = useSpaces();
 
+  const hoverTimeoutRef = useRef(null);
+  const libraryScrollRef = useRef(null);
+  const loadMoreSentinelRef = useRef(null);
 
   /* -----------------------------
      State
   ------------------------------*/
   const [activePanel, setActivePanel] = useState(null); // "library" | "spaces" | null
-  const [fetchedThreads, setFetchedThreads] = useState(false);
-  const [fetchedSpaces, setFetchedSpaces] = useState(false);
-  const hoverTimeoutRef = useRef(null);
+  const [sidebarThreads, setSidebarThreads] = useState([]);
+  const [sidebarThreadsPage, setSidebarThreadsPage] = useState(1);
+  const [hasMoreSidebarThreads, setHasMoreSidebarThreads] = useState(true);
+  const [loadingSidebarThreads, setLoadingSidebarThreads] = useState(false);
+  const [libraryPanelFetched, setLibraryPanelFetched] = useState(false);
 
   /* -----------------------------
      Hover control
@@ -31,9 +44,11 @@ export default function Sidebar() {
     setActivePanel(panel);
 
     if (panel === "library") {
-      fetchThreads();
+      if (!libraryPanelFetched) {
+        fetchSidebarThreads(1, false);
+      }
     } else if (panel === "spaces") {
-      fetchSpaces()
+      fetchSpaces();
     }
   };
 
@@ -44,65 +59,93 @@ export default function Sidebar() {
   };
 
   /* -----------------------------
-     Fetch threads (once)
+     Fetch sidebar threads (paginated, infinite scroll)
   ------------------------------*/
-  async function fetchThreads() {
-    if (fetchedThreads) return;
-
+  async function fetchSidebarThreads(page, append) {
+    if (loadingSidebarThreads) return;
+    setLoadingSidebarThreads(true);
     try {
-      const res = await fetchWithAuth(`${import.meta.env.VITE_API_URL}/threads/`, {
-        headers: {
-          "Content-Type": "application/json"
-        },
-      });
-
-      const data = await res.json();
+      const res = await fetchWithAuth(
+        `${import.meta.env.VITE_API_URL}/threads/?page=${page}&page_size=${SIDEBAR_PAGE_SIZE}`,
+        { method: "GET", headers: { "Content-Type": "application/json" } }
+      );
+      const resJson = await res.json();
 
       if (!res.ok) {
         if (res.status === 401) {
           showCustomToast("Session expired. Please log in again.", { type: "warn" });
           logoutAndNavigate();
-        } else {
-          showCustomToast("Failed to load threads", { type: "error" });
+          return;
         }
+        showCustomToast("Failed to load threads", { type: "error" });
         return;
       }
 
-      setThreadsContainer(Array.isArray(data) ? data : []);
-      setFetchedThreads(true);
-    } catch {
-      showCustomToast("Network error while loading threads", { type: "error" });
-    }
-  }
-
-
-  async function fetchSpaces() {
-    if (fetchedSpaces) return;
-    try {
-      const res = await fetchWithAuth(`${import.meta.env.VITE_API_URL}/get-spaces/`, {
-        headers: {
-          "Content-Type": "application/json"
-        },
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        if (res.status === 401) {
-          showCustomToast("Session expired. Please log in again.", { type: "warn" });
-          logoutAndNavigate();
-        } else {
-          showCustomToast("Failed to load spaces", { type: "error" });
-        }
-        return;
+      const data = Array.isArray(resJson) ? resJson : resJson.results ?? resJson.data ?? [];
+      if (append) {
+        setSidebarThreads((prev) => [...prev, ...data]);
+      } else {
+        setSidebarThreads(data);
       }
-
-      setSpacesContainer(Array.isArray(data) ? data : []);
-      setFetchedSpaces(true);
-    } catch {
-      showCustomToast("Network error while loading spaces", { type: "error" });
+      setHasMoreSidebarThreads(resJson.next != null ? !!resJson.next : data.length >= SIDEBAR_PAGE_SIZE);
+      setSidebarThreadsPage(page);
+      if (page === 1) setLibraryPanelFetched(true);
+    } catch (err) {
+      showCustomToast("Failed to load threads", { type: "error" });
+    } finally {
+      setLoadingSidebarThreads(false);
     }
   }
+
+  /* -----------------------------
+     Infinite scroll: load more when sentinel is visible inside the library panel scroll area
+  ------------------------------*/
+  useEffect(() => {
+    if (activePanel !== "library") return;
+    const sentinel = loadMoreSentinelRef.current;
+    const scrollRoot = libraryScrollRef.current;
+    if (!sentinel || !scrollRoot) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const [entry] = entries;
+        if (!entry?.isIntersecting) return;
+        if (hasMoreSidebarThreads && !loadingSidebarThreads) {
+          fetchSidebarThreads(sidebarThreadsPage + 1, true);
+        }
+      },
+      { root: scrollRoot, rootMargin: "100px", threshold: 0 }
+    );
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, [activePanel, hasMoreSidebarThreads, loadingSidebarThreads, sidebarThreadsPage]);
+
+
+  // async function fetchSpaces() {
+  //   if (fetchedSpaces) return;
+
+  //   try {
+  //     const data = await fetchSpacesApi();
+
+  //     setSpacesContainer(data);
+  //     setFetchedSpaces(true);
+
+  //   } catch (err) {
+  //     if (err.status === 401) {
+  //       showCustomToast(
+  //         "Session expired. Please log in again.",
+  //         { type: "warn" }
+  //       );
+  //       logoutAndNavigate();
+  //     } else {
+  //       showCustomToast(
+  //         "Failed to load spaces",
+  //         { type: "error" }
+  //       );
+  //     }
+  //   }
+  // }
+
 
 
   return (
@@ -175,7 +218,7 @@ export default function Sidebar() {
         onMouseEnter={() => openPanel(activePanel)}
         onMouseLeave={closePanel}
         className={`
-          fixed left-20 top-0 h-full w-64
+          fixed left-20 top-0 h-full w-64 flex flex-col
           bg-white border-r border-gray-200 shadow-lg z-50
           transition-all duration-200 ease-out
           ${activePanel
@@ -184,7 +227,7 @@ export default function Sidebar() {
           }
         `}
       >
-        <div className="p-4 space-y-4">
+        <div className="p-4 shrink-0 space-y-4">
 
           {activePanel === "library" && (
             <>
@@ -195,14 +238,32 @@ export default function Sidebar() {
               <span className="block px-3 py-2 text-sm font-semibold text-gray-700">
                 Recent
               </span>
+            </>
+          )}
 
-              {threadsContainer.length === 0 && (
+          {activePanel === "spaces" && (
+            <>
+              <h3 className="border-b pb-4 text-sm font-semibold text-gray-700">
+                Spaces
+              </h3>
+            </>
+          )}
+
+        </div>
+
+        <div
+          ref={libraryScrollRef}
+          className="flex-1 min-h-0 overflow-y-auto scrollbar-auto p-4 pt-0"
+        >
+          {activePanel === "library" && (
+            <>
+              {sidebarThreads.length === 0 && !loadingSidebarThreads && (
                 <p className="px-3 py-2 text-sm text-gray-500">
                   No recent threads
                 </p>
               )}
 
-              {threadsContainer.map((item) => (
+              {sidebarThreads.map((item) => (
                 <Link
                   key={item.thread_id}
                   to={`/thread/${item.thread_id}`}
@@ -213,18 +274,16 @@ export default function Sidebar() {
                     : item.title}
                 </Link>
               ))}
+
+              <div ref={loadMoreSentinelRef} className="h-2 flex-shrink-0" aria-hidden />
+              {loadingSidebarThreads && (
+                <p className="px-3 py-2 text-sm text-gray-500">Loading more...</p>
+              )}
             </>
           )}
 
           {activePanel === "spaces" && (
             <>
-              <h3 className="border-b pb-4 text-sm font-semibold text-gray-700">
-                Spaces
-              </h3>
-
-              {/* <p className="px-3 py-2 text-sm text-gray-500">
-                Your Spaces content goes here.
-              </p> */}
               <p
                 className="px-3 py-2 text-sm text-gray-500 cursor-pointer"
                 onClick={() => navigate(`/space/${crypto.randomUUID()}`)}
@@ -244,7 +303,6 @@ export default function Sidebar() {
               ))}
             </>
           )}
-
         </div>
       </aside>
     </>

@@ -6,7 +6,7 @@ const SearchSuggestionsBox = forwardRef(
             return <></>
         } else {
             return (
-                <div className={`relative mt-${mt}`}>
+                <div className={`absolute mt-${mt}`}>
                     {searchSuggestions.map((item, index) => (
                         <div
                             onClick={() => { ref.current.innerText = item; handleSearchSubmit() }}

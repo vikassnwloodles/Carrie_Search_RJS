@@ -1,7 +1,7 @@
 // src/context/AuthContext.jsx
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { fetchWithAuth } from "../utils/fetchWithAuth";
+import { fetchWithAuth } from "../api/fetchWithAuth";
 
 const AuthContext = createContext();
 

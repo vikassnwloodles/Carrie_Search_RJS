@@ -1,6 +1,6 @@
 import { useState } from "react"
 import { showCustomToast } from "../utils/customToast"
-import { fetchWithAuth } from "../utils/fetchWithAuth"
+import { fetchWithAuth } from "../api/fetchWithAuth"
 
 const ResetPasswordModal = ({ setShowResetPasswordModal, eventUidb64, eventToken }) => {
     const [btnTxt, setBtnTxt] = useState("Reset Password")

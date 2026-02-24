@@ -5,7 +5,7 @@ import SearchForm from '../components/SearchForm';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { showCustomToast } from '../utils/customToast';
 import { useAuthUtils } from '../utils/useAuthUtils';
-import { fetchWithAuth } from '../utils/fetchWithAuth';
+import { fetchWithAuth } from '../api/fetchWithAuth';
 
 function Thread() {
 

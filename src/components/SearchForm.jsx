@@ -10,10 +10,10 @@ import { useSearch } from '../context/SearchContext';
 import { useAuthUtils } from '../utils/useAuthUtils';
 import FileMetadataBox from './SearchForm/FileMetadataBox';
 import RightControls from './SearchForm/RightControls';
-import { fetchWithAuth } from '../utils/fetchWithAuth';
+import { fetchWithAuth } from '../api/fetchWithAuth';
 
 
-const SearchForm = ({ isThreadPage, threadId, selectedText = "", setSelectedText, styles, spaceId=null, showSearchSuggestions=false }) => {
+const SearchForm = ({ isThreadPage, threadId, selectedText = "", setSelectedText, styles, spaceId=null, showSearchSuggestions=false, initialUploadedFiles = [], onAttachmentsCleared, hideFileMetadataBox = false, embedInModal = false }) => {
 
     const { logoutAndNavigate } = useAuthUtils();
     const {
@@ -88,7 +88,14 @@ const SearchForm = ({ isThreadPage, threadId, selectedText = "", setSelectedText
     ];
 
 
-    const [uploadedFiles, setUploadedFiles] = useState([]);
+    const [uploadedFiles, setUploadedFiles] = useState(initialUploadedFiles || []);
+
+    // When user removes all attachments (e.g. close thumbnail in follow-up form), notify parent
+    useEffect(() => {
+        if (uploadedFiles.length === 0 && onAttachmentsCleared) {
+            onAttachmentsCleared();
+        }
+    }, [uploadedFiles.length, onAttachmentsCleared]);
 
     const pickerLoadedRef = useRef(false);
 
@@ -113,6 +120,7 @@ const SearchForm = ({ isThreadPage, threadId, selectedText = "", setSelectedText
         if (mime === 'application/pdf') return '.pdf';
 
         if (mime.includes('wordprocessingml') || mime.includes('msword')) return '.docx';
+        if (mime === 'application/vnd.ms-excel') return '.xls';
         if (mime.includes('spreadsheetml') || mime.includes('excel')) return '.xlsx';
         if (mime === 'text/csv') return '.csv';
         if (mime.includes('presentationml') || mime.includes('powerpoint')) return '.pptx';
@@ -133,7 +141,7 @@ const SearchForm = ({ isThreadPage, threadId, selectedText = "", setSelectedText
 
         if (!allowedMimeTypes.includes(file.mimeType)) {
             showCustomToast(
-                "Only PDF, DOCX, TXT, XLSX, CSV and image files are allowed",
+                "Only PDF, DOCX, TXT, XLS, XLSX, CSV and image files are allowed",
                 { type: "warning" }
             );
             return;
@@ -323,11 +331,12 @@ const SearchForm = ({ isThreadPage, threadId, selectedText = "", setSelectedText
                     "application/vnd.openxmlformats-officedocument.wordprocessingml.document" &&
                     file.type !==
                     "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" &&
+                    file.type !== "application/vnd.ms-excel" &&
                     file.type !==
                     "application/vnd.openxmlformats-officedocument.presentationml.presentation"
                 ) {
                     showCustomToast(
-                        `File "${file.name}" is not allowed. Only PDF, DOCX, TXT, XLSX, CSV, and image files are accepted.`,
+                        `File "${file.name}" is not allowed. Only PDF, DOCX, TXT, XLS, XLSX, CSV, and image files are accepted.`,
                         { type: "warn", title: "Invalid File Type" }
                     );
                 } else {
@@ -351,12 +360,12 @@ const SearchForm = ({ isThreadPage, threadId, selectedText = "", setSelectedText
         //     extractedText += `# Attached Doc ${i}\n## Doc Metadata\nDoc Name: ${uploadedDoc.name}\n## Doc Content\n${uploadedDoc.content}\n\n---\n\n`
         // }
         // if (extractedText) text = `${extractedText}# User Query\n${text}`
-        if (isThreadPage) {
-            // fireSearch(searchQuery, null, threadId, imageUrl, docContent)
+        if (isThreadPage && threadId) {
+            // Existing thread: use current thread_id
             await fireSearch(text, null, threadId, false, uploadedFiles, selectedText, spaceId)
         } else {
+            // New thread: generate new thread_id (Home or Media follow-up form)
             const newThreadId = crypto.randomUUID();
-            // setSearchInputData(prev => ({...prev, thread_id: newThreadId}))
             navigate(`/thread/${newThreadId}`, { state: { shouldFetchThread: false } })
             await fireSearch(text, null, newThreadId, true, uploadedFiles, null, spaceId)
         }
@@ -636,23 +645,28 @@ const SearchForm = ({ isThreadPage, threadId, selectedText = "", setSelectedText
 
         const clipboard = e.clipboardData;
         const html = clipboard.getData("text/html");
-        const text = clipboard.getData("text/plain");
+        const text = (clipboard.getData("text/plain") ?? "").trim();
 
-        // If a link was copied → extract href
+        // Prefer plain text when present (e.g. paste from Teams/Word preserves full content)
+        if (text) {
+            document.execCommand("insertText", false, text);
+            setSearchQuery(prev => prev + text);
+            return;
+        }
+
+        // Only when there's no plain text: if HTML contains a single link, use its href (e.g. "Copy link")
         if (html) {
             const doc = new DOMParser().parseFromString(html, "text/html");
-            const anchor = doc.querySelector("a[href]");
-
-            if (anchor?.href) {
-                document.execCommand("insertText", false, anchor.href);
-                setSearchQuery(prev => prev + anchor.href);
+            const anchors = doc.querySelectorAll("a[href]");
+            if (anchors.length === 1 && anchors[0].href) {
+                document.execCommand("insertText", false, anchors[0].href);
+                setSearchQuery(prev => prev + anchors[0].href);
                 return;
             }
         }
 
-        // Fallback: normal text
-        document.execCommand("insertText", false, text);
-        setSearchQuery(prev => prev + text);
+        document.execCommand("insertText", false, clipboard.getData("text/plain") ?? "");
+        setSearchQuery(prev => prev + (clipboard.getData("text/plain") ?? ""));
     };
 
 
@@ -663,7 +677,7 @@ const SearchForm = ({ isThreadPage, threadId, selectedText = "", setSelectedText
             <form
                 id="search-form"
                 // className="z-10 w-full max-w-4xl pb-12 bg-[#fcfcf9] rounded-xl"
-                className={`z-10 ${true ? "" : "w-full"} max-w-4xl pb-12 rounded-xl ${isThreadPage ? "fixed -bottom-5 !w-full" : ""}`}
+                className={`z-10 ${true ? "" : "w-full"} max-w-4xl pb-12 rounded-xl ${isThreadPage ? "fixed -bottom-5 !w-full" : ""} ${embedInModal ? "left-1/2 -translate-x-1/2" : ""}`}
                 onSubmit={(e) => {
                     e.preventDefault();
                     handleSearchSubmit();
@@ -710,7 +724,7 @@ const SearchForm = ({ isThreadPage, threadId, selectedText = "", setSelectedText
                                 text-lg bg-white focus:outline-none
                                 whitespace-pre-wrap overflow-y-auto
                                 transition-all
-                                ${(selectedText.trim() && uploadedFiles.length > 0) ? "pt-40" : (selectedText.trim() ? "pt-20" : (uploadedFiles.length > 0 ? "pt-20" : "pt-2"))}
+                                ${hideFileMetadataBox ? "pt-2" : (selectedText.trim() && uploadedFiles.length > 0) ? "pt-40" : (selectedText.trim() ? "pt-20" : (uploadedFiles.length > 0 ? "pt-20" : "pt-2"))}
                                 `}
 
                             style={{ minHeight: "60px" }}
@@ -759,10 +773,12 @@ const SearchForm = ({ isThreadPage, threadId, selectedText = "", setSelectedText
                     >
                         {isThreadPage && selectedText.trim() && <SelectedTextContainer selectedText={selectedText} setSelectedText={setSelectedText} />}
 
-                        <FileMetadataBox
-                            uploadedFiles={uploadedFiles}
-                            setUploadedFiles={setUploadedFiles}
-                        />
+                        {!hideFileMetadataBox && (
+                            <FileMetadataBox
+                                uploadedFiles={uploadedFiles}
+                                setUploadedFiles={setUploadedFiles}
+                            />
+                        )}
                     </div>
                     <RightControls
                         modelDropdownRef={modelDropdownRef}

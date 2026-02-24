@@ -24,6 +24,7 @@ export function SearchProvider({ children }) {
     const [spacesContainer, setSpacesContainer] = useState([]);
     const [imageGenerationStarted, setImageGenerationStarted] = useState(false)
     const [fileGenerationStarted, setFileGenerationStarted] = useState(false)
+    const [fetchedSpaces, setFetchedSpaces] = useState(false)
 
 
     return (
@@ -47,7 +48,9 @@ export function SearchProvider({ children }) {
             fileGenerationStarted,
             setFileGenerationStarted,
             spacesContainer,
-            setSpacesContainer
+            setSpacesContainer,
+            fetchedSpaces, 
+            setFetchedSpaces
         }}>
             {children}
         </SearchContext.Provider>

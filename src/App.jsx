@@ -21,6 +21,7 @@ import Thread from "./pages/Thread";
 import CarrieLogo from "./components/CarrieLogo";
 import Space from "./pages/Space";
 import { useLocation } from "react-router-dom";
+import VerifyOtp from "./pages/VerifyOtp";
 
 
 const App = () => {
@@ -53,6 +54,7 @@ const App = () => {
                   <Route path="/pricing" element={<Pricing />} />
                   <Route path="/signup" element={<SignupForm />} />
                   <Route path="/login" element={<LoginPage />} />
+                  <Route path="/verify-otp" element={<VerifyOtp />} />
                   <Route path="/forgot-password" element={<ForgotPassword />} />
                   <Route path="/search/public/:chatId" element={<SearchResult />} />
                   <Route path="/library" element={<LibraryPage />} />

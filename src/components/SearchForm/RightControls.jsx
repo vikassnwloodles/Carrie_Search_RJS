@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react'
-import { fetchWithAuth } from '../../utils/fetchWithAuth';
+import { fetchWithAuth } from '../../api/fetchWithAuth';
 
 function RightControls({
     modelDropdownRef,
@@ -165,7 +165,7 @@ function RightControls({
                 <button
                     type="button"
                     id="dropdown2Button"
-                    className="text-gray-500 hover:text-black p-1 sm:p-2"
+                    className="cursor-pointer text-gray-500 hover:text-black p-1 sm:p-2"
                     onClick={toggleMain2}
                 >
                     <i className="fa fa-microchip text-base sm:text-xl" />
@@ -175,7 +175,8 @@ function RightControls({
                     id="main2Dropdown"
                     className={`${main2DropdownOpen ? "" : "hidden"}
                                     absolute right-0 ${isThreadPage ? "bottom-full mb-2" : "mt-2"}
-                                    w-56 bg-white rounded shadow-lg z-[9999]
+                                    w-56 max-h-[min(18rem,70vh)] overflow-y-auto
+                                    bg-white rounded shadow-lg z-[9999]
                                 `}
                 >
                     <div className="p-1">
@@ -268,7 +269,7 @@ function RightControls({
                 <button
                     type="button"
                     id="dropdown3Button"
-                    className="text-gray-500 hover:text-black p-1 sm:p-2"
+                    className="cursor-pointer text-gray-500 hover:text-black p-1 sm:p-2"
                     onClick={toggleMain3}
                 >
                     <i className="fa fa fa-database text-base sm:text-xl" />
@@ -360,7 +361,7 @@ function RightControls({
                 <button
                     type="button"
                     id="dropdownButton"
-                    className="text-gray-500 hover:text-black p-1 sm:p-2"
+                    className="cursor-pointer text-gray-500 hover:text-black p-1 sm:p-2"
                     onClick={toggleMain}
                 >
                     <i className="fas fa-paperclip text-base sm:text-xl" />
@@ -430,7 +431,7 @@ function RightControls({
                 type="button"
                 id="mic-button"
                 onClick={handleMicClick}
-                className="text-gray-500 hover:text-black p-1 sm:p-2"
+                className="cursor-pointer text-gray-500 hover:text-black p-1 sm:p-2"
             >
                 <i
                     ref={micIconRef}
@@ -444,7 +445,7 @@ function RightControls({
                 disabled={searchStarted}
                 type="submit"
                 id="search-form-btn"
-                className="bg-[#652F74] text-white rounded-lg w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center hover:bg-teal-700 transition-colors"
+                className="cursor-pointer bg-[#652F74] text-white rounded-lg w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center hover:bg-teal-700 transition-colors"
             >
                 <i className={`fas ${searchStarted ? "fa-stop" : "fa-arrow-right"} text-base sm:text-xl`} />
             </button>

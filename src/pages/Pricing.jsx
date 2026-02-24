@@ -4,7 +4,7 @@ import { showCustomToast } from "../utils/customToast";
 import { useAuthUtils } from "../utils/useAuthUtils";
 import { useAuth } from "../context/AuthContext";
 import { timeLeft } from "../utils/utils";
-import { fetchWithAuth } from "../utils/fetchWithAuth";
+import { fetchWithAuth } from "../api/fetchWithAuth";
 
 export default function Pricing() {
   const { isAuthenticated, setIsPro } = useAuth()

@@ -4,6 +4,8 @@ export default function DeleteConfirmModal({
   isOpen,
   onClose,
   onConfirm,
+  title = "Delete Space",
+  message = "Are you sure you want to delete this Space?",
   loading = false,
 }) {
   // Close on ESC
@@ -36,7 +38,7 @@ export default function DeleteConfirmModal({
         {/* Header */}
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-2xl font-semibold text-gray-800">
-            Delete Space
+            {title}
           </h2>
 
           <button
@@ -49,7 +51,7 @@ export default function DeleteConfirmModal({
 
         {/* Message */}
         <p className="text-gray-500 mb-8">
-          Are you sure you want to delete this Space?
+          {message}
         </p>
 
         {/* Actions */}

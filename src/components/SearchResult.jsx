@@ -10,7 +10,7 @@ import { showCustomToast } from "../utils/customToast";
 import { useAuthUtils } from "../utils/useAuthUtils";
 import FileMetadataBox from "./SearchForm/FileMetadataBox";
 import SelectedTextContainer from "./SearchForm/SelectedTextContainer";
-import { fetchWithAuth } from "../utils/fetchWithAuth";
+import { fetchWithAuth } from "../api/fetchWithAuth";
 
 export default function SearchResult({ response: initResponse, prompt: initPrompt, pk, threadId, uploadedFiles, setSelectedText, selected_text }) {
   const { logoutAndNavigate } = useAuthUtils();
@@ -78,6 +78,7 @@ export default function SearchResult({ response: initResponse, prompt: initPromp
   const image_url = response.content?.[0]?.image_url
   const doc_url = response.content?.[0]?.doc_url
   const doc_name = response.content?.[0]?.doc_name
+  const image_deleted = response.content?.[0]?.image_deleted
 
 
   return (
@@ -115,6 +116,7 @@ export default function SearchResult({ response: initResponse, prompt: initPromp
             <SearchResponseContainer
               content={content}
               imageURL={image_url}
+              imageDeleted={image_deleted}
               uniqueId={uniqueId}
               searchResultId={pk}
               setSelectedText={setSelectedText}

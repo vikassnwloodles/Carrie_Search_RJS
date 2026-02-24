@@ -5,7 +5,7 @@ import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 import { useAuth } from "../context/AuthContext";
-import { fetchWithAuth } from "../utils/fetchWithAuth";
+import { fetchWithAuth } from "../api/fetchWithAuth";
 
 /* helper to try parse JSON safely */
 async function tryParseJson(text) {
@@ -37,7 +37,6 @@ async function loginUser({ username, password }) {
       data?.message ||
       data?.error ||
       data?.detail ||
-      raw ||
       `Login failed (${res.status})`;
 
     throw new Error(serverMessage);
@@ -65,9 +64,20 @@ export default function Login() {
     setLoading(true);
 
     try {
-      // 1️⃣ Authenticate
+      // 1️⃣ Authenticate (this now sends OTP)
       const result = await loginUser({ username, password });
 
+      // ✅ If backend returned OTP message (no tokens yet)
+      if (result?.message && !result?.access) {
+        toast.success(result.message);
+
+        // Navigate to OTP page and pass username
+        navigate("/verify-otp", { state: { username } });
+
+        return;
+      }
+
+      // ⚠️ Safety fallback (in case backend still sends tokens)
       const token =
         result?.access ||
         result?.token ||
@@ -86,35 +96,11 @@ export default function Login() {
           ? JSON.parse(result.user_info)
           : result?.user_info;
 
-      // 2️⃣ Store tokens FIRST
       login(token, refToken, userInfo, false);
 
-      // 3️⃣ Fetch subscription AFTER storing token
-      let isPro = false;
-
-      try {
-        const subRes = await fetchWithAuth(
-          `${import.meta.env.VITE_API_URL}/subscriptions/get-subscription-status/`,
-          { method: "GET" }
-        );
-
-        if (subRes.ok) {
-          const subData = await subRes.json();
-          isPro = subData.is_active;
-          setIsPro(isPro);
-        }
-      } catch (err) {
-        console.error("Subscription fetch failed:", err);
-      }
-
-      // 4️⃣ Update subscription in context
-      login(token, refToken, userInfo, isPro);
-
-      toast.success(result?.message || "Logged in successfully!", {
-        autoClose: 1400,
-      });
-
+      toast.success("Logged in successfully!", { autoClose: 1400 });
       setTimeout(() => navigate("/"), 600);
+
     } catch (err) {
       toast.error(err?.message || "Invalid username or password.");
     } finally {
@@ -159,7 +145,7 @@ export default function Login() {
         <button
           type="submit"
           disabled={loading}
-          className="w-full bg-teal-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-teal-700 transition-colors disabled:opacity-60"
+          className="cursor-pointer w-full bg-teal-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-teal-700 transition-colors disabled:opacity-60"
         >
           {loading ? "Logging in..." : "Login"}
         </button>

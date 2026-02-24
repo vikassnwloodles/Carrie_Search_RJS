@@ -1,6 +1,5 @@
 // src/components/SignupForm.jsx
-import React, { useState } from "react";
-import { fetchWithAuth } from "../utils/fetchWithAuth";
+import { useState } from "react";
 import.meta.env.VITE_API_URL
 
 /**
@@ -80,7 +79,7 @@ export default function SignupForm({ apiEndpoint, onSuccess }) {
         consent_to_communications: form.consent_to_communications,
       };
 
-      const res = await fetchWithAuth(endpoint, {
+      const res = await fetch(endpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -327,7 +326,7 @@ export default function SignupForm({ apiEndpoint, onSuccess }) {
 
         <div className="flex items-center justify-center">
           <button
-            className="bg-teal-600 hover:bg-teal-700 text-white font-bold py-3 px-6 rounded focus:outline-none focus:shadow-outline transition-colors"
+            className="cursor-pointer bg-teal-600 hover:bg-teal-700 text-white font-bold py-3 px-6 rounded focus:outline-none focus:shadow-outline transition-colors"
             type="submit"
             disabled={submitting}
           >
