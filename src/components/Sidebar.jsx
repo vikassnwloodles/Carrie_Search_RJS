@@ -257,7 +257,7 @@ export default function Sidebar() {
           body: JSON.stringify({
             space_id: newSpaceId,
             space_name: "New Space",
-            space_description: "",
+            space_description: "Description of what this Space is for and how to use it",
             space_emoji: "",
           }),
         }

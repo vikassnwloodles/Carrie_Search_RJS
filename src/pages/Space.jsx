@@ -132,15 +132,18 @@ export default function Space() {
     const navigate = useNavigate();
     const { addThreadToSpace } = useAddThreadToSpace();
 
+    const SPACE_THREADS_PAGE_SIZE = 20;
+    const DEFAULT_SPACE_NAME = "New Space";
+    const DEFAULT_DESCRIPTION = "Description of what this Space is for and how to use it";
+
     const moreOptionsRef = useRef(null)
     const fileInputRef = useRef(null);
     const spaceThreadsSentinelRef = useRef(null);
-
-    const SPACE_THREADS_PAGE_SIZE = 20;
+    const lastValidSpaceNameRef = useRef(DEFAULT_SPACE_NAME);
 
     const [uploading, setUploading] = useState(false);
-    const [spaceName, setSpaceName] = useState("New Space");
-    const [description, setDescription] = useState("Description of what this Space is for and how to use it");
+    const [spaceName, setSpaceName] = useState(DEFAULT_SPACE_NAME);
+    const [description, setDescription] = useState(DEFAULT_DESCRIPTION);
     const [editingName, setEditingName] = useState(false);
     const [editingDesc, setEditingDesc] = useState(false);
     const [showPicker, setShowPicker] = useState(false)
@@ -185,7 +188,9 @@ export default function Space() {
                 }
             } else {
                 // SUCCESS
-                setSpaceName(respJson.space_name)
+                const name = respJson.space_name ?? DEFAULT_SPACE_NAME;
+                setSpaceName(name);
+                lastValidSpaceNameRef.current = name;
                 setDescription(respJson.space_description)
                 setText(respJson.space_emoji)
                 setInstructions(respJson.answer_instructions)
@@ -207,6 +212,7 @@ export default function Space() {
 
 
     async function update_space() {
+        const nameToSend = (spaceName && spaceName.trim()) ? spaceName.trim() : lastValidSpaceNameRef.current;
         try {
             const resp = await fetchWithAuth(
                 `${import.meta.env.VITE_API_URL}/update-space/`,
@@ -217,7 +223,7 @@ export default function Space() {
                     },
                     body: JSON.stringify({
                         space_id: spaceId,
-                        space_name: spaceName,
+                        space_name: nameToSend,
                         space_description: description,
                         space_emoji: text,
                         answer_instructions: instructions
@@ -241,8 +247,10 @@ export default function Space() {
                 return { success: false };
             }
 
-            // ✅ SUCCESS — update local state
-            setSpaceName(respJson.space_name);
+            // ✅ SUCCESS — update local state (restore name if user had cleared it)
+            const updatedName = respJson.space_name ?? lastValidSpaceNameRef.current;
+            setSpaceName(updatedName);
+            lastValidSpaceNameRef.current = updatedName;
             setDescription(respJson.space_description);
 
             setSpacesContainer(prev =>
@@ -543,7 +551,7 @@ export default function Space() {
                     <div className="flex items-center gap-2 text-sm text-stone-500 ">
                         <span className="cursor-pointer text-stone-400 hover:text-stone-600 transition-colors">Spaces</span>
                         <span className="text-stone-300">›</span>
-                        <span className="text-stone-800 font-medium line-clamp-1">{spaceName}</span>
+                        <span className="text-stone-800 font-medium line-clamp-1">{spaceName || DEFAULT_SPACE_NAME}</span>
                     </div>
                     <div className=" flex items-center gap-2.5">
                         <button
@@ -635,16 +643,35 @@ export default function Space() {
                                         autoFocus
                                         value={spaceName}
                                         onChange={(e) => setSpaceName(e.target.value)}
-                                        onBlur={() => { setEditingName(false); update_space() }}
-                                        onKeyDown={(e) => e.key === "Enter" && setEditingName(false)}
-                                        className="text-3xl font-normal font-serif text-stone-800 bg-transparent border-0 border-b border-stone-300 outline-none mb-2.5 block w-96 leading-snug"
+                                        onBlur={() => {
+                                            if (!spaceName || !spaceName.trim()) {
+                                                setSpaceName(lastValidSpaceNameRef.current);
+                                                setEditingName(false);
+                                            } else {
+                                                setEditingName(false);
+                                                update_space();
+                                            }
+                                        }}
+                                        onKeyDown={(e) => {
+                                            if (e.key === "Enter") {
+                                                if (!spaceName || !spaceName.trim()) {
+                                                    setSpaceName(lastValidSpaceNameRef.current);
+                                                    setEditingName(false);
+                                                } else {
+                                                    setEditingName(false);
+                                                    update_space();
+                                                }
+                                            }
+                                        }}
+                                        placeholder={DEFAULT_SPACE_NAME}
+                                        className="text-3xl font-normal font-serif text-stone-800 bg-transparent border-0 border-b border-stone-300 outline-none mb-2.5 block w-96 leading-snug placeholder:text-stone-400"
                                     />
                                 ) : (
                                     <h1
                                         onClick={() => setEditingName(true)}
-                                        className="text-3xl font-normal font-serif text-stone-800 m-0 mb-2.5 cursor-text tracking-tight"
+                                        className={`text-3xl font-normal font-serif m-0 mb-2.5 cursor-text tracking-tight ${spaceName ? "text-stone-800" : "text-stone-400"}`}
                                     >
-                                        {spaceName}
+                                        {spaceName || DEFAULT_SPACE_NAME}
                                     </h1>
                                 )}
 
@@ -656,14 +683,15 @@ export default function Space() {
                                         onChange={(e) => setDescription(e.target.value)}
                                         onBlur={() => { setEditingDesc(false); update_space() }}
                                         onKeyDown={(e) => e.key === "Enter" && setEditingDesc(false)}
-                                        className="text-sm text-stone-400  bg-transparent border-0 border-b border-stone-300 outline-none w-96 block"
+                                        placeholder={DEFAULT_DESCRIPTION}
+                                        className="text-sm text-stone-400 bg-transparent border-0 border-b border-stone-300 outline-none w-96 block placeholder:text-stone-300"
                                     />
                                 ) : (
                                     <p
                                         onClick={() => setEditingDesc(true)}
-                                        className="text-sm text-stone-400 m-0 cursor-text "
+                                        className={`text-sm m-0 cursor-text min-h-[1.25rem] ${description ? "text-stone-400" : "text-stone-300"}`}
                                     >
-                                        {description}
+                                        {description || DEFAULT_DESCRIPTION}
                                     </p>
                                 )}
                             </div>
