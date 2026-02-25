@@ -13,8 +13,8 @@ export function useSpaces() {
 
   const { logoutAndNavigate } = useAuthUtils();
 
-  const fetchSpaces = async () => {
-    if (fetchedSpaces) return;
+  const fetchSpaces = async (forceRefetch = false) => {
+    if (fetchedSpaces && !forceRefetch) return;
 
     try {
       const data = await fetchSpacesApi();

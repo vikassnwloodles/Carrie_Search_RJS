@@ -30,8 +30,9 @@ import { fetchWithAuth } from "./fetchWithAuth";
 
 export async function fetchSpacesApi() {
   const res = await fetchWithAuth(
-    `${import.meta.env.VITE_API_URL}/get-spaces/`,
+    `${import.meta.env.VITE_API_URL}/get-spaces/?page=1&page_size=500`,
     {
+      method: "GET",
       headers: {
         "Content-Type": "application/json",
       },
@@ -47,5 +48,6 @@ export async function fetchSpacesApi() {
     throw error;
   }
 
-  return Array.isArray(data) ? data : [];
+  const list = Array.isArray(data) ? data : data?.results ?? data?.data ?? [];
+  return Array.isArray(list) ? list : [];
 }

@@ -146,11 +146,14 @@ body {
 /* scroll-behavior: smooth; */
 /* } */
 #search-width{
-    width: 650px;
+    width: 100%;
+    max-width: 650px;
+    min-width: 0;
+    margin-left: auto;
+    margin-right: auto;
     display: flex;
     justify-content: center;
     align-items: center;
-    /* left: 190px; */
 }
 #search-results-container {
     margin-bottom: 150px;

@@ -5,10 +5,17 @@ import { toast } from "react-toastify";
 import { useAuth } from "../context/AuthContext";
 import { fetchWithAuth } from "../api/fetchWithAuth";
 
-async function verifyOtp({ username, otp }) {
+const RESEND_COOLDOWN_SECONDS = 60;
+
+function getBaseUrl() {
     const base = import.meta.env.VITE_API_URL
         ? import.meta.env.VITE_API_URL.replace(/\/$/, "")
         : "";
+    return base;
+}
+
+async function verifyOtp({ username, otp }) {
+    const base = getBaseUrl();
     const endpoint = base ? `${base}/verify-login-otp/` : "/api/verify-login-otp/";
 
     const res = await fetch(endpoint, {
@@ -26,6 +33,25 @@ async function verifyOtp({ username, otp }) {
     return data;
 }
 
+async function resendLoginOtp({ username }) {
+    const base = getBaseUrl();
+    const endpoint = base ? `${base}/resend-login-otp/` : "/api/resend-login-otp/";
+
+    const res = await fetch(endpoint, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username }),
+    });
+
+    const data = await res.json().catch(() => ({}));
+
+    if (!res.ok) {
+        throw new Error(data?.error || data?.detail || data?.message || "Failed to resend OTP");
+    }
+
+    return data;
+}
+
 export default function VerifyOtp() {
     const { state } = useLocation();
     const navigate = useNavigate();
@@ -33,9 +59,12 @@ export default function VerifyOtp() {
 
     const [otp, setOtp] = useState("");
     const [loading, setLoading] = useState(false);
+    const [resendCooldown, setResendCooldown] = useState(RESEND_COOLDOWN_SECONDS);
+    const [resendLoading, setResendLoading] = useState(false);
     const otpRef = useRef(null);
 
     const username = state?.username;
+    const canResend = resendCooldown <= 0;
 
     useEffect(() => {
         if (!username) {
@@ -43,6 +72,21 @@ export default function VerifyOtp() {
         }
         otpRef.current?.focus();
     }, []);
+
+    // Countdown timer for resend OTP
+    useEffect(() => {
+        if (resendCooldown <= 0) return;
+        const t = setInterval(() => {
+            setResendCooldown((prev) => {
+                if (prev <= 1) {
+                    clearInterval(t);
+                    return 0;
+                }
+                return prev - 1;
+            });
+        }, 1000);
+        return () => clearInterval(t);
+    }, [resendCooldown]);
 
     async function handleSubmit(e) {
         e.preventDefault();
@@ -94,6 +138,21 @@ export default function VerifyOtp() {
         }
     }
 
+    async function handleResendOtp(e) {
+        e.preventDefault();
+        if (!canResend || resendLoading) return;
+        setResendLoading(true);
+        try {
+            await resendLoginOtp({ username });
+            toast.success("OTP sent again. Please check your email.");
+            setResendCooldown(RESEND_COOLDOWN_SECONDS);
+        } catch (err) {
+            toast.error(err?.message || "Could not resend OTP");
+        } finally {
+            setResendLoading(false);
+        }
+    }
+
     return (
         <div className="bg-white rounded-2xl shadow-[0_0_25px_rgba(0,0,0,0.12)] p-8 w-full max-w-md">
             <h2 className="text-2xl font-bold text-gray-800 mb-6">Verify OTP</h2>
@@ -121,6 +180,23 @@ export default function VerifyOtp() {
                 >
                     {loading ? "Verifying..." : "Verify OTP"}
                 </button>
+
+                <div className="mt-4 text-center">
+                    {canResend ? (
+                        <button
+                            type="button"
+                            onClick={handleResendOtp}
+                            disabled={resendLoading}
+                            className="cursor-pointer text-teal-600 font-medium hover:underline disabled:opacity-60"
+                        >
+                            {resendLoading ? "Sending..." : "Resend OTP"}
+                        </button>
+                    ) : (
+                        <span className="text-gray-500 text-sm">
+                            Resend OTP in {resendCooldown}s
+                        </span>
+                    )}
+                </div>
             </form>
         </div>
     );

@@ -33,14 +33,14 @@ const App = () => {
       <SearchProvider>
         <ScrollToTop />
         <ToastContainer />
-        <div className="flex h-screen">
+        <div className="flex h-screen min-w-0 overflow-x-hidden">
           <Sidebar />
-          <main id="main-content-area" className="flex-1 flex flex-col">
+          <main id="main-content-area" className="flex-1 flex flex-col min-w-0">
             <Header />
 
-            <div id="dynamic-content-container" className="flex-1 flex flex-col items-center w-full px-4 overflow-y-auto">
+            <div id="dynamic-content-container" className="flex-1 flex flex-col items-center w-full min-w-0 px-4 overflow-y-auto overflow-x-hidden">
               {/* <div id="center-content-wrapper" className="w-full flex flex-col items-center justify-center flex-1"> */}
-              <div id="center-content-wrapper" className="w-full flex flex-col items-center justify-start">
+              <div id="center-content-wrapper" className="w-full flex flex-col items-center justify-start min-w-0 max-w-full">
 
                 {/* <div className="w-full flex flex-col items-center justify-start pt-8"> */}
                 <CarrieLogo />

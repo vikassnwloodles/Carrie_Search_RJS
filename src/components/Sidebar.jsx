@@ -5,26 +5,21 @@ import { useAuth } from "../context/AuthContext";
 import BottomUserProfileSection from "./BottomUserProfileSection";
 import { showCustomToast } from "../utils/customToast";
 import { useAuthUtils } from "../utils/useAuthUtils";
-import { useSearch } from "../context/SearchContext";
 import { fetchWithAuth } from "../api/fetchWithAuth";
-import { useSpaces } from "../hooks/useSpaces";
+import { useSearch } from "../context/SearchContext";
 
 const SIDEBAR_PAGE_SIZE = 20;
 
 export default function Sidebar() {
   const navigate = useNavigate();
-  const {
-    threadsContainer,
-    setThreadsContainer,
-    spacesContainer,
-  } = useSearch();
   const { logoutAndNavigate } = useAuthUtils();
   const { isAuthenticated } = useAuth();
-  const { fetchSpaces } = useSpaces();
+  const { deletedSpaceId, setDeletedSpaceId, updatedSpace, setUpdatedSpace, newThreadForSidebar, setNewThreadForSidebar, deletedThreadId, setDeletedThreadId } = useSearch();
 
   const hoverTimeoutRef = useRef(null);
   const libraryScrollRef = useRef(null);
   const loadMoreSentinelRef = useRef(null);
+  const loadMoreSpacesSentinelRef = useRef(null);
 
   /* -----------------------------
      State
@@ -36,6 +31,13 @@ export default function Sidebar() {
   const [loadingSidebarThreads, setLoadingSidebarThreads] = useState(false);
   const [libraryPanelFetched, setLibraryPanelFetched] = useState(false);
 
+  const [sidebarSpaces, setSidebarSpaces] = useState([]);
+  const [sidebarSpacesPage, setSidebarSpacesPage] = useState(1);
+  const [hasMoreSidebarSpaces, setHasMoreSidebarSpaces] = useState(true);
+  const [loadingSidebarSpaces, setLoadingSidebarSpaces] = useState(false);
+  const [spacesPanelFetched, setSpacesPanelFetched] = useState(false);
+  const [creatingSpace, setCreatingSpace] = useState(false);
+
   /* -----------------------------
      Hover control
   ------------------------------*/
@@ -44,11 +46,13 @@ export default function Sidebar() {
     setActivePanel(panel);
 
     if (panel === "library") {
-      if (!libraryPanelFetched) {
+      if (isAuthenticated && !libraryPanelFetched) {
         fetchSidebarThreads(1, false);
       }
     } else if (panel === "spaces") {
-      fetchSpaces();
+      if (isAuthenticated && !spacesPanelFetched) {
+        fetchSidebarSpaces(1, false);
+      }
     }
   };
 
@@ -57,6 +61,46 @@ export default function Sidebar() {
       setActivePanel(null);
     }, 120);
   };
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      setLibraryPanelFetched(false);
+      setSpacesPanelFetched(false);
+    }
+  }, [isAuthenticated]);
+
+  // Remove deleted space from sidebar list when Space page reports deletion
+  useEffect(() => {
+    if (!deletedSpaceId) return;
+    setSidebarSpaces((prev) => prev.filter((s) => s.space_id !== deletedSpaceId));
+    setDeletedSpaceId(null);
+  }, [deletedSpaceId, setDeletedSpaceId]);
+
+  // Update space in sidebar list when Space page reports name/other updates
+  useEffect(() => {
+    if (!updatedSpace?.space_id) return;
+    setSidebarSpaces((prev) =>
+      prev.map((s) => (s.space_id === updatedSpace.space_id ? { ...s, ...updatedSpace } : s))
+    );
+    setUpdatedSpace(null);
+  }, [updatedSpace, setUpdatedSpace]);
+
+  // Prepend new thread to sidebar when a new search completes (user redirected to /thread/<id>)
+  useEffect(() => {
+    if (!newThreadForSidebar?.thread_id) return;
+    setSidebarThreads((prev) => {
+      if (prev.some((t) => t.thread_id === newThreadForSidebar.thread_id)) return prev;
+      return [{ thread_id: newThreadForSidebar.thread_id, title: newThreadForSidebar.title ?? "New thread" }, ...prev];
+    });
+    setNewThreadForSidebar(null);
+  }, [newThreadForSidebar, setNewThreadForSidebar]);
+
+  // Remove deleted thread from sidebar list when Library page deletes a thread
+  useEffect(() => {
+    if (!deletedThreadId) return;
+    setSidebarThreads((prev) => prev.filter((t) => t.thread_id !== deletedThreadId));
+    setDeletedThreadId(null);
+  }, [deletedThreadId, setDeletedThreadId]);
 
   /* -----------------------------
      Fetch sidebar threads (paginated, infinite scroll)
@@ -73,6 +117,7 @@ export default function Sidebar() {
 
       if (!res.ok) {
         if (res.status === 401) {
+          setLibraryPanelFetched(true);
           showCustomToast("Session expired. Please log in again.", { type: "warn" });
           logoutAndNavigate();
           return;
@@ -98,6 +143,47 @@ export default function Sidebar() {
   }
 
   /* -----------------------------
+     Fetch sidebar spaces (paginated, infinite scroll)
+  ------------------------------*/
+  async function fetchSidebarSpaces(page, append) {
+    if (loadingSidebarSpaces) return;
+    setLoadingSidebarSpaces(true);
+    try {
+      const res = await fetchWithAuth(
+        `${import.meta.env.VITE_API_URL}/get-spaces/?page=${page}&page_size=${SIDEBAR_PAGE_SIZE}`,
+        { method: "GET", headers: { "Content-Type": "application/json" } }
+      );
+      const resJson = await res.json();
+
+      if (!res.ok) {
+        if (res.status === 401) {
+          setSpacesPanelFetched(true);
+          showCustomToast("Session expired. Please log in again.", { type: "warn" });
+          logoutAndNavigate();
+          return;
+        }
+        showCustomToast("Failed to load spaces", { type: "error" });
+        return;
+      }
+
+      const data = Array.isArray(resJson) ? resJson : resJson.results ?? resJson.data ?? [];
+      const list = Array.isArray(data) ? data : [];
+      if (append) {
+        setSidebarSpaces((prev) => [...prev, ...list]);
+      } else {
+        setSidebarSpaces(list);
+      }
+      setHasMoreSidebarSpaces(resJson.next != null ? !!resJson.next : list.length >= SIDEBAR_PAGE_SIZE);
+      setSidebarSpacesPage(page);
+      if (page === 1) setSpacesPanelFetched(true);
+    } catch (err) {
+      showCustomToast("Failed to load spaces", { type: "error" });
+    } finally {
+      setLoadingSidebarSpaces(false);
+    }
+  }
+
+  /* -----------------------------
      Infinite scroll: load more when sentinel is visible inside the library panel scroll area
   ------------------------------*/
   useEffect(() => {
@@ -110,7 +196,7 @@ export default function Sidebar() {
       (entries) => {
         const [entry] = entries;
         if (!entry?.isIntersecting) return;
-        if (hasMoreSidebarThreads && !loadingSidebarThreads) {
+        if (isAuthenticated && hasMoreSidebarThreads && !loadingSidebarThreads) {
           fetchSidebarThreads(sidebarThreadsPage + 1, true);
         }
       },
@@ -118,8 +204,72 @@ export default function Sidebar() {
     );
     observer.observe(sentinel);
     return () => observer.disconnect();
-  }, [activePanel, hasMoreSidebarThreads, loadingSidebarThreads, sidebarThreadsPage]);
+  }, [activePanel, isAuthenticated, hasMoreSidebarThreads, loadingSidebarThreads, sidebarThreadsPage]);
 
+  /* -----------------------------
+     Infinite scroll: load more spaces when sentinel is visible
+  ------------------------------*/
+  useEffect(() => {
+    if (activePanel !== "spaces") return;
+    const sentinel = loadMoreSpacesSentinelRef.current;
+    const scrollRoot = libraryScrollRef.current;
+    if (!sentinel || !scrollRoot) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const [entry] = entries;
+        if (!entry?.isIntersecting) return;
+        if (isAuthenticated && hasMoreSidebarSpaces && !loadingSidebarSpaces) {
+          fetchSidebarSpaces(sidebarSpacesPage + 1, true);
+        }
+      },
+      { root: scrollRoot, rootMargin: "100px", threshold: 0 }
+    );
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, [activePanel, isAuthenticated, hasMoreSidebarSpaces, loadingSidebarSpaces, sidebarSpacesPage]);
+
+  /* -----------------------------
+     Create new space: call API, add to sidebar list, then navigate
+  ------------------------------*/
+  async function handleCreateNewSpace() {
+    if (creatingSpace) return;
+    const newSpaceId = crypto.randomUUID();
+    setCreatingSpace(true);
+    try {
+      const res = await fetchWithAuth(
+        `${import.meta.env.VITE_API_URL}/get-or-create-space/`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            space_id: newSpaceId,
+            space_name: "New Space",
+            space_description: "",
+            space_emoji: "",
+          }),
+        }
+      );
+      const data = await res.json();
+
+      if (!res.ok) {
+        if (res.status === 401) {
+          showCustomToast("Session expired. Please log in again.", { type: "warn" });
+          logoutAndNavigate();
+          return;
+        }
+        showCustomToast(data?.detail || data?.error || "Failed to create space", { type: "error" });
+        return;
+      }
+
+      setSidebarSpaces((prev) => [data, ...prev]);
+      navigate(`/space/${newSpaceId}`);
+    } catch (err) {
+      showCustomToast("Failed to create space", { type: "error" });
+    } finally {
+      setCreatingSpace(false);
+    }
+  }
 
   // async function fetchSpaces() {
   //   if (fetchedSpaces) return;
@@ -285,12 +435,17 @@ export default function Sidebar() {
           {activePanel === "spaces" && (
             <>
               <p
-                className="px-3 py-2 text-sm text-gray-500 cursor-pointer"
-                onClick={() => navigate(`/space/${crypto.randomUUID()}`)}
+                className="px-3 py-2 text-sm text-gray-500 cursor-pointer hover:text-gray-700 disabled:opacity-60"
+                onClick={handleCreateNewSpace}
+                role="button"
+                aria-disabled={creatingSpace}
               >
-                + Create new Space
+                {creatingSpace ? "Creating..." : "+ Create new Space"}
               </p>
-              {spacesContainer.map((item) => (
+              {sidebarSpaces.length === 0 && !loadingSidebarSpaces && (
+                <p className="px-3 py-2 text-sm text-gray-500">No spaces yet</p>
+              )}
+              {sidebarSpaces.map((item) => (
                 <Link
                   key={item.space_id}
                   to={`/space/${item.space_id}`}
@@ -301,6 +456,10 @@ export default function Sidebar() {
                     : item.space_name}
                 </Link>
               ))}
+              <div ref={loadMoreSpacesSentinelRef} className="h-2 flex-shrink-0" aria-hidden />
+              {loadingSidebarSpaces && (
+                <p className="px-3 py-2 text-sm text-gray-500">Loading more...</p>
+              )}
             </>
           )}
         </div>

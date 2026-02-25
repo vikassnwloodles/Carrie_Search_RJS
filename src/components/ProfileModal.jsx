@@ -480,7 +480,7 @@ const ProfileModal = ({ profileModalOpen, setProfileModalOpen }) => {
                                             ref={phoneBtnRef}
                                             disabled={disableUpdatePhoneBtn}
                                             type="button"
-                                            className={`h-12 whitespace-nowrap text-white px-4 rounded-md 
+                                            className={`cursor-pointer h-12 whitespace-nowrap text-white px-4 rounded-md 
                                                 ${disableUpdatePhoneBtn ?
                                                     "bg-gray-400 opacity-70 cursor-not-allowed" :
                                                     "hover:bg-teal-700 bg-teal-600"

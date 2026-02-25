@@ -51,7 +51,7 @@ export default function LibraryPage() {
   const { setShowImg } = useSearch();
   const navigate = useNavigate();
   const { logoutAndNavigate } = useAuthUtils();
-  const { threadsContainer, setThreadsContainer } = useSearch();
+  const { threadsContainer, setThreadsContainer, setDeletedThreadId } = useSearch();
 
   const menuRef = useRef(null);
   const loadMoreSentinelRef = useRef(null);
@@ -387,9 +387,10 @@ export default function LibraryPage() {
 
             {/* Threads list */}
             <div className="divide-y border-t">
-              {threads.map((thread) => {
+              {threads.map((thread, index) => {
                 const id = thread.id;
                 const checked = selectedIds.has(id);
+                const isLastThread = index === threads.length - 1;
 
                 return (
                   <div
@@ -421,7 +422,7 @@ export default function LibraryPage() {
                         {id === openMenuId && (
                           <div
                             ref={menuRef}
-                            className="z-[999] flex flex-col absolute text-sm top-7 right-0 bg-white border border-gray-200 p-2 rounded-xl gap-2 w-52 shadow-xl"
+                            className={`z-[999] flex flex-col absolute text-sm right-0 bg-white border border-gray-200 p-2 rounded-xl gap-2 w-52 shadow-xl ${isLastThread ? "bottom-full mb-1" : "top-7"}`}
                           >
                             {!thread.space ? (
                               <span
@@ -643,6 +644,7 @@ export default function LibraryPage() {
           try {
             await deleteThreadAPI(currentThread.thread_id);
             setShowDeleteThreadModal(false);
+            setDeletedThreadId(currentThread.thread_id);
             setThreadsContainer((prev) =>
               prev.filter((thread) => thread.thread_id !== currentThread.thread_id)
             );

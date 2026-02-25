@@ -14,7 +14,8 @@ export function useFireSearch() {
         setStreamStarted,
         setThreadsContainer,
         setImageGenerationStarted,
-        setFileGenerationStarted
+        setFileGenerationStarted,
+        setNewThreadForSidebar,
     } = useSearch();
 
 
@@ -281,6 +282,7 @@ export function useFireSearch() {
                     thread_id: thread_id
                 };
 
+                setNewThreadForSidebar({ thread_id, title: prompt });
                 return [newThread, ...prev];
             });
 

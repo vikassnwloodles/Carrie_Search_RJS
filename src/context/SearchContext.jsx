@@ -24,8 +24,11 @@ export function SearchProvider({ children }) {
     const [spacesContainer, setSpacesContainer] = useState([]);
     const [imageGenerationStarted, setImageGenerationStarted] = useState(false)
     const [fileGenerationStarted, setFileGenerationStarted] = useState(false)
-    const [fetchedSpaces, setFetchedSpaces] = useState(false)
-
+    const [fetchedSpaces, setFetchedSpaces] = useState(false);
+    const [deletedSpaceId, setDeletedSpaceId] = useState(null);
+    const [updatedSpace, setUpdatedSpace] = useState(null);
+    const [newThreadForSidebar, setNewThreadForSidebar] = useState(null);
+    const [deletedThreadId, setDeletedThreadId] = useState(null);
 
     return (
         <SearchContext.Provider value={{
@@ -49,8 +52,16 @@ export function SearchProvider({ children }) {
             setFileGenerationStarted,
             spacesContainer,
             setSpacesContainer,
-            fetchedSpaces, 
-            setFetchedSpaces
+            fetchedSpaces,
+            setFetchedSpaces,
+            deletedSpaceId,
+            setDeletedSpaceId,
+            updatedSpace,
+            setUpdatedSpace,
+            newThreadForSidebar,
+            setNewThreadForSidebar,
+            deletedThreadId,
+            setDeletedThreadId,
         }}>
             {children}
         </SearchContext.Provider>

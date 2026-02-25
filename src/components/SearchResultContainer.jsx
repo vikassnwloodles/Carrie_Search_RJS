@@ -4,7 +4,7 @@ import ThinkingLoader from "./ThinkingLoader";
 import { useSearch } from "../context/SearchContext";
 
 
-const SearchResultContainer = forwardRef(({ threadId, setSelectedText }, ref) => {
+const SearchResultContainer = forwardRef(({ threadId, setSelectedText, loadMoreSentinelRef, hasMoreThread, loadingThread }, ref) => {
   const { searchHistoryContainer, searchStarted, searchInputData } = useSearch()
 
   // console.log(searchHistoryContainer)
@@ -35,20 +35,23 @@ const SearchResultContainer = forwardRef(({ threadId, setSelectedText }, ref) =>
   return (
     <div className="w-full flex flex-col items-center">
       <div id="search-results-container" className={`w-full max-w-4xl`}>
-        {/* <div id="search-results-container" className={`${searchStarted ? "!mb-[35rem]" : ""} w-full max-w-4xl`}> */}
+        {/* Sentinel at TOP: when user scrolls up, load older messages (page 2, 3, ...) */}
+        {threadId && <div ref={loadMoreSentinelRef} className="h-4 flex-shrink-0" aria-hidden />}
+        {threadId && loadingThread && (
+          <p className="py-3 text-sm text-gray-500 text-center">Loading older messages...</p>
+        )}
 
         {searchHistoryContainer.map((item) => {
           return (
             <SearchResult
               key={item._key ?? item.id}
-              // key={item.id ?? item._key}
               response={item.response}
               prompt={item.prompt}
               pk={item.id}
               threadId={threadId}
               uploadedFiles={item.uploaded_files?.map(file => ({
-                ...file,                 // keep everything
-                type: file.content_type, // add/override
+                ...file,
+                type: file.content_type,
                 name: file.file_name,
                 size: file.file_size,
               }))}

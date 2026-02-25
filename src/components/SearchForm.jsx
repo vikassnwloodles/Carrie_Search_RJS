@@ -677,13 +677,13 @@ const SearchForm = ({ isThreadPage, threadId, selectedText = "", setSelectedText
             <form
                 id="search-form"
                 // className="z-10 w-full max-w-4xl pb-12 bg-[#fcfcf9] rounded-xl"
-                className={`z-10 ${true ? "" : "w-full"} max-w-4xl pb-12 rounded-xl ${isThreadPage ? "fixed -bottom-5 !w-full" : ""} ${embedInModal ? "left-1/2 -translate-x-1/2" : ""}`}
+                className={`z-10 w-full max-w-4xl min-w-0 pb-12 rounded-xl ${isThreadPage ? "fixed -bottom-5 !w-full" : ""} ${embedInModal ? "left-1/2 -translate-x-1/2" : ""}`}
                 onSubmit={(e) => {
                     e.preventDefault();
                     handleSearchSubmit();
                 }}
             >
-                <div className={`relative flex items-center rounded-xl ${isThreadPage ? "!w-full !left-0" : ""} ${styles}`} id="search-width">
+                <div className={`relative flex items-center rounded-xl ${isThreadPage ? "!w-full !left-0" : ""} ${styles}`} id="search-width" style={{ maxWidth: isThreadPage ? "none" : undefined }}>
                     <div
                         id="searchbox_parent_div"
                         // className={`w-full border border-gray-200 rounded-xl p-2 pb-12 bg-white shadow-sm transition-shadow focus-within:outline-none focus-within:ring-2 focus-within:ring-teal-500`}
@@ -804,13 +804,12 @@ const SearchForm = ({ isThreadPage, threadId, selectedText = "", setSelectedText
                         setMainDropdownOpen={setMainDropdownOpen}
                         setShowConnectSubmenu={setShowConnectSubmenu}
                     />
+                    <SearchSuggestionsBox
+                        ref={searchBoxRef}
+                        searchSuggestions={searchSuggestions}
+                        handleSearchSubmit={handleSearchSubmit}
+                    />
                 </div >
-                <SearchSuggestionsBox
-                    ref={searchBoxRef}
-                    searchSuggestions={searchSuggestions}
-                    mt={1}
-                    handleSearchSubmit={handleSearchSubmit}
-                />
             </form >
         </>
     )

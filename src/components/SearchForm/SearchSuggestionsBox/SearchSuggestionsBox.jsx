@@ -1,35 +1,46 @@
 import React, { forwardRef } from 'react'
 
 const SearchSuggestionsBox = forwardRef(
-    ({ searchSuggestions, mt, handleSearchSubmit }, ref) => {
+    ({ searchSuggestions, handleSearchSubmit }, ref) => {
         if (!searchSuggestions || searchSuggestions.length === 0) {
-            return <></>
-        } else {
-            return (
-                <div className={`absolute mt-${mt}`}>
-                    {searchSuggestions.map((item, index) => (
-                        <div
-                            onClick={() => { ref.current.innerText = item; handleSearchSubmit() }}
-                            key={index}
-                            id="search-width"
-                            className={`
-                        max-w-4xl w-full
-                        border border-gray-200
-                        pl-7 py-2 bg-white shadow-sm
-                        transition-shadow
-                        ${index === searchSuggestions.length - 1 && "rounded-b-xl"}
-                        focus-within:outline-none
-                        focus-within:ring-2 focus-within:ring-teal-500
-                        flex-col !items-start !text-left
-                        cursor-pointer
-                        `}
-                        >
-                            {item}
-                        </div>
-                    ))}
-                </div>
-            )
+            return null;
         }
+        return (
+            <div className="absolute top-full left-0 right-0 z-10 mt-0.5">
+                {searchSuggestions.map((item, index) => (
+                    <div
+                        key={index}
+                        role="button"
+                        tabIndex={0}
+                        onClick={() => {
+                            if (ref?.current) {
+                                ref.current.innerText = item;
+                                handleSearchSubmit();
+                            }
+                        }}
+                        onKeyDown={(e) => {
+                            if (e.key === "Enter" || e.key === " ") {
+                                e.preventDefault();
+                                if (ref?.current) {
+                                    ref.current.innerText = item;
+                                    handleSearchSubmit();
+                                }
+                            }
+                        }}
+                        className={`
+                            w-full border border-t-0 border-gray-200
+                            pl-7 py-2.5 bg-white shadow-sm
+                            text-left text-base
+                            ${index === searchSuggestions.length - 1 ? "rounded-b-xl" : ""}
+                            hover:bg-gray-50
+                            cursor-pointer
+                        `}
+                    >
+                        {item}
+                    </div>
+                ))}
+            </div>
+        );
     })
 
 export default SearchSuggestionsBox

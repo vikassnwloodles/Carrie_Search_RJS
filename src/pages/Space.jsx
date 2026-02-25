@@ -127,13 +127,16 @@ export default function Space() {
     const location = useLocation();
     const { thread } = location.state || {};
 
-    const { setShowImg, setSpacesContainer } = useSearch()
+    const { setShowImg, setSpacesContainer, setDeletedSpaceId, setUpdatedSpace } = useSearch()
     const { spaceId } = useParams();
     const navigate = useNavigate();
     const { addThreadToSpace } = useAddThreadToSpace();
 
     const moreOptionsRef = useRef(null)
     const fileInputRef = useRef(null);
+    const spaceThreadsSentinelRef = useRef(null);
+
+    const SPACE_THREADS_PAGE_SIZE = 20;
 
     const [uploading, setUploading] = useState(false);
     const [spaceName, setSpaceName] = useState("New Space");
@@ -143,6 +146,9 @@ export default function Space() {
     const [showPicker, setShowPicker] = useState(false)
     const [text, setText] = useState("")
     const [spaceThreads, setSpaceThreads] = useState([])
+    const [spaceThreadsPage, setSpaceThreadsPage] = useState(1)
+    const [hasMoreSpaceThreads, setHasMoreSpaceThreads] = useState(true)
+    const [loadingSpaceThreads, setLoadingSpaceThreads] = useState(false)
     const [showMoreOptions, setShowMoreOptions] = useState(false)
     const [openSettingsModal, setOpenSettingsModal] = useState(false);
     const [openDeleteConfirmModal, setOpenDeleteConfirmModal] = useState(false);
@@ -249,6 +255,7 @@ export default function Space() {
                         : space
                 )
             );
+            setUpdatedSpace(respJson);
 
             return {
                 success: true,
@@ -263,29 +270,39 @@ export default function Space() {
     }
 
 
-    async function get_threads_by_space() {
+    async function get_threads_by_space(page, append) {
+        if (loadingSpaceThreads) return;
+        setLoadingSpaceThreads(true);
         try {
-            const resp = await fetchWithAuth(`${import.meta.env.VITE_API_URL}/get-threads-by-space/${spaceId}/`, {
-                method: "GET"
-            })
-
-            const respJson = await resp.json()
+            const url = `${import.meta.env.VITE_API_URL}/get-threads-by-space/${spaceId}/?page=${page}&page_size=${SPACE_THREADS_PAGE_SIZE}`;
+            const resp = await fetchWithAuth(url, { method: "GET", headers: { "Content-Type": "application/json" } });
+            const respJson = await resp.json();
 
             if (!resp.ok) {
                 if (resp.status === 401) {
-                    // SESSOIN EXPIRED
+                    // SESSION EXPIRED
                 } else {
-                    showCustomToast(respJson, { type: "error" });
+                    showCustomToast(respJson?.detail || respJson?.error || "Failed to load threads", { type: "error" });
                 }
-            } else {
-                // SUCCESS
-                setSpaceThreads(respJson)
+                return;
             }
+
+            const data = Array.isArray(respJson) ? respJson : respJson.results ?? respJson.data ?? [];
+            const list = Array.isArray(data) ? data : [];
+
+            if (append) {
+                setSpaceThreads((prev) => [...(Array.isArray(prev) ? prev : []), ...list]);
+            } else {
+                setSpaceThreads(list);
+            }
+
+            const hasNext = respJson.next != null ? !!respJson.next : list.length >= SPACE_THREADS_PAGE_SIZE;
+            setHasMoreSpaceThreads(append && list.length === 0 ? false : hasNext);
+            setSpaceThreadsPage(page);
         } catch (e) {
-            // SOMETHING WENT WRONG
             showCustomToast({ message: "Something went wrong" }, { type: "error" });
         } finally {
-
+            setLoadingSpaceThreads(false);
         }
     }
 
@@ -420,7 +437,7 @@ export default function Space() {
         const init = async () => {
             setShowImg(false)
             await get_or_create_space()
-            await get_threads_by_space()
+            await get_threads_by_space(1, false)
             await get_space_files()
         }
 
@@ -428,6 +445,26 @@ export default function Space() {
 
         return () => setShowImg(true)
     }, [])
+
+    /* Infinite scroll: load more space threads when sentinel is visible */
+    useEffect(() => {
+        const sentinel = spaceThreadsSentinelRef.current;
+        const scrollRoot = document.querySelector("#dynamic-content-container");
+        if (!sentinel || !scrollRoot) return;
+
+        const observer = new IntersectionObserver(
+            (entries) => {
+                const [entry] = entries;
+                if (!entry?.isIntersecting) return;
+                if (hasMoreSpaceThreads && !loadingSpaceThreads) {
+                    get_threads_by_space(spaceThreadsPage + 1, true);
+                }
+            },
+            { root: scrollRoot, rootMargin: "120px", threshold: 0 }
+        );
+        observer.observe(sentinel);
+        return () => observer.disconnect();
+    }, [spaceId, hasMoreSpaceThreads, loadingSpaceThreads, spaceThreadsPage]);
 
 
     useEffect(() => {
@@ -483,6 +520,7 @@ export default function Space() {
         if (!success) return; // ✅ stop here if failed
 
         setOpenDeleteConfirmModal(false);
+        setDeletedSpaceId(spaceId);
 
         setSpacesContainer(prev =>
             prev.filter(space => space.space_id !== spaceId)
@@ -648,7 +686,7 @@ export default function Space() {
                                     <span>My threads</span>
                                 </div>
                             </div>
-                            {spaceThreads.length === 0 && (
+                            {spaceThreads.length === 0 && !loadingSpaceThreads && (
                                 <div className="border-t border-stone-200 pt-16 text-center">
                                     <p className="text-stone-400 text-sm  m-0">
                                         Your threads will appear here. Ask anything above to get started.
@@ -656,6 +694,10 @@ export default function Space() {
                                 </div>
                             )}
                             <ThreadsList threads={spaceThreads} styles={`divide-y divide-stone-200 border-t border-stone-200`} />
+                            <div ref={spaceThreadsSentinelRef} className="h-4 flex-shrink-0" aria-hidden />
+                            {loadingSpaceThreads && (
+                                <p className="py-3 text-sm text-stone-400 text-center m-0">Loading more...</p>
+                            )}
                         </div>
                     </div>
 

@@ -148,12 +148,12 @@ export default function Home() {
   return (
 
     <>
-      <div className="w-full flex flex-col items-center">
+      <div className="w-full max-w-full min-w-0 flex flex-col items-center overflow-x-hidden">
         {/* <div className="bg-gray-900 flex flex-col items-center min-h-screen justify-center -mt-40"> */}
-        <section className="min-h-screen flex flex-col items-center justify-center -translate-y-[18vh]">
+        <section className="min-h-screen w-full max-w-full min-w-0 flex flex-col items-center justify-center -translate-y-[18vh] px-2">
           <CarrieLogo isHomePage={true} styles={`mb-6`} />
-          <div className="flex flex-col items-center w-120 px-8 gap-2 pb-4">
-            <span className="text-4xl text-[#652F74] font-semibold">How can I help today?</span>
+          <div className="flex flex-col items-center w-full max-w-2xl px-4 sm:px-8 gap-2 pb-4">
+            <span className="text-2xl sm:text-4xl text-[#652F74] font-semibold text-center">How can I help today?</span>
             {/* <span className="text-sm font-medium text-gray-400">Try out new features: Search, Analyze, and Summarize their own files and online content</span> */}
           </div>
           {/* SEARCH FORM GOES HERE */}
@@ -177,20 +177,20 @@ export default function Home() {
             <AlertsForm />
 
             {/* </div> */}
-            <div className="flex flex-col my-12 text-center gap-8">
+            <div className="flex flex-col my-12 text-center gap-8 w-full max-w-full overflow-hidden pl-4 pr-0">
               <div className="text-gray-400 text-lg font-semibold">TESTIMONIALS</div>
-              <div className="text-[#652F74] text-4xl font-semibold">What our Users are saying</div>
-              <div className="relative w-full max-w-6xl">
+              <div className="text-[#652F74] text-2xl sm:text-4xl font-semibold">What our Users are saying</div>
+              {/* w-max so wrapper shrinks to card row width (no blank space); overflow-x-auto for horizontal scroll on narrow viewports */}
+              <div className="relative w-max max-w-full min-w-0 overflow-x-auto scrollbar-hide mx-auto">
 
-                {/* Scroll Container */}
                 <div
-                  className="flex gap-6 overflow-x-auto scroll-smooth snap-x snap-mandatory scrollbar-hide px-2"
+                  className="flex gap-4 sm:gap-6 scroll-smooth snap-x snap-mandatory pl-2 pr-0 min-w-0"
                 >
                   {testimonial_data.map((item) => {
                     return (
                       <div
                         key={item.id}
-                        className="min-w-80 max-w-80 snap-start border border-gray-300 p-6 rounded-xl bg-stone-100 flex-shrink-0"
+                        className="min-w-[280px] sm:min-w-80 max-w-[280px] sm:max-w-80 snap-start border border-gray-300 p-4 sm:p-6 rounded-xl bg-stone-100 flex-shrink-0"
                       >
                         {/* Quote Icon */}
                         <div className="text-left mb-3 gap-2 flex flex-row items-center">
@@ -199,7 +199,7 @@ export default function Home() {
                         </div>
 
                         {/* Testimonial */}
-                        <div className="text-left text-gray-600 mb-4">
+                        <div className="text-left text-gray-600 mb-4 text-sm sm:text-base">
                           {item.testimonial}
                         </div>
 

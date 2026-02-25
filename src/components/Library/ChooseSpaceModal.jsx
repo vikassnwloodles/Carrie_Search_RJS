@@ -17,7 +17,7 @@ export default function ChooseSpaceModal({ currentThread, currentSpace, setThrea
 
     useEffect(() => {
         if (showChooseSpaceModal) {
-            fetchSpaces()
+            fetchSpaces(true)
         }
     }, [showChooseSpaceModal])
 
