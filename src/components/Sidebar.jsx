@@ -14,7 +14,7 @@ export default function Sidebar() {
   const navigate = useNavigate();
   const { logoutAndNavigate } = useAuthUtils();
   const { isAuthenticated } = useAuth();
-  const { deletedSpaceId, setDeletedSpaceId, updatedSpace, setUpdatedSpace, newThreadForSidebar, setNewThreadForSidebar, deletedThreadId, setDeletedThreadId } = useSearch();
+  const { deletedSpaceId, setDeletedSpaceId, updatedSpace, setUpdatedSpace, newThreadForSidebar, setNewThreadForSidebar, deletedThreadId, setDeletedThreadId, newSpaceForSidebar, setNewSpaceForSidebar } = useSearch();
 
   const hoverTimeoutRef = useRef(null);
   const libraryScrollRef = useRef(null);
@@ -102,6 +102,16 @@ export default function Sidebar() {
     setDeletedThreadId(null);
   }, [deletedThreadId, setDeletedThreadId]);
 
+  // Prepend new space to sidebar when Space page creates a space (e.g. via "Add to Space" → "New Space")
+  useEffect(() => {
+    if (!newSpaceForSidebar?.space_id) return;
+    setSidebarSpaces((prev) => {
+      if (prev.some((s) => s.space_id === newSpaceForSidebar.space_id)) return prev;
+      return [newSpaceForSidebar, ...prev];
+    });
+    setNewSpaceForSidebar(null);
+  }, [newSpaceForSidebar, setNewSpaceForSidebar]);
+
   /* -----------------------------
      Fetch sidebar threads (paginated, infinite scroll)
   ------------------------------*/
@@ -122,7 +132,8 @@ export default function Sidebar() {
           logoutAndNavigate();
           return;
         }
-        showCustomToast("Failed to load threads", { type: "error" });
+        if (append) setHasMoreSidebarThreads(false);
+        else showCustomToast("Failed to load threads", { type: "error" });
         return;
       }
 
@@ -136,7 +147,8 @@ export default function Sidebar() {
       setSidebarThreadsPage(page);
       if (page === 1) setLibraryPanelFetched(true);
     } catch (err) {
-      showCustomToast("Failed to load threads", { type: "error" });
+      if (append) setHasMoreSidebarThreads(false);
+      else showCustomToast("Failed to load threads", { type: "error" });
     } finally {
       setLoadingSidebarThreads(false);
     }

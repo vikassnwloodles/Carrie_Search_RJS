@@ -127,7 +127,7 @@ export default function Space() {
     const location = useLocation();
     const { thread } = location.state || {};
 
-    const { setShowImg, setSpacesContainer, setDeletedSpaceId, setUpdatedSpace } = useSearch()
+    const { setShowImg, setSpacesContainer, setDeletedSpaceId, setUpdatedSpace, setNewSpaceForSidebar } = useSearch()
     const { spaceId } = useParams();
     const navigate = useNavigate();
     const { addThreadToSpace } = useAddThreadToSpace();
@@ -191,6 +191,7 @@ export default function Space() {
                 setInstructions(respJson.answer_instructions)
                 if (resp.status === 201) {
                     setSpacesContainer(prev => [respJson, ...prev])
+                    setNewSpaceForSidebar(respJson)
                     if (thread) {
                         addThreadToSpace(thread.thread_id, spaceId)
                     }
@@ -281,6 +282,9 @@ export default function Space() {
             if (!resp.ok) {
                 if (resp.status === 401) {
                     // SESSION EXPIRED
+                } else if (resp.status === 404) {
+                    setSpaceThreads(append ? (prev) => prev : []);
+                    setHasMoreSpaceThreads(false);
                 } else {
                     showCustomToast(respJson?.detail || respJson?.error || "Failed to load threads", { type: "error" });
                 }

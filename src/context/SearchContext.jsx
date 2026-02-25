@@ -29,6 +29,7 @@ export function SearchProvider({ children }) {
     const [updatedSpace, setUpdatedSpace] = useState(null);
     const [newThreadForSidebar, setNewThreadForSidebar] = useState(null);
     const [deletedThreadId, setDeletedThreadId] = useState(null);
+    const [newSpaceForSidebar, setNewSpaceForSidebar] = useState(null);
 
     return (
         <SearchContext.Provider value={{
@@ -62,6 +63,8 @@ export function SearchProvider({ children }) {
             setNewThreadForSidebar,
             deletedThreadId,
             setDeletedThreadId,
+            newSpaceForSidebar,
+            setNewSpaceForSidebar,
         }}>
             {children}
         </SearchContext.Provider>

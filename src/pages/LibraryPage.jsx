@@ -105,7 +105,8 @@ export default function LibraryPage() {
           showCustomToast("Session expired. Please log in again.", { type: "warn" });
           logoutAndNavigate();
         } else {
-          showCustomToast("Failed to load threads", { type: "error" });
+          if (append) setHasMoreThreads(false);
+          else showCustomToast("Failed to load threads", { type: "error" });
         }
         return;
       }
@@ -121,7 +122,8 @@ export default function LibraryPage() {
       if (page === 1) setThreadsPage(1);
       else setThreadsPage((p) => p + 1);
     } catch (err) {
-      showCustomToast("Network error while loading threads", { type: "error" });
+      if (append) setHasMoreThreads(false);
+      else showCustomToast("Network error while loading threads", { type: "error" });
     } finally {
       setLoadingThreads(false);
     }
