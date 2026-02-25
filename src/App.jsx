@@ -20,6 +20,7 @@ import { SearchProvider } from "./context/SearchContext";
 import Thread from "./pages/Thread";
 import CarrieLogo from "./components/CarrieLogo";
 import Space from "./pages/Space";
+import SpacesListPage from "./pages/SpacesListPage";
 import { useLocation } from "react-router-dom";
 import VerifyOtp from "./pages/VerifyOtp";
 
@@ -48,6 +49,7 @@ const App = () => {
                 <Routes>
                   <Route path="/" element={<Home />} />
                   <Route path="/thread/:threadId" element={<Thread />} />
+                  <Route path="/spaces" element={<SpacesListPage />} />
                   <Route path="/space/:spaceId" element={<Space key={location.pathname} />} />
                   <Route path="/about-us" element={<AboutUs />} />
                   <Route path="/how-carrie-works" element={<HowCarrieWorks />} />

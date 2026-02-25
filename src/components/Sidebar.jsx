@@ -343,7 +343,7 @@ export default function Sidebar() {
 
           {/* SPACES */}
           <Link
-            // to="/spaces"
+            to="/spaces"
             className="text-gray-600"
             onMouseEnter={() => openPanel("spaces")}
             onMouseLeave={closePanel}

@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useSearch } from "../context/SearchContext";
 import SearchForm from "../components/SearchForm";
 import EmojiPicker from "emoji-picker-react";
-import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import { showCustomToast } from "../utils/customToast";
 import { fetchWithAuth } from "../api/fetchWithAuth";
 import ThreadsList from "../components/ThreadsList";
@@ -549,7 +549,7 @@ export default function Space() {
                 {/* Top Nav */}
                 <div className="relative flex items-center justify-between px-7 py-3.5 border-b border-black/[0.07]">
                     <div className="flex items-center gap-2 text-sm text-stone-500 ">
-                        <span className="cursor-pointer text-stone-400 hover:text-stone-600 transition-colors">Spaces</span>
+                        <Link to="/spaces" className="cursor-pointer text-stone-400 hover:text-stone-600 transition-colors">Spaces</Link>
                         <span className="text-stone-300">›</span>
                         <span className="text-stone-800 font-medium line-clamp-1">{spaceName || DEFAULT_SPACE_NAME}</span>
                     </div>
