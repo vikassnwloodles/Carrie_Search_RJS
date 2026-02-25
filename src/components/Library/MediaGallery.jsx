@@ -7,7 +7,8 @@ export default function MediaGallery({ media, onDeleteMedia }) {
   const [previewImageFile, setPreviewImageFile] = useState(null);
   const [previewFormKey, setPreviewFormKey] = useState(0);
   const [showFollowUpForm, setShowFollowUpForm] = useState(false);
-  const [followUpImageFile, setFollowUpImageFile] = useState(null);
+  const [followUpImageFiles, setFollowUpImageFiles] = useState([]);
+  const [addedImageUrls, setAddedImageUrls] = useState(() => new Set());
   const [followUpFormKey, setFollowUpFormKey] = useState(0);
   const [openMenuIndex, setOpenMenuIndex] = useState(null);
   const menuRef = React.useRef(null);
@@ -23,19 +24,30 @@ export default function MediaGallery({ media, onDeleteMedia }) {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [openMenuIndex]);
 
-  async function handleAskFollowUp(imageUrl) {
-    try {
-      const res = await fetch(imageUrl);
-      const blob = await res.blob();
-      const file = new File([blob], "image.png", { type: blob.type || "image/png" });
-      setFollowUpImageFile(file);
-      setShowFollowUpForm(true);
-      setFollowUpFormKey((k) => k + 1);
-    } catch (err) {
-      console.error("Failed to attach image for follow-up:", err);
-      setShowFollowUpForm(true);
-      setFollowUpFormKey((k) => k + 1);
-    }
+  function handleAskFollowUp(imageUrl) {
+    setAddedImageUrls((prev) => new Set(prev).add(imageUrl));
+    setShowFollowUpForm(true);
+    setFollowUpImageFiles((prev) => [...prev, { loading: true, imageUrl }]);
+
+    (async () => {
+      try {
+        const res = await fetch(imageUrl);
+        const blob = await res.blob();
+        const file = new File([blob], "image.png", { type: blob.type || "image/png" });
+        file.sourceImageUrl = imageUrl;
+        setFollowUpImageFiles((prev) =>
+          prev.map((item) => (item.loading && item.imageUrl === imageUrl ? file : item))
+        );
+      } catch (err) {
+        console.error("Failed to attach image for follow-up:", err);
+        setFollowUpImageFiles((prev) => prev.filter((item) => !(item.loading && item.imageUrl === imageUrl)));
+        setAddedImageUrls((prev) => {
+          const next = new Set(prev);
+          next.delete(imageUrl);
+          return next;
+        });
+      }
+    })();
   }
 
   // Close preview using ESC
@@ -155,14 +167,16 @@ export default function MediaGallery({ media, onDeleteMedia }) {
                 )}
               </div>
 
-              {/* Follow-up Button (right, always visible) */}
+              {/* Follow-up Button (right, always visible; disabled if already added) */}
               <div
-                className="
+                className={`
                   absolute bottom-3 right-3
-                  pointer-events-auto cursor-pointer
-                "
+                  pointer-events-auto
+                  ${addedImageUrls.has(imageUrl) ? "cursor-not-allowed opacity-60" : "cursor-pointer"}
+                `}
                 onClick={(e) => {
                   e.stopPropagation();
+                  if (addedImageUrls.has(imageUrl)) return;
                   handleAskFollowUp(imageUrl);
                 }}
               >
@@ -194,8 +208,22 @@ export default function MediaGallery({ media, onDeleteMedia }) {
                 key={followUpFormKey}
                 isThreadPage={true}
                 styles="!w-full"
-                initialUploadedFiles={followUpImageFile ? [followUpImageFile] : []}
-                onAttachmentsCleared={() => setShowFollowUpForm(false)}
+                initialUploadedFiles={followUpImageFiles}
+                onUploadedFilesChange={(files) => {
+                  setFollowUpImageFiles(files);
+                  const urls = new Set();
+                  (files || []).forEach((f) => {
+                    if (f?.loading && f?.imageUrl) urls.add(f.imageUrl);
+                    if (f instanceof File && f.sourceImageUrl) urls.add(f.sourceImageUrl);
+                  });
+                  setAddedImageUrls(urls);
+                }}
+                onAttachmentsCleared={() => {
+                setShowFollowUpForm(false);
+                setFollowUpImageFiles([]);
+                setAddedImageUrls(new Set());
+                setFollowUpFormKey((k) => k + 1);
+              }}
               />
             </div>,
             wrapper

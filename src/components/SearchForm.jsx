@@ -13,7 +13,7 @@ import RightControls from './SearchForm/RightControls';
 import { fetchWithAuth } from '../api/fetchWithAuth';
 
 
-const SearchForm = ({ isThreadPage, threadId, selectedText = "", setSelectedText, styles, spaceId=null, showSearchSuggestions=false, initialUploadedFiles = [], onAttachmentsCleared, hideFileMetadataBox = false, embedInModal = false }) => {
+const SearchForm = ({ isThreadPage, threadId, selectedText = "", setSelectedText, styles, spaceId=null, showSearchSuggestions=false, initialUploadedFiles = [], onAttachmentsCleared, onUploadedFilesChange, hideFileMetadataBox = false, embedInModal = false }) => {
 
     const { logoutAndNavigate } = useAuthUtils();
     const {
@@ -90,12 +90,34 @@ const SearchForm = ({ isThreadPage, threadId, selectedText = "", setSelectedText
 
     const [uploadedFiles, setUploadedFiles] = useState(initialUploadedFiles || []);
 
+    // When parent updates the list (adds image, or replaces loading with file), sync state
+    useEffect(() => {
+        const initial = initialUploadedFiles || [];
+        setUploadedFiles((prev) => {
+            if (initial.length > prev.length) return initial;
+            if (initial.length === prev.length) {
+                const anyResolved = initial.some(
+                    (f, i) => (f instanceof File || f instanceof Blob) && prev[i]?.loading === true
+                );
+                if (anyResolved) return initial;
+            }
+            return prev;
+        });
+    }, [initialUploadedFiles]);
+
     // When user removes all attachments (e.g. close thumbnail in follow-up form), notify parent
     useEffect(() => {
         if (uploadedFiles.length === 0 && onAttachmentsCleared) {
             onAttachmentsCleared();
         }
     }, [uploadedFiles.length, onAttachmentsCleared]);
+
+    // When uploaded files list changes (e.g. user removed one), notify parent so it can re-enable "Add follow-up" for that image
+    const onUploadedFilesChangeRef = useRef(onUploadedFilesChange);
+    onUploadedFilesChangeRef.current = onUploadedFilesChange;
+    useEffect(() => {
+        onUploadedFilesChangeRef.current?.(uploadedFiles);
+    }, [uploadedFiles]);
 
     const pickerLoadedRef = useRef(false);
 
@@ -309,13 +331,21 @@ const SearchForm = ({ isThreadPage, threadId, selectedText = "", setSelectedText
         // ✅ CLEAR SEARCH BOX
         searchBoxRef.current.innerHTML = "";
 
+        // Only include actual File/Blob (exclude loading placeholders)
+        const filesToSend = (uploadedFiles || []).filter((f) => f instanceof File || f instanceof Blob);
+        const hasLoadingPlaceholder = (uploadedFiles || []).some((f) => f?.loading === true);
+        if (hasLoadingPlaceholder && filesToSend.length === 0) {
+            showCustomToast("Please wait for the image to finish loading.", { type: "warn" });
+            return;
+        }
+
         // VALIDATE SELECTED FILES AND CALL UPLOAD API
         let uploadedImages = [];
         let uploadedDocs = [];
 
-        if (uploadedFiles && uploadedFiles.length > 0) {
-            for (const file of uploadedFiles) {
-                if (file.type.startsWith("image/")) {
+        if (filesToSend.length > 0) {
+            for (const file of filesToSend) {
+                if (file.type && file.type.startsWith("image/")) {
                     // CALL UPLOAD IMAGE API
                     // try {
                     //     const imageUrl = await callUploadImageApi(file);
@@ -362,12 +392,12 @@ const SearchForm = ({ isThreadPage, threadId, selectedText = "", setSelectedText
         // if (extractedText) text = `${extractedText}# User Query\n${text}`
         if (isThreadPage && threadId) {
             // Existing thread: use current thread_id
-            await fireSearch(text, null, threadId, false, uploadedFiles, selectedText, spaceId)
+            await fireSearch(text, null, threadId, false, filesToSend, selectedText, spaceId)
         } else {
             // New thread: generate new thread_id (Home or Media follow-up form)
             const newThreadId = crypto.randomUUID();
             navigate(`/thread/${newThreadId}`, { state: { shouldFetchThread: false } })
-            await fireSearch(text, null, newThreadId, true, uploadedFiles, null, spaceId)
+            await fireSearch(text, null, newThreadId, true, filesToSend, null, spaceId)
         }
     }
 
