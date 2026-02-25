@@ -91,10 +91,11 @@ export default function MediaGallery({ media, onDeleteMedia }) {
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 gap-6">
         {media.map((item, index) => {
           const imageUrl = item.response.content[0].image_url;
+          const stableKey = item.id ?? item.search_result_id ?? imageUrl ?? index;
 
           return (
             <div
-              key={index}
+              key={stableKey}
               className="
                 group relative rounded-2xl overflow-hidden
                 bg-gray-100 aspect-square cursor-zoom-in
