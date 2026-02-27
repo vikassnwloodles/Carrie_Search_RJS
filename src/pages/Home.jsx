@@ -150,7 +150,7 @@ export default function Home() {
     <>
       <div className="w-full max-w-full min-w-0 flex flex-col items-center overflow-x-hidden">
         {/* <div className="bg-gray-900 flex flex-col items-center min-h-screen justify-center -mt-40"> */}
-        <section className="min-h-screen w-full max-w-full min-w-0 flex flex-col items-center justify-center -translate-y-[18vh] px-2">
+        <section className="w-full max-w-full min-w-0 flex flex-col items-center px-2 pt-4 pb-2">
           <CarrieLogo isHomePage={true} styles={`mb-6`} />
           <div className="flex flex-col items-center w-full max-w-2xl px-4 sm:px-8 gap-2 pb-4">
             <span className="text-2xl sm:text-4xl text-[#652F74] font-semibold text-center">How can I help today?</span>
@@ -171,13 +171,8 @@ export default function Home() {
         {!threadId && (
           // {false && (
           <>
-            {/* <EncryptedBadge /> */}
-            {/* <div className="max-w-6xl bg-stone-100 flex flex-row p-6"> */}
-            {/* <AppPurpose /> */}
-            <AlertsForm />
-
-            {/* </div> */}
-            <div className="flex flex-col my-12 text-center gap-8 w-full max-w-full overflow-hidden pl-4 pr-0">
+            {/* Testimonials: below prompt box, above subscription form */}
+            <div className="flex flex-col mt-0 mb-12 text-center gap-8 w-full max-w-full overflow-hidden pl-4 pr-0">
               <div className="text-gray-400 text-lg font-semibold">TESTIMONIALS</div>
               <div className="text-[#652F74] text-2xl sm:text-4xl font-semibold">What our Users are saying</div>
               {/* w-max so wrapper shrinks to card row width (no blank space); overflow-x-auto for horizontal scroll on narrow viewports */}
@@ -226,6 +221,9 @@ export default function Home() {
               </div>
 
             </div>
+
+            {/* Subscription form (Alerts) */}
+            <AlertsForm />
           </>
         )}
 

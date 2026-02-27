@@ -281,6 +281,45 @@ function RightControls({
                         } absolute right-0 bg-white rounded shadow-lg z-10 ${isThreadPage ? "bottom-full mb-2" : "mt-2"}`}
                     style={{ width: 300 }}
                 >
+                    {/* Select all */}
+                    <div className="p-3 border-b border-slate-100">
+                        <div className="relative">
+                            <span>
+                                <i className="fa-solid fa-check-double mr-2" /> Select all
+                            </span>
+                            <span style={{ fontSize: "0.8rem", display: "block" }}>Enable or disable all sources</span>
+
+                            <div className="relative inline-block w-11 h-5 float-right">
+                                <input
+                                    id="source-select-all"
+                                    type="checkbox"
+                                    checked={
+                                        searchInputData.sourceWeb === true &&
+                                        searchInputData.sourceAcademic === true &&
+                                        searchInputData.sourceFinance === true
+                                    }
+                                    onChange={() => {
+                                        const allOn =
+                                            searchInputData.sourceWeb !== false &&
+                                            searchInputData.sourceAcademic !== false &&
+                                            searchInputData.sourceFinance !== false;
+                                        setSearchInputData((prev) => ({
+                                            ...prev,
+                                            sourceWeb: !allOn,
+                                            sourceAcademic: !allOn,
+                                            sourceFinance: !allOn,
+                                        }));
+                                    }}
+                                    className="peer appearance-none w-11 h-5 bg-slate-100 rounded-full checked:bg-blue-600 cursor-pointer transition-colors duration-300"
+                                />
+                                <label
+                                    htmlFor="source-select-all"
+                                    className="absolute top-0 left-0 w-5 h-5 bg-white rounded-full border border-slate-300 shadow-sm transition-transform duration-300 peer-checked:translate-x-6 peer-checked:border-blue-600 cursor-pointer"
+                                />
+                            </div>
+                        </div>
+                    </div>
+
                     <div className="p-3">
                         <div className="relative">
                             <span>
@@ -291,11 +330,11 @@ function RightControls({
                             <div className="relative inline-block w-11 h-5 float-right">
                                 <input
                                     id="source-web"
-                                    type="radio"
-                                    name="source"
-                                    value="web"
-                                    defaultChecked
-                                    onChange={() => console.log("source: web")}
+                                    type="checkbox"
+                                    checked={searchInputData.sourceWeb !== false}
+                                    onChange={() =>
+                                        setSearchInputData((prev) => ({ ...prev, sourceWeb: !prev.sourceWeb }))
+                                    }
                                     className="peer appearance-none w-11 h-5 bg-slate-100 rounded-full checked:bg-blue-600 cursor-pointer transition-colors duration-300"
                                 />
                                 <label
@@ -316,10 +355,11 @@ function RightControls({
                             <div className="relative inline-block w-11 h-5 float-right">
                                 <input
                                     id="source-academic"
-                                    type="radio"
-                                    name="source"
-                                    value="academic"
-                                    onChange={() => console.log("source: academic")}
+                                    type="checkbox"
+                                    checked={searchInputData.sourceAcademic === true}
+                                    onChange={() =>
+                                        setSearchInputData((prev) => ({ ...prev, sourceAcademic: !prev.sourceAcademic }))
+                                    }
                                     className="peer appearance-none w-11 h-5 bg-slate-100 rounded-full checked:bg-blue-600 cursor-pointer transition-colors duration-300"
                                 />
                                 <label
@@ -340,10 +380,11 @@ function RightControls({
                             <div className="relative inline-block w-11 h-5 float-right">
                                 <input
                                     id="source-finance"
-                                    type="radio"
-                                    name="source"
-                                    value="sec"
-                                    onChange={() => console.log("source: sec")}
+                                    type="checkbox"
+                                    checked={searchInputData.sourceFinance === true}
+                                    onChange={() =>
+                                        setSearchInputData((prev) => ({ ...prev, sourceFinance: !prev.sourceFinance }))
+                                    }
                                     className="peer appearance-none w-11 h-5 bg-slate-100 rounded-full checked:bg-blue-600 cursor-pointer transition-colors duration-300"
                                 />
                                 <label

@@ -12,7 +12,10 @@ export function SearchProvider({ children }) {
         image_url: "",
         search_mode: "web",
         checkedAIModelValues: localStorage.getItem("model") || "best",
-        search_result_id: null
+        search_result_id: null,
+        sourceWeb: true,
+        sourceAcademic: false,
+        sourceFinance: false,
     });
 
     // Example future states

@@ -60,34 +60,6 @@ export function structuredData(rawText, citationsMetadata) {
 
     /* ---------------- Inline helpers ---------------- */
 
-    function handleInlineCode(text) {
-        // Convert single inline backticks to <code>
-        // Example: `<input />` → <code>&lt;input /&gt;</code>
-        return text.replace(/`([^`]+)`/g, (_, code) => {
-            const escaped = code
-                .replace(/&/g, '&amp;')
-                .replace(/</g, '&lt;')
-                .replace(/>/g, '&gt;');
-            return `<code class="bg-gray-100 px-1 rounded text-sm font-mono">${escaped}</code>`;
-        });
-    }
-
-    // function processInlineFormatting(text) {
-    //     return handleInlineCode(parseItalic(parsebold(text)));
-    // }
-    function processInlineFormatting(text) {
-        return linkify(
-            handleInlineCode(
-                parseItalic(
-                    parsebold(
-                        parseMarkdownLinks(text)
-                    )
-                )
-            )
-        )
-    }
-
-
     function closeOpenBlocks() {
         if (inList) {
             htmlBuilder.push('</ul>');
@@ -391,6 +363,27 @@ function parsebold(text) {
     return text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
 }
 
+function handleInlineCode(text) {
+    return text.replace(/`([^`]+)`/g, (_, code) => {
+        const escaped = code
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;');
+        return `<code class="bg-gray-100 px-1 rounded text-sm font-mono">${escaped}</code>`;
+    });
+}
+
+function processInlineFormatting(text) {
+    return linkify(
+        handleInlineCode(
+            parseItalic(
+                parsebold(
+                    parseMarkdownLinks(text)
+                )
+            )
+        )
+    );
+}
 
 // function attachEventHandlers(uniqueId) {
 // let hideTimeout; // store timeout ID
