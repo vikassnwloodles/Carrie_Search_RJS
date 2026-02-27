@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useLayoutEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { showCustomToast } from "../utils/customToast";
 import ThinkingLoader from "./ThinkingLoader";
@@ -25,6 +25,46 @@ export default function SearchResponseContainer({
     imageGenerationStarted,
     fileGenerationStarted
   } = useSearch();
+
+  const showOrb =
+    searchStarted &&
+    searchResultId === searchInputData.search_result_id &&
+    !imageGenerationStarted &&
+    !fileGenerationStarted;
+
+  /* ---------- Inline orb at end of streamed text (same line); only when text has started rendering ---------- */
+  useLayoutEffect(() => {
+    const container = responseContainerRef.current;
+    if (!container) return;
+
+    const orbId = `thinking-orb-${uniqueId}`;
+    let orb = container.querySelector(`#${orbId}`);
+    if (orb) orb.remove();
+
+    if (!showOrb || !content) return;
+
+    const orbSpan = document.createElement("span");
+    orbSpan.id = orbId;
+    orbSpan.className = "inline-block align-middle ml-0.5";
+    orbSpan.setAttribute("aria-hidden", "true");
+    orbSpan.innerHTML = `
+      <span class="relative inline-block w-3 h-3 align-middle">
+        <span class="block w-3 h-3 bg-blue-500 rounded-full animate-pulse"></span>
+        <span class="absolute inset-0 block w-3 h-3 bg-blue-400 rounded-full animate-ping opacity-75"></span>
+      </span>
+    `;
+
+    const lastChild = container.lastChild;
+    if (lastChild && lastChild.nodeType === Node.ELEMENT_NODE) {
+      lastChild.appendChild(orbSpan);
+    } else {
+      container.appendChild(orbSpan);
+    }
+
+    return () => {
+      container.querySelector(`#${orbId}`)?.remove();
+    };
+  }, [content, showOrb, uniqueId]);
 
   /* ---------- COPY TO CLIPBOARD ---------- */
   const copyResponseToClipboard = async () => {
@@ -186,16 +226,13 @@ export default function SearchResponseContainer({
               id={`response-text-inner-${uniqueId}`}
               dangerouslySetInnerHTML={{ __html: content }}
             />
-            {/* Thinking orb at the end of streaming text; no label once stream has started */}
-            {searchStarted && searchResultId === searchInputData.search_result_id ? (
-              imageGenerationStarted ? (
-                <ThinkingLoader text="Generating..." />
-              ) : fileGenerationStarted ? (
-                <ThinkingLoader text="Generating File..." />
-              ) : (
-                <ThinkingLoader text={content ? "" : "Thinking..."} />
-              )
-            ) : null}
+            {/* Orb is injected inline at end of text via useLayoutEffect. When no content yet, show loader on its own line. */}
+            {searchStarted && searchResultId === searchInputData.search_result_id && !content && (
+              <ThinkingLoader text="Thinking..." />
+            )}
+            {searchStarted && searchResultId === searchInputData.search_result_id && (imageGenerationStarted || fileGenerationStarted) && (
+              <ThinkingLoader text={imageGenerationStarted ? "Generating..." : "Generating File..."} />
+            )}
           </>
         )}
     </div>
