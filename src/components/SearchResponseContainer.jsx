@@ -157,18 +157,7 @@ export default function SearchResponseContainer({
         </button>
       </div>
 
-      {/* Thinking Loader */}
-      {(searchStarted &&
-        searchResultId === searchInputData.search_result_id) ? (
-        imageGenerationStarted ? (
-          <ThinkingLoader text="Generating..." />
-        ) : fileGenerationStarted ? <ThinkingLoader text="Generating File..." />
-          : !content ? (
-            <ThinkingLoader text="Thinking..." />
-          ) : null
-      ) : null}
-
-      {/* Content */}
+      {/* Content (streaming text flows first, orb follows at the end like ChatGPT) */}
       {imageURL ? (!imageDeleted ? (
         <img
           src={imageURL}
@@ -191,11 +180,23 @@ export default function SearchResponseContainer({
         </button>
         </>
         : (
-          <div
-            ref={responseContainerRef}
-            id={`response-text-inner-${uniqueId}`}
-            dangerouslySetInnerHTML={{ __html: content }}
-          />
+          <>
+            <div
+              ref={responseContainerRef}
+              id={`response-text-inner-${uniqueId}`}
+              dangerouslySetInnerHTML={{ __html: content }}
+            />
+            {/* Thinking orb at the end of streaming text; no label once stream has started */}
+            {searchStarted && searchResultId === searchInputData.search_result_id ? (
+              imageGenerationStarted ? (
+                <ThinkingLoader text="Generating..." />
+              ) : fileGenerationStarted ? (
+                <ThinkingLoader text="Generating File..." />
+              ) : (
+                <ThinkingLoader text={content ? "" : "Thinking..."} />
+              )
+            ) : null}
+          </>
         )}
     </div>
   );
