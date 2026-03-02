@@ -53,12 +53,12 @@ const App = () => {
           {/* Sidebar: when mobile overlay open it's portaled to body; otherwise here (hidden on mobile when closed, visible on md+) */}
           {!showMobileOverlay && (
             <div
-              className={`fixed md:relative inset-y-0 left-0 w-[320px] md:w-auto flex-shrink-0 h-full min-h-0 md:min-h-full transition-transform duration-300 ease-out ${sidebarMobileOpen ? "translate-x-0 z-[60]" : "-translate-x-full md:translate-x-0 z-50 md:z-auto"}`}
+              className={`fixed md:relative inset-y-0 left-0 w-[320px] md:w-auto flex-shrink-0 h-full min-h-0 md:min-h-full transition-transform duration-300 ease-out ${sidebarMobileOpen ? "translate-x-0 z-[60]" : "-translate-x-full md:translate-x-0 z-50 md:z-30"}`}
             >
               <Sidebar onClose={() => setSidebarMobileOpen(false)} />
             </div>
           )}
-          <main id="main-content-area" className="flex-1 flex flex-col min-w-0 relative z-[60] md:z-auto">
+          <main id="main-content-area" className="flex-1 flex flex-col min-w-0 relative z-[60] md:z-0">
             <Header onSidebarToggle={() => setSidebarMobileOpen((v) => !v)} />
 
             <div id="dynamic-content-container" className="flex-1 flex flex-col items-center w-full min-w-0 px-4 overflow-y-auto overflow-x-hidden">

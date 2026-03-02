@@ -59,7 +59,7 @@ export default function Sidebar({ onClose }) {
   const closePanel = () => {
     hoverTimeoutRef.current = setTimeout(() => {
       setActivePanel(null);
-    }, 120);
+    }, 300);
   };
 
   useEffect(() => {
@@ -379,7 +379,7 @@ export default function Sidebar({ onClose }) {
         {isAuthenticated && <BottomUserProfileSection />}
       </aside>
 
-      {/* SECONDARY SIDEBAR (flyout) */}
+      {/* SECONDARY SIDEBAR (flyout) - left-20 sits flush to the right of the primary sidebar */}
       <aside
         onMouseEnter={() => openPanel(activePanel)}
         onMouseLeave={closePanel}
