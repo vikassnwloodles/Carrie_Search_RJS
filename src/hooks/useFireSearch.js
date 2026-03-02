@@ -27,10 +27,11 @@ export function useFireSearch() {
         setSearchStarted(true)
         setSearchInputData(prev => ({ ...prev, search_result_id }))
 
-        let fullText = "";
-        let imageUrl = "";
-        let docUrl = "";
-        let docName = ""
+            let fullText = "";
+            let annotations = [];
+            let imageUrl = "";
+            let docUrl = "";
+            let docName = ""
 
         try {
             if (search_result_id) {
@@ -43,7 +44,7 @@ export function useFireSearch() {
                                 prompt: prompt,
                                 response: {
                                     ...item.response,
-                                    content: [{ text: fullText, image_url: imageUrl, doc_url: docUrl, doc_name: docName }]
+                                    content: [{ text: fullText, image_url: imageUrl, doc_url: docUrl, doc_name: docName, annotations }]
                                 },
                             }
                             : item
@@ -57,9 +58,9 @@ export function useFireSearch() {
                         id: null,
                         _key: crypto.randomUUID(),
                         prompt: prompt,
-                        response: {
-                            content: [{ text: fullText, image_url: imageUrl, doc_url: docUrl, doc_name: docName }]
-                        },
+                response: {
+                                    content: [{ text: fullText, image_url: imageUrl, doc_url: docUrl, doc_name: docName, annotations: [] }]
+                                },
                         uploaded_files: uploadedFiles.map(file => {
                             const base = {
                                 file_name: file.name,
@@ -149,9 +150,32 @@ export function useFireSearch() {
                 } else if (is_downloadable_file_generation) {
                     docData = buffer
                     continue
-                }
-                else {
-                    fullText = buffer
+                } else {
+                    // Parse __A__ annotation lines (GPT sources); accumulate text and annotations
+                    let rest = buffer
+                    let textPart = ""
+                    const newAnns = []
+                    while (rest.includes("__A__")) {
+                        const i = rest.indexOf("__A__")
+                        textPart += rest.slice(0, i)
+                        const after = rest.slice(i + 5)
+                        const j = after.indexOf("\n")
+                        if (j === -1) {
+                            rest = rest.slice(i)
+                            break
+                        }
+                        try {
+                            newAnns.push(JSON.parse(after.slice(0, j)))
+                        } catch (_) {}
+                        rest = after.slice(j + 1)
+                    }
+                    if (!rest.includes("__A__")) {
+                        textPart += rest
+                        rest = ""
+                    }
+                    fullText = fullText + textPart
+                    annotations = [...annotations, ...newAnns]
+                    buffer = rest
                 }
 
                 // if (is_image_generation) {
@@ -181,7 +205,8 @@ export function useFireSearch() {
                 // fullText += chunk;
 
                 // 🔴 live UI update
-                if (fullText.length % 20 === 0) {
+                const displayText = fullText + (buffer.startsWith("__A__") ? "" : buffer);
+                if (displayText.length % 20 === 0) {
                     flushSync(() => {
                         setSearchHistoryContainer(prev =>
                             prev.map(item =>
@@ -192,7 +217,7 @@ export function useFireSearch() {
                                         prompt: prompt,
                                         response: {
                                             ...item.response,
-                                            content: [{ text: fullText, image_url: imageUrl, doc_url: docUrl, doc_name: docName }]
+                                            content: [{ text: displayText, image_url: imageUrl, doc_url: docUrl, doc_name: docName, annotations }]
                                         },
                                     }
                                     : item
@@ -202,8 +227,9 @@ export function useFireSearch() {
                 }
             }
 
+            const finalText = fullText + (buffer.startsWith("__A__") ? "" : buffer);
             if (is_error) {
-                fullText = errorData
+                fullText = errorData;
             } else if (is_image_generation) {
                 imageData = JSON.parse(imageData)
                 if ("error" in imageData) {
@@ -221,6 +247,7 @@ export function useFireSearch() {
                 }
             }
 
+            const displayContentText = is_error ? fullText : finalText;
             flushSync(() => {
                 setSearchHistoryContainer(prev =>
                     prev.map(item =>
@@ -231,7 +258,7 @@ export function useFireSearch() {
                                 prompt: prompt,
                                 response: {
                                     ...item.response,
-                                    content: [{ text: fullText, image_url: imageUrl, doc_url: docUrl, doc_name: docName }]
+                                    content: [{ text: displayContentText, image_url: imageUrl, doc_url: docUrl, doc_name: docName, annotations: is_error ? [] : annotations }]
                                 },
                             }
                             : item

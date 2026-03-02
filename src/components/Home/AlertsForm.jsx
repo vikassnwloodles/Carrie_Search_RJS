@@ -93,88 +93,86 @@ export default function AlertsForm() {
 
 
   return (
-    <div className={`max-w-2xl p-6 bg-white my-6 border border-gray-200 rounded-2xl`}>
-      <div className='text-2xl mb-4 text-center text-[#652F74]'><span className='font-semibold'>Subscribe</span> to Ask Carrie Updates!</div>
-      <div className="space-y-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="flex flex-col">
-            {/* <label className="text-sm font-medium mb-1">Name</label> */}
+    <div className="max-w-2xl w-full p-4 sm:p-6 bg-white my-4 sm:my-6 border border-gray-200 rounded-2xl mx-2 sm:mx-0">
+      <div className="text-xl sm:text-2xl mb-3 sm:mb-4 text-center text-[#652F74] px-1">
+        <span className="font-semibold">Subscribe</span> to Ask Carrie Updates!
+      </div>
+      <div className="space-y-3 sm:space-y-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
+          <div className="flex flex-col min-w-0">
             <input
               placeholder='Name'
               type="text"
               name="name"
               value={formData.name}
               onChange={handleChange}
-              className="border-2 border-[#652F74] px-3 py-2 focus:outline-none focus:ring-1 focus:ring-[#652F74]"
+              className="border-2 border-[#652F74] px-3 py-2.5 sm:py-2 focus:outline-none focus:ring-1 focus:ring-[#652F74] min-w-0 rounded"
             />
           </div>
 
-          <div className="flex flex-col">
-            {/* <label className="text-sm font-medium mb-1">Mobile</label> */}
+          <div className="flex flex-col min-w-0">
             <input
               placeholder='Mobile'
               type="tel"
               name="mobile"
               value={formData.mobile}
               onChange={handleChange}
-              className="border-2 border-[#652F74] px-3 py-2 focus:outline-none focus:ring-1 focus:ring-[#652F74]"
+              className="border-2 border-[#652F74] px-3 py-2.5 sm:py-2 focus:outline-none focus:ring-1 focus:ring-[#652F74] min-w-0 rounded"
             />
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="flex flex-col">
-            {/* <label className="text-sm font-medium mb-1">Email</label> */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
+          <div className="flex flex-col min-w-0">
             <input
               placeholder='Email'
               type="email"
               name="email"
               value={formData.email}
               onChange={handleChange}
-              className="border-2 border-[#652F74] px-3 py-2 focus:outline-none focus:ring-1 focus:ring-[#652F74]"
+              className="border-2 border-[#652F74] px-3 py-2.5 sm:py-2 focus:outline-none focus:ring-1 focus:ring-[#652F74] min-w-0 rounded"
             />
           </div>
 
-          <div className="flex flex-col">
-            {/* <label className="text-sm font-medium mb-1">ZIP</label> */}
+          <div className="flex flex-col min-w-0">
             <input
               placeholder='ZIP'
               type="text"
               name="zip_code"
               value={formData.zip_code}
               onChange={handleChange}
-              className="border-2 border-[#652F74] px-3 py-2 focus:outline-none focus:ring-1 focus:ring-[#652F74]"
+              className="border-2 border-[#652F74] px-3 py-2.5 sm:py-2 focus:outline-none focus:ring-1 focus:ring-[#652F74] min-w-0 rounded"
             />
           </div>
         </div>
 
-        <div className="flex items-center space-x-3 bg-gray-50 p-3 rounded">
+        <div className="flex items-center gap-2 sm:gap-3 bg-gray-50 p-2.5 sm:p-3 rounded min-w-0">
           <img
             src="https://flagcdn.com/w20/us.png"
             alt="US Flag"
-            className="w-6 h-4"
+            className="w-6 h-4 flex-shrink-0"
           />
-          <span className="text-sm font-medium">+1</span>
+          <span className="text-sm font-medium flex-shrink-0">+1</span>
           <input
             type="tel"
             name="phone"
             placeholder="phone number to receive alerts"
             value={formData.phone}
             onChange={handleChange}
-            className="flex-1 border border-gray-300 px-3 py-2 rounded focus:outline-none focus:ring-1 focus:ring-[#652F74]"
+            className="flex-1 min-w-0 border border-gray-300 px-3 py-2.5 sm:py-2 rounded focus:outline-none focus:ring-1 focus:ring-[#652F74]"
           />
         </div>
 
-        <div className="flex items-start space-x-3 pt-2">
+        <div className="flex items-start gap-2 sm:gap-3 pt-2">
           <input
             type="checkbox"
             name="text_alerts"
             id="textAlerts"
             checked={formData.text_alerts}
             onChange={handleChange}
-            className="mt-1 w-4 h-4 border-2 border-gray-400 focus:ring-1 focus:ring-[#652F74]"
+            className="mt-1 w-4 h-4 flex-shrink-0 border-2 border-gray-400 focus:ring-1 focus:ring-[#652F74] rounded"
           />
-          <label htmlFor="textAlerts" className="text-sm">
+          <label htmlFor="textAlerts" className="text-xs sm:text-sm min-w-0">
             <span className="font-bold text-[#652F74]">Text me with alerts</span>
             <br />
             <span className="text-gray-700">
@@ -186,7 +184,7 @@ export default function AlertsForm() {
 
         <button
           onClick={handleSubmit}
-          className="w-full md:w-auto px-6 py-2 bg-[#652F74] text-white font-medium rounded hover:bg-indigo-700 transition-colors"
+          className="w-full md:w-auto px-6 py-3 sm:py-2 bg-[#652F74] text-white font-medium rounded hover:bg-indigo-700 transition-colors touch-manipulation"
         >
           Submit
         </button>

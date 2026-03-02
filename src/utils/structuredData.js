@@ -41,7 +41,50 @@ function linkify(text) {
 
 
 
-export function structuredData(rawText, citationsMetadata) {
+// Placeholder uses guillemets so it's never parsed as markdown (_ or *)
+const CITE_OPEN = "\u00AB";
+const CITE_CLOSE = "\u00BB";
+const CITE_PLACEHOLDER_REGEX = new RegExp(`${CITE_OPEN}CITE:(\\d+)${CITE_CLOSE}`, "g");
+
+/** Injects «CITE:0», «CITE:1», ... at end_index so pills appear after cited phrase. Inserts from end to start so indices stay valid. */
+export function injectCitationPlaceholders(text, annotations) {
+    if (!annotations?.length) return text;
+    const withIndex = annotations
+        .map((a, i) => {
+            const end = a != null ? Number(a.end_index) : NaN;
+            return Number.isFinite(end) ? { ...a, end_index: end, _i: i } : null;
+        })
+        .filter(Boolean)
+        .sort((a, b) => b.end_index - a.end_index);
+    let out = text;
+    for (const { end_index, _i } of withIndex) {
+        const idx = Math.min(end_index, out.length);
+        out = out.slice(0, idx) + `${CITE_OPEN}CITE:${_i}${CITE_CLOSE}` + out.slice(idx);
+    }
+    return out;
+}
+
+function expandCitationPlaceholders(text, annotations) {
+    if (!annotations?.length) return text;
+    return text.replace(CITE_PLACEHOLDER_REGEX, (_, i) => getSingleCitationPillHtml(annotations[parseInt(i, 10)]));
+}
+
+function escapeHtml(s) {
+    if (s == null) return "";
+    const t = String(s);
+    return t.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+}
+
+function getSingleCitationPillHtml(annotation) {
+    if (!annotation?.url) return "";
+    const domain = getDomain(annotation.url).replace(/^www\./, "");
+    const label = escapeHtml(domain || annotation.title || "Source");
+    const title = escapeHtml(annotation.title || annotation.url);
+    const url = annotation.url.replace(/"/g, "&quot;");
+    return `<a href="${url}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center ml-1 no-underline whitespace-nowrap" aria-label="${title}"><span class="inline-flex text-xs rounded-full px-2 py-0.5 font-mono text-gray-600 bg-gray-100 border border-gray-300 hover:bg-gray-200 cursor-pointer transition-colors">${label}</span></a>`;
+}
+
+export function structuredData(rawText, citationsMetadata, annotations) {
     // Remove <think> blocks
     rawText = rawText.replace(/<think>.*?<\/think>/gs, '');
 
@@ -159,9 +202,11 @@ export function structuredData(rawText, citationsMetadata) {
             const [mainText, citationsHtml] =
                 getMainTextAndCitationsHtml(trimmedLine, citationsMetadata);
 
+            const liRaw = annotations?.length ? expandCitationPlaceholders(mainText.substring(2), annotations) : mainText.substring(2);
+            const liContent = processInlineFormatting(liRaw);
             htmlBuilder.push(
                 `<li class="text-gray-700">
-                    ${processInlineFormatting(mainText.substring(2))}
+                    ${liContent}
                     ${citationsHtml}
                  </li>`
             );
@@ -179,9 +224,11 @@ export function structuredData(rawText, citationsMetadata) {
         const [mainText, citationsHtml] =
             getMainTextAndCitationsHtml(trimmedLine, citationsMetadata);
 
+        const pRaw = annotations?.length ? expandCitationPlaceholders(mainText, annotations) : mainText;
+        const pContent = processInlineFormatting(pRaw);
         htmlBuilder.push(
             `<p class="text-gray-700 leading-relaxed my-2">
-                ${processInlineFormatting(mainText)}
+                ${pContent}
                 ${citationsHtml}
              </p>`
         );
@@ -191,6 +238,13 @@ export function structuredData(rawText, citationsMetadata) {
     closeOpenBlocks();
 
     let content = htmlBuilder.join('');
+
+    // Replace any remaining citation placeholders (e.g. in headings)
+    if (annotations?.length) {
+        content = content.replace(CITE_PLACEHOLDER_REGEX, (_, i) =>
+            getSingleCitationPillHtml(annotations[parseInt(i, 10)])
+        );
+    }
 
     // Wrap tables for horizontal scrolling
     content = content.replace(/<table([\s\S]*?)<\/table>/g, match =>

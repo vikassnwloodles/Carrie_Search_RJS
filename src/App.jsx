@@ -1,3 +1,5 @@
+import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { Routes, Route } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -24,10 +26,23 @@ import SpacesListPage from "./pages/SpacesListPage";
 import { useLocation } from "react-router-dom";
 import VerifyOtp from "./pages/VerifyOtp";
 
+const MOBILE_BREAKPOINT = 768;
+function useIsMobile() {
+  const [isMobile, setIsMobile] = useState(() => typeof window !== "undefined" && window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT - 1}px)`).matches);
+  useEffect(() => {
+    const mql = window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT - 1}px)`);
+    const handler = () => setIsMobile(mql.matches);
+    mql.addEventListener("change", handler);
+    return () => mql.removeEventListener("change", handler);
+  }, []);
+  return isMobile;
+}
 
 const App = () => {
-
   const location = useLocation();
+  const [sidebarMobileOpen, setSidebarMobileOpen] = useState(false);
+  const isMobile = useIsMobile();
+  const showMobileOverlay = isMobile && sidebarMobileOpen;
 
   return (
     <AuthProvider>
@@ -35,9 +50,16 @@ const App = () => {
         <ScrollToTop />
         <ToastContainer />
         <div className="flex h-screen min-w-0 overflow-x-hidden">
-          <Sidebar />
-          <main id="main-content-area" className="flex-1 flex flex-col min-w-0">
-            <Header />
+          {/* Sidebar: when mobile overlay open it's portaled to body; otherwise here (hidden on mobile when closed, visible on md+) */}
+          {!showMobileOverlay && (
+            <div
+              className={`fixed md:relative inset-y-0 left-0 w-[320px] md:w-auto flex-shrink-0 h-full min-h-0 md:min-h-full transition-transform duration-300 ease-out ${sidebarMobileOpen ? "translate-x-0 z-[60]" : "-translate-x-full md:translate-x-0 z-50 md:z-auto"}`}
+            >
+              <Sidebar onClose={() => setSidebarMobileOpen(false)} />
+            </div>
+          )}
+          <main id="main-content-area" className="flex-1 flex flex-col min-w-0 relative z-[60] md:z-auto">
+            <Header onSidebarToggle={() => setSidebarMobileOpen((v) => !v)} />
 
             <div id="dynamic-content-container" className="flex-1 flex flex-col items-center w-full min-w-0 px-4 overflow-y-auto overflow-x-hidden">
               {/* <div id="center-content-wrapper" className="w-full flex flex-col items-center justify-center flex-1"> */}
@@ -64,10 +86,32 @@ const App = () => {
                   <Route path="/terms-of-service" element={<TermsOfService />} />
                 </Routes>
                 {/* </div> */}
-              </div>
             </div>
-          </main>
+          </div>
+        </main>
         </div>
+        {/* Mobile: portal overlay + sidebar to body so overlay reliably receives tap outside */}
+        {showMobileOverlay && createPortal(
+          <>
+            <button
+              type="button"
+              aria-label="Close sidebar"
+              onClick={() => setSidebarMobileOpen(false)}
+              onTouchEnd={(e) => {
+                e.preventDefault();
+                setSidebarMobileOpen(false);
+              }}
+              style={{ position: "fixed", inset: 0, zIndex: 9998, background: "rgba(0,0,0,0.5)", border: "none", cursor: "pointer" }}
+            />
+            <div
+              style={{ position: "fixed", inset: "0 auto 0 0", zIndex: 9999, width: 320, maxWidth: "100%", transition: "transform 0.3s ease-out", pointerEvents: "none" }}
+              className="h-full min-h-0 flex-shrink-0 bg-transparent"
+            >
+              <Sidebar onClose={() => setSidebarMobileOpen(false)} />
+            </div>
+          </>,
+          document.body
+        )}
       </SearchProvider>
     </AuthProvider>
   )

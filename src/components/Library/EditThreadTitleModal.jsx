@@ -36,15 +36,16 @@ export default function EditThreadTitleModal({
     }
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20">
-            <div className="bg-stone-50 rounded-2xl shadow-xl w-[480px] max-w-[95vw] p-6">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/20">
+            <div className="bg-stone-50 rounded-2xl shadow-xl w-full max-w-[480px] p-5 sm:p-6 mx-4">
                 {/* Header */}
                 <div className="flex items-center justify-between mb-5">
-                    <h2 className="text-xl font-bold text-gray-900">Edit Thread Title</h2>
+                    <h2 className="text-lg sm:text-xl font-bold text-gray-900 pr-2">Edit Thread Title</h2>
                     <button
+                        type="button"
                         onClick={() => setShowEditThreadTitleModal(false)}
                         aria-label="Close"
-                        className="cursor-pointer text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-md p-1.5 transition"
+                        className="cursor-pointer text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg p-2 min-w-[44px] min-h-[44px] flex items-center justify-center transition touch-manipulation"
                     >
                         <i className="fa-solid fa-xmark text-sm" />
                     </button>
@@ -61,8 +62,9 @@ export default function EditThreadTitleModal({
                 {/* Footer */}
                 <div className="flex justify-end mt-5">
                     <button
+                        type="button"
                         onClick={handleSave}
-                        className="cursor-pointer px-5 py-2.5 bg-gray-900 hover:bg-gray-700 text-white text-sm font-medium rounded-xl transition"
+                        className="cursor-pointer px-5 py-3 min-h-[44px] bg-gray-900 hover:bg-gray-700 text-white text-sm font-medium rounded-xl transition touch-manipulation"
                     >
                         Save
                     </button>

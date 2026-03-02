@@ -109,8 +109,8 @@ export default function Login() {
   }
 
   return (
-    <div className="bg-white rounded-2xl shadow-[0_0_25px_rgba(0,0,0,0.12)] p-8 w-full max-w-md">
-      <h2 className="text-2xl font-bold text-gray-800 mb-6">Login</h2>
+    <div className="bg-white rounded-2xl shadow-[0_0_25px_rgba(0,0,0,0.12)] p-5 sm:p-8 w-full max-w-md mx-4 sm:mx-auto">
+      <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-6">Login</h2>
 
       <form onSubmit={handleLoginSubmit}>
         <div className="mb-4">
@@ -145,7 +145,7 @@ export default function Login() {
         <button
           type="submit"
           disabled={loading}
-          className="cursor-pointer w-full bg-teal-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-teal-700 transition-colors disabled:opacity-60"
+          className="cursor-pointer w-full bg-teal-600 text-white font-bold py-3 min-h-[44px] px-4 rounded-lg hover:bg-teal-700 transition-colors disabled:opacity-60 touch-manipulation"
         >
           {loading ? "Logging in..." : "Login"}
         </button>

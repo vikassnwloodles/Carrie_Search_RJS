@@ -547,7 +547,7 @@ export default function Space() {
             <div className="w-full min-h-screen flex flex-col">
 
                 {/* Top Nav */}
-                <div className="relative flex items-center justify-between px-7 py-3.5 border-b border-black/[0.07]">
+                <div className="relative flex items-center justify-between px-4 sm:px-6 md:px-7 py-3.5 border-b border-black/[0.07]">
                     <div className="flex items-center gap-2 text-sm text-stone-500 ">
                         <Link to="/spaces" className="cursor-pointer text-stone-400 hover:text-stone-600 transition-colors">Spaces</Link>
                         <span className="text-stone-300">›</span>
@@ -555,13 +555,14 @@ export default function Space() {
                     </div>
                     <div className=" flex items-center gap-2.5">
                         <button
-                            className="bg-transparent border-none cursor-pointer text-stone-400 p-1.5 rounded-md flex items-center hover:bg-stone-200 transition-colors"
+                            type="button"
+                            className="bg-transparent border-none cursor-pointer text-stone-400 p-2.5 min-w-[44px] min-h-[44px] rounded-md flex items-center justify-center hover:bg-stone-200 transition-colors touch-manipulation"
                             onClick={() => setShowMoreOptions(true)}
                         >
                             {icons.moreHoriz}
                         </button>
                         {showMoreOptions &&
-                            <div ref={moreOptionsRef} className="flex flex-col absolute text-sm top-10 right-5 bg-white border border-gray-200 p-2 rounded-xl gap-2 w-48">
+                            <div ref={moreOptionsRef} className="flex flex-col absolute text-sm top-10 right-0 md:right-5 bg-white border border-gray-200 p-2 rounded-xl gap-2 w-48 max-w-[calc(100vw-2rem)] z-50">
                                 <span
                                     className="hover:bg-gray-200 p-2 rounded-md cursor-pointer"
                                     onClick={() => setOpenSettingsModal(true)}
@@ -580,7 +581,7 @@ export default function Space() {
                 </div>
 
                 {/* Main Layout */}
-                <div className="flex flex-1 max-w-5xl mx-auto w-full px-6 gap-8">
+                <div className="flex flex-1 flex-col md:flex-row max-w-5xl mx-auto w-full px-4 sm:px-6 gap-6 md:gap-8">
 
                     {/* Center Content */}
                     <div className="flex-1 pt-14 pb-10">
@@ -623,7 +624,7 @@ export default function Space() {
                                     </div>
 
                                     {showPicker && (
-                                        <div className="absolute top-14 left-0 z-50 shadow-lg">
+                                        <div className="absolute top-14 left-0 right-0 sm:right-auto sm:left-0 z-50 shadow-lg max-w-[min(320px,100vw)]">
                                             <EmojiPicker
                                                 onEmojiClick={(emojiData) => {
                                                     setText(emojiData.emoji);
@@ -664,12 +665,12 @@ export default function Space() {
                                             }
                                         }}
                                         placeholder={DEFAULT_SPACE_NAME}
-                                        className="text-3xl font-normal font-serif text-stone-800 bg-transparent border-0 border-b border-stone-300 outline-none mb-2.5 block w-96 leading-snug placeholder:text-stone-400"
+                                        className="text-2xl sm:text-3xl font-normal font-serif text-stone-800 bg-transparent border-0 border-b border-stone-300 outline-none mb-2.5 block w-full max-w-md leading-snug placeholder:text-stone-400"
                                     />
                                 ) : (
                                     <h1
                                         onClick={() => setEditingName(true)}
-                                        className={`text-3xl font-normal font-serif m-0 mb-2.5 cursor-text tracking-tight ${spaceName ? "text-stone-800" : "text-stone-400"}`}
+                                        className={`text-2xl sm:text-3xl font-normal font-serif m-0 mb-2.5 cursor-text tracking-tight max-w-full truncate ${spaceName ? "text-stone-800" : "text-stone-400"}`}
                                     >
                                         {spaceName || DEFAULT_SPACE_NAME}
                                     </h1>
@@ -684,7 +685,7 @@ export default function Space() {
                                         onBlur={() => { setEditingDesc(false); update_space() }}
                                         onKeyDown={(e) => e.key === "Enter" && setEditingDesc(false)}
                                         placeholder={DEFAULT_DESCRIPTION}
-                                        className="text-sm text-stone-400 bg-transparent border-0 border-b border-stone-300 outline-none w-96 block placeholder:text-stone-300"
+                                        className="text-sm text-stone-400 bg-transparent border-0 border-b border-stone-300 outline-none w-full max-w-md block placeholder:text-stone-300"
                                     />
                                 ) : (
                                     <p
@@ -733,9 +734,9 @@ export default function Space() {
                         </div>
                     </div>
 
-                    {/* Right Sidebar */}
-                    <div className="w-60 flex-shrink-0 pt-10">
-                        <div className="bg-white rounded-2xl border border-stone-200 p-5 flex flex-col gap-5">
+                    {/* Right Sidebar: below content on mobile, right column from md up */}
+                    <div className="w-full md:w-60 flex-shrink-0 pt-6 md:pt-10">
+                        <div className="bg-white rounded-2xl border border-stone-200 p-4 sm:p-5 flex flex-col gap-5">
 
                             {/* Files */}
                             <div>

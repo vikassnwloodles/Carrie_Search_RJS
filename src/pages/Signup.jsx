@@ -144,7 +144,7 @@ export default function SignupForm({ apiEndpoint, onSuccess }) {
 
   return (
     <div className="max-w-3xl mx-auto py-10 animate-fade-in px-4 sm:px-6 lg:px-8">
-      <h1 className="text-4xl font-bold mb-6 text-center text-gray-800">Carrie Client Sign Up Form</h1>
+      <h1 className="text-2xl sm:text-4xl font-bold mb-6 text-center text-gray-800">Carrie Client Sign Up Form</h1>
 
       <p className="text-lg text-gray-700 leading-relaxed mb-4">
         Why settle for Google when you can get more, give more, and help change lives? Carrie isn’t just about making
@@ -152,7 +152,7 @@ export default function SignupForm({ apiEndpoint, onSuccess }) {
         rural children and families nationwide.
       </p>
 
-      <form id="signup-form-new" className="bg-white shadow-md rounded-lg px-8 pt-6 pb-8 mb-4" onSubmit={handleSubmit}>
+      <form id="signup-form-new" className="bg-white shadow-md rounded-lg px-4 sm:px-8 pt-6 pb-8 mb-4" onSubmit={handleSubmit}>
         {/* Personal Information */}
         <h2 className="text-2xl font-semibold text-gray-800 mb-4 border-b pb-2">Personal Information</h2>
 
@@ -326,7 +326,7 @@ export default function SignupForm({ apiEndpoint, onSuccess }) {
 
         <div className="flex items-center justify-center">
           <button
-            className="cursor-pointer bg-teal-600 hover:bg-teal-700 text-white font-bold py-3 px-6 rounded focus:outline-none focus:shadow-outline transition-colors"
+            className="cursor-pointer bg-teal-600 hover:bg-teal-700 text-white font-bold py-3 min-h-[44px] px-6 rounded focus:outline-none focus:shadow-outline transition-colors touch-manipulation"
             type="submit"
             disabled={submitting}
           >

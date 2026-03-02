@@ -148,12 +148,11 @@ export default function Home() {
   return (
 
     <>
-      <div className="w-full max-w-full min-w-0 flex flex-col items-center overflow-x-hidden">
-        {/* <div className="bg-gray-900 flex flex-col items-center min-h-screen justify-center -mt-40"> */}
-        <section className="w-full max-w-full min-w-0 flex flex-col items-center px-2 pt-4 pb-2">
-          <CarrieLogo isHomePage={true} styles={`mb-6`} />
-          <div className="flex flex-col items-center w-full max-w-2xl px-4 sm:px-8 gap-2 pb-4">
-            <span className="text-2xl sm:text-4xl text-[#652F74] font-semibold text-center">How can I help today?</span>
+      <div className="w-full max-w-full min-w-0 flex flex-col items-center overflow-x-hidden px-2 sm:px-4 pb-6 sm:pb-8">
+        <section className="w-full max-w-full min-w-0 flex flex-col items-center px-2 sm:px-4 pt-2 sm:pt-4 pb-2">
+          <CarrieLogo isHomePage={true} styles={`mb-4 sm:mb-6`} />
+          <div className="flex flex-col items-center w-full max-w-2xl px-2 sm:px-6 md:px-8 gap-1 sm:gap-2 pb-3 sm:pb-4">
+            <span className="text-xl sm:text-3xl md:text-4xl text-[#652F74] font-semibold text-center leading-tight">How can I help today?</span>
             {/* <span className="text-sm font-medium text-gray-400">Try out new features: Search, Analyze, and Summarize their own files and online content</span> */}
           </div>
           {/* SEARCH FORM GOES HERE */}
@@ -172,29 +171,25 @@ export default function Home() {
           // {false && (
           <>
             {/* Testimonials: below prompt box, above subscription form */}
-            <div className="flex flex-col mt-0 mb-12 text-center gap-8 w-full max-w-full overflow-hidden pl-4 pr-0">
-              <div className="text-gray-400 text-lg font-semibold">TESTIMONIALS</div>
-              <div className="text-[#652F74] text-2xl sm:text-4xl font-semibold">What our Users are saying</div>
-              {/* w-max so wrapper shrinks to card row width (no blank space); overflow-x-auto for horizontal scroll on narrow viewports */}
-              <div className="relative w-max max-w-full min-w-0 overflow-x-auto scrollbar-hide mx-auto">
-
-                <div
-                  className="flex gap-4 sm:gap-6 scroll-smooth snap-x snap-mandatory pl-2 pr-0 min-w-0"
-                >
+            <div className="flex flex-col mt-0 mb-8 sm:mb-12 text-center gap-4 sm:gap-8 w-full max-w-full overflow-hidden px-3 sm:pl-4 sm:pr-0">
+              <div className="text-gray-400 text-sm sm:text-lg font-semibold">TESTIMONIALS</div>
+              <div className="text-[#652F74] text-xl sm:text-3xl md:text-4xl font-semibold px-1">What our Users are saying</div>
+              <div className="relative w-max max-w-full min-w-0 overflow-x-auto scrollbar-hide mx-auto touch-pan-x">
+                <div className="flex gap-3 sm:gap-6 scroll-smooth snap-x snap-mandatory pl-1 pr-3 sm:pl-2 sm:pr-0 min-w-0">
                   {testimonial_data.map((item) => {
                     return (
                       <div
                         key={item.id}
-                        className="min-w-[280px] sm:min-w-80 max-w-[280px] sm:max-w-80 snap-start border border-gray-300 p-4 sm:p-6 rounded-xl bg-stone-100 flex-shrink-0"
+                        className="min-w-[260px] max-w-[260px] sm:min-w-80 sm:max-w-80 snap-start border border-gray-300 p-3 sm:p-6 rounded-xl bg-stone-100 flex-shrink-0"
                       >
                         {/* Quote Icon */}
-                        <div className="text-left mb-3 gap-2 flex flex-row items-center">
-                          <i className="fa fa-quote-left font-bold text-3xl text-[#652F74]"></i>
-                          <span className="text-xl">{item.name.split(" ")[0][0]}. {item.name.split(" ")[1]}</span>
+                        <div className="text-left mb-2 sm:mb-3 gap-1.5 sm:gap-2 flex flex-row items-center min-w-0">
+                          <i className="fa fa-quote-left font-bold text-2xl sm:text-3xl text-[#652F74] flex-shrink-0"></i>
+                          <span className="text-sm sm:text-xl truncate">{item.name.split(" ")[0][0]}. {item.name.split(" ")[1]}</span>
                         </div>
 
                         {/* Testimonial */}
-                        <div className="text-left text-gray-600 mb-4 text-sm sm:text-base">
+                        <div className="text-left text-gray-600 mb-3 sm:mb-4 text-xs sm:text-base leading-snug">
                           {item.testimonial}
                         </div>
 

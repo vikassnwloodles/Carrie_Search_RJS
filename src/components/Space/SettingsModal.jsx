@@ -28,7 +28,7 @@ export default function SettingsModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       {/* Overlay */}
       <div
         className="absolute inset-0 bg-black/30 backdrop-blur-sm"
@@ -36,14 +36,16 @@ export default function SettingsModal({
       />
 
       {/* Modal */}
-      <div className="relative w-full max-w-2xl bg-white rounded-2xl shadow-xl p-8 z-10">
+      <div className="relative w-full max-w-2xl bg-white rounded-2xl shadow-xl p-6 sm:p-8 mx-4 z-10 max-h-[90vh] overflow-y-auto">
         {/* Header */}
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-xl font-semibold">Settings</h2>
+          <h2 className="text-lg sm:text-xl font-semibold pr-2">Settings</h2>
           <button
+            type="button"
             disabled={loading}
             onClick={onClose}
-            className="disabled:opacity-60 text-gray-500 hover:text-gray-700 cursor-pointer"
+            aria-label="Close"
+            className="disabled:opacity-60 text-gray-500 hover:text-gray-700 cursor-pointer min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg touch-manipulation"
           >
             ✕
           </button>
@@ -83,11 +85,12 @@ export default function SettingsModal({
               </p>
             </div>
 
-            {/* Toggle */}
+            {/* Toggle: padded hit area for touch */}
             <button
+              type="button"
               disabled={loading}
               onClick={() => setIncludeWeb(!includeWeb)}
-              className={`disabled:opacity-60 cursor-pointer relative w-12 h-6 rounded-full transition-colors ${includeWeb ? "bg-teal-600" : "bg-gray-300"
+              className={`disabled:opacity-60 cursor-pointer relative w-12 h-6 rounded-full transition-colors p-1 -m-1 touch-manipulation ${includeWeb ? "bg-teal-600" : "bg-gray-300"
                 }`}
             >
               <span
@@ -99,19 +102,21 @@ export default function SettingsModal({
         </div>
 
         {/* Footer Buttons */}
-        <div className="flex justify-end gap-3">
+        <div className="flex flex-col-reverse sm:flex-row justify-end gap-3">
           <button
+            type="button"
             disabled={loading}
             onClick={onClose}
-            className="disabled:opacity-60 cursor-pointer px-4 py-2 rounded-lg border border-gray-300 text-sm hover:bg-gray-100"
+            className="disabled:opacity-60 cursor-pointer px-4 py-3 min-h-[44px] rounded-lg border border-gray-300 text-sm hover:bg-gray-100 touch-manipulation"
           >
             Cancel
           </button>
 
           <button
+            type="button"
             disabled={loading}
             onClick={onSave}
-            className="disabled:opacity-60 cursor-pointer px-5 py-2 rounded-lg bg-black text-white text-sm hover:opacity-90"
+            className="disabled:opacity-60 cursor-pointer px-5 py-3 min-h-[44px] rounded-lg bg-black text-white text-sm hover:opacity-90 touch-manipulation"
           >
             {loading ? "Saving..." : "Save"}
           </button>

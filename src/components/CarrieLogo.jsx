@@ -6,8 +6,7 @@ function CarrieLogo({ isHomePage = false, styles=`mb-12` }) {
 
     return (<>
         {(showImg || isHomePage) && <><img
-            className={`Carrie-main-logo ${styles}`}
-            style={{ width: "380px" }}
+            className={`Carrie-main-logo max-w-[85vw] sm:max-w-[380px] w-full h-auto ${styles}`}
             // style={{ width: "380px", marginLeft: "-32px" }}
             src="/assets/images/pete.png"
             alt="Carrie"

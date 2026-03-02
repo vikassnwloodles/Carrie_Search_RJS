@@ -29,18 +29,18 @@ export default function ChooseSpaceModal({ currentThread, currentSpace, setThrea
 
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20">
-            {/* <div className="bg-white rounded-2xl shadow-xl w-[420px] max-w-[95vw] p-7"> */}
-            <div className="bg-white rounded-2xl shadow-xl w-[420px] max-w-[95vw] max-h-[80vh] flex flex-col p-7">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/20">
+            <div className="bg-white rounded-2xl shadow-xl w-full max-w-[420px] max-h-[85vh] flex flex-col p-5 sm:p-7 mx-4">
                 {/* Header */}
                 <div className="flex items-center justify-between mb-5 shrink-0">
-                    <h2 className="text-xl font-semibold text-gray-900 tracking-tight">
+                    <h2 className="text-lg sm:text-xl font-semibold text-gray-900 tracking-tight pr-2">
                         Choose Space
                     </h2>
                     <button
+                        type="button"
                         onClick={() => setShowChooseSpaceModal(false)}
                         aria-label="Close"
-                        className="cursor-pointer text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-md p-1 transition"
+                        className="cursor-pointer text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg p-2 min-w-[44px] min-h-[44px] flex items-center justify-center transition touch-manipulation"
                     >
                         <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                             <path

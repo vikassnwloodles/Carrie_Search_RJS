@@ -10,7 +10,7 @@ import { useSearch } from "../context/SearchContext";
 
 const SIDEBAR_PAGE_SIZE = 20;
 
-export default function Sidebar() {
+export default function Sidebar({ onClose }) {
   const navigate = useNavigate();
   const { logoutAndNavigate } = useAuthUtils();
   const { isAuthenticated } = useAuth();
@@ -276,6 +276,7 @@ export default function Sidebar() {
 
       setSidebarSpaces((prev) => [data, ...prev]);
       navigate(`/space/${newSpaceId}`);
+      onClose?.();
     } catch (err) {
       showCustomToast("Failed to create space", { type: "error" });
     } finally {
@@ -313,12 +314,13 @@ export default function Sidebar() {
   return (
     <>
       {/* PRIMARY SIDEBAR */}
-      <aside className="w-20 bg-[#f7f7f4] border-r border-gray-200 p-4 flex flex-col items-center justify-between z-20">
+      <aside className="w-20 h-full min-h-0 bg-[#f7f7f4] border-r border-gray-200 p-4 flex flex-col items-center justify-between z-20 pointer-events-auto">
         <nav className="flex flex-col space-y-6 items-center">
 
           {/* HOME */}
           <Link
             to="/"
+            onClick={onClose}
             className="w-12 h-12 flex items-center justify-center
                        rounded-full bg-gray-200 text-gray-800"
             title="Home"
@@ -329,6 +331,7 @@ export default function Sidebar() {
           {/* LIBRARY */}
           <Link
             to="/library"
+            onClick={onClose}
             className="text-gray-600"
             onMouseEnter={() => openPanel("library")}
             onMouseLeave={closePanel}
@@ -344,6 +347,7 @@ export default function Sidebar() {
           {/* SPACES */}
           <Link
             to="/spaces"
+            onClick={onClose}
             className="text-gray-600"
             onMouseEnter={() => openPanel("spaces")}
             onMouseLeave={closePanel}
@@ -375,7 +379,7 @@ export default function Sidebar() {
         {isAuthenticated && <BottomUserProfileSection />}
       </aside>
 
-      {/* SECONDARY SIDEBAR */}
+      {/* SECONDARY SIDEBAR (flyout) */}
       <aside
         onMouseEnter={() => openPanel(activePanel)}
         onMouseLeave={closePanel}
@@ -384,7 +388,7 @@ export default function Sidebar() {
           bg-white border-r border-gray-200 shadow-lg z-50
           transition-all duration-200 ease-out
           ${activePanel
-            ? "opacity-100 translate-x-0"
+            ? "opacity-100 translate-x-0 pointer-events-auto"
             : "opacity-0 -translate-x-2 pointer-events-none"
           }
         `}
@@ -429,6 +433,7 @@ export default function Sidebar() {
                 <Link
                   key={item.thread_id}
                   to={`/thread/${item.thread_id}`}
+                  onClick={onClose}
                   className="block px-3 py-2 rounded-md hover:bg-gray-100 text-sm"
                 >
                   {item.title?.length > 20
@@ -461,6 +466,7 @@ export default function Sidebar() {
                 <Link
                   key={item.space_id}
                   to={`/space/${item.space_id}`}
+                  onClick={onClose}
                   className="block px-3 py-2 rounded-md hover:bg-gray-100 text-sm"
                 >
                   {item.space_name?.length > 20

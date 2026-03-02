@@ -169,7 +169,7 @@ export default function Pricing() {
     <>
       <style>{`
 
-        .container { max-width: 28rem; margin: 0 auto; margin-bottom: 3rem; }
+        .container { max-width: 28rem; margin: 0 auto; margin-bottom: 3rem; padding: 0 1rem; }
         .pricing-card { background: white; border-radius: 1rem; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04); overflow: hidden; border: 1px solid #e5e7eb; }
         .card-header { background: linear-gradient(135deg, #2563eb 0%, #9333ea 100%); padding: 2.5rem 2rem; text-align: center; color: white; }
         .card-header h2 { font-size: 1.875rem; font-weight: bold; margin-bottom: 0.5rem; }
@@ -179,7 +179,7 @@ export default function Pricing() {
         .price-period { font-size: 1.25rem; color: #bfdbfe; margin-left: 0.5rem; }
         .card-header .tagline { font-size: 0.875rem; color: #dbeafe; }
         .cta-section { padding: 1.5rem 2rem; background: #f9fafb; border-bottom: 1px solid #e5e7eb; }
-        .cta-button { width: 100%; background: linear-gradient(135deg, #2563eb 0%, #9333ea 100%); color: white; font-weight: 600; padding: 1rem; border-radius: 0.5rem; border: none; cursor: pointer; font-size: 1rem; margin-bottom: 0.75rem; transition: box-shadow 0.2s; }
+        .cta-button { width: 100%; min-height: 44px; background: linear-gradient(135deg, #2563eb 0%, #9333ea 100%); color: white; font-weight: 600; padding: 1rem; border-radius: 0.5rem; border: none; cursor: pointer; font-size: 1rem; margin-bottom: 0.75rem; transition: box-shadow 0.2s; touch-action: manipulation; }
         .cta-button:hover { box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); }
         .no-cc { text-align: center; font-size: 0.875rem; color: #6b7280; }
         .features-section { padding: 1.5rem 2rem; border-bottom: 1px solid #e5e7eb; }
@@ -210,12 +210,12 @@ export default function Pricing() {
 
       {isAuthenticated ? (isSubscriptionLoading ? <div className="max-w-xl mx-auto py-10 animate-fade-in px-4 sm:px-6 lg:px-8 text-center">
         {/* {(!isAuthenticated || isSubscriptionLoading || isRedirectingToPayment) && */}
-        <h1 className="text-4xl font-bold mb-6 text-gray-800">Pricing</h1>
+        <h1 className="text-2xl sm:text-4xl font-bold mb-6 text-gray-800">Pricing</h1>
         {/* } */}
         <div id="pricing-status-container" className="mt-8"><p className="text-gray-600">Loading subscription status...</p></div></div> :
         isRedirectingToPayment ? <div className="max-w-xl mx-auto py-10 animate-fade-in px-4 sm:px-6 lg:px-8 text-center">
           {/* {(!isAuthenticated || isSubscriptionLoading || isRedirectingToPayment) && */}
-          <h1 className="text-4xl font-bold mb-6 text-gray-800">Pricing</h1>
+          <h1 className="text-2xl sm:text-4xl font-bold mb-6 text-gray-800">Pricing</h1>
           {/* } */}
           <div id="pricing-status-container" className="mt-8"><p className="text-gray-600">Redirecting to payment gateway...</p></div></div> :
           <div className="container">
@@ -376,7 +376,7 @@ export default function Pricing() {
         :
         <div className="max-w-xl mx-auto py-10 animate-fade-in px-4 sm:px-6 lg:px-8 text-center">
           {/* {(!isAuthenticated || isSubscriptionLoading || isRedirectingToPayment) && */}
-          <h1 className="text-4xl font-bold mb-6 text-gray-800">Pricing</h1>
+          <h1 className="text-2xl sm:text-4xl font-bold mb-6 text-gray-800">Pricing</h1>
           {/* } */}
           <div id="pricing-status-container" className="mt-8">
             <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg relative">

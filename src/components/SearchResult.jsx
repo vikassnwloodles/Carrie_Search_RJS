@@ -3,7 +3,7 @@ import SearchImagesContainer from "./SearchImagesContainer";
 import SearchResponseContainer from "./SearchResponseContainer";
 import SearchExportOptions from "./SearchExportOptions";
 import RelatedQuestionsContainer from "./RelatedQuestionsContainer";
-import { structuredData } from "../utils/structuredData";
+import { structuredData, injectCitationPlaceholders } from "../utils/structuredData";
 import { useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { showCustomToast } from "../utils/customToast";
@@ -70,9 +70,13 @@ export default function SearchResult({ response: initResponse, prompt: initPromp
 
 
 
+  const rawText = response?.choices?.[0]?.message?.content ?? response?.content?.[0]?.text ?? "";
+  const annotations = response?.content?.[0]?.annotations ?? [];
+  const textWithPlaceholders = annotations.length ? injectCitationPlaceholders(rawText, annotations) : rawText;
   const content = response ? structuredData(
-    response.choices?.[0]?.message?.content ?? response.content?.[0]?.text,
-    response.citations_metadata ?? []
+    textWithPlaceholders,
+    response.citations_metadata ?? [],
+    annotations.length ? annotations : undefined
   ) : null;
 
   const image_url = response.content?.[0]?.image_url
@@ -90,7 +94,7 @@ export default function SearchResult({ response: initResponse, prompt: initPromp
               <div className="mb-2">
                 <SelectedTextContainer
                   selectedText={selected_text}
-                  styles={`max-w-3/4 ml-auto `}
+                  styles={`max-w-[75%] sm:max-w-3xl ml-auto `}
                 />
               </div>
             }
@@ -98,7 +102,7 @@ export default function SearchResult({ response: initResponse, prompt: initPromp
               <FileMetadataBox
                 uploadedFiles={uploadedFiles}
                 setUploadedFiles={null}
-                styles={`max-w-3/4 ml-auto`}
+                styles={`max-w-[75%] sm:max-w-3xl ml-auto`}
               />
             </div>
             <SearchQueryContainer
@@ -122,6 +126,8 @@ export default function SearchResult({ response: initResponse, prompt: initPromp
               setSelectedText={setSelectedText}
               docUrl={doc_url}
               docName={doc_name}
+              annotations={annotations}
+              citationsMetadata={response.citations_metadata}
             />
             {!chatId &&
               <SearchExportOptions

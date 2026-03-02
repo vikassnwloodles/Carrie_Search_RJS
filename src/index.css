@@ -93,7 +93,7 @@ body {
 
 .main-logo {
     width: 60vh;
-    max-width: 65vh;
+    max-width: min(65vh, 380px);
 }
 
 .logo-main .char-c {
@@ -294,15 +294,15 @@ input:checked+.slider:before {
     display: flex;
     overflow-x: auto;
     gap: 16px;
-    /* Space between images */
-    padding: 0 40px;
-    /* Padding for scrollbar and space for arrows */
+    padding: 0 16px;
     -webkit-overflow-scrolling: touch;
-    /* Smooth scrolling on iOS */
     scrollbar-width: thin;
-    /* Firefox */
     scrollbar-color: #888 #f1f1f1;
-    /* Firefox scrollbar color */
+}
+@media (min-width: 640px) {
+    .image-carousel-container {
+        padding: 0 40px;
+    }
 }
 
 .image-carousel-container::-webkit-scrollbar {
@@ -325,11 +325,9 @@ input:checked+.slider:before {
 
 .image-card {
     flex-shrink: 0;
-    /* Prevent images from shrinking */
     height: 150px;
-    /* Fixed height for all image cards */
     width: 250px;
-    /* Fixed width for each card, adjust as needed */
+    max-width: min(250px, 85vw);
     border-radius: 8px;
     overflow: hidden;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);

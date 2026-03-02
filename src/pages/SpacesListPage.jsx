@@ -138,7 +138,7 @@ export default function SpacesListPage() {
   return (
     <div className="w-full min-h-screen flex flex-col">
       {/* Top Nav */}
-      <div className="flex items-center justify-between px-7 py-3.5 border-b border-black/[0.07]">
+      <div className="flex items-center justify-between px-4 sm:px-6 md:px-7 py-3.5 border-b border-black/[0.07]">
         <div className="text-sm text-stone-500">
           <span className="text-stone-800 font-medium">Spaces</span>
         </div>
@@ -147,7 +147,7 @@ export default function SpacesListPage() {
             type="button"
             onClick={handleCreateNewSpace}
             disabled={creatingSpace}
-            className="flex items-center gap-2 bg-stone-900 text-white border-none rounded-lg px-4 py-2 text-sm font-medium cursor-pointer tracking-wide hover:bg-stone-700 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+            className="flex items-center gap-2 bg-stone-900 text-white border-none rounded-lg px-4 py-3 min-h-[44px] text-sm font-medium cursor-pointer tracking-wide hover:bg-stone-700 transition-colors disabled:opacity-60 disabled:cursor-not-allowed touch-manipulation"
           >
             {plusIcon}
             <span>{creatingSpace ? "Creating..." : "New Space"}</span>
@@ -156,7 +156,7 @@ export default function SpacesListPage() {
       </div>
 
       {/* Main content */}
-      <div className="flex-1 max-w-5xl mx-auto w-full px-6 pt-10 pb-10">
+      <div className="flex-1 max-w-5xl mx-auto w-full px-4 sm:px-6 pt-10 pb-10">
         <h2 className="text-xl font-semibold text-stone-800 mb-6">My Spaces</h2>
 
         {loading ? (
@@ -171,7 +171,7 @@ export default function SpacesListPage() {
               type="button"
               onClick={handleCreateNewSpace}
               disabled={creatingSpace}
-              className="mt-4 flex items-center gap-2 bg-stone-900 text-white border-none rounded-lg px-4 py-2 text-sm font-medium cursor-pointer hover:bg-stone-700 disabled:opacity-60"
+              className="mt-4 flex items-center gap-2 bg-stone-900 text-white border-none rounded-lg px-4 py-3 min-h-[44px] text-sm font-medium cursor-pointer hover:bg-stone-700 disabled:opacity-60 touch-manipulation"
             >
               {plusIcon}
               <span>New Space</span>

@@ -341,7 +341,7 @@ export default function LibraryPage() {
   ------------------------------*/
   return (
     <>
-      <div className="w-full max-w-5xl mx-auto px-4 py-6">
+      <div className="w-full max-w-5xl mx-auto px-4 sm:px-6 py-6">
 
         {/* Tabs */}
         <div className="flex border-b border-gray-200 mb-6">
@@ -350,7 +350,7 @@ export default function LibraryPage() {
               key={tab}
               // onClick={() => setActiveTab(tab)}
               onClick={() => handleTabChange(tab)}
-              className={`cursor-pointer px-4 py-2.5 text-sm font-medium transition-colors duration-150 relative
+              className={`cursor-pointer px-3 sm:px-4 py-3 sm:py-2.5 text-sm font-medium transition-colors duration-150 relative touch-manipulation
                 ${activeTab === tab
                   ? "text-gray-900 after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-gray-900 after:rounded-full"
                   : "text-gray-500 hover:text-gray-700"
@@ -417,18 +417,22 @@ export default function LibraryPage() {
                         <h3 className="font-medium text-gray-900 line-clamp-1">
                           {thread.title ?? "Untitled thread"}
                         </h3>
-                        <i
-                          className={`fa fa-ellipsis ml-auto hover:bg-gray-200 px-2 py-1 rounded-sm ${id === openMenuId && "bg-gray-200"}`}
+                        <button
+                          type="button"
+                          aria-label="Thread options"
+                          className={`ml-auto hover:bg-gray-200 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-sm cursor-pointer touch-manipulation ${id === openMenuId ? "bg-gray-200" : ""}`}
                           onClick={(event) => toggleMenu(id, event)}
-                        ></i>
+                        >
+                          <i className="fa fa-ellipsis-v" aria-hidden />
+                        </button>
                         {id === openMenuId && (
                           <div
                             ref={menuRef}
-                            className={`z-[999] flex flex-col absolute text-sm right-0 bg-white border border-gray-200 p-2 rounded-xl gap-2 w-52 shadow-xl ${isLastThread ? "bottom-full mb-1" : "top-7"}`}
+                            className={`z-[999] flex flex-col absolute text-sm right-0 bg-white border border-gray-200 p-2 rounded-xl gap-0.5 w-52 max-w-[calc(100vw-2rem)] shadow-xl ${isLastThread ? "bottom-full mb-1" : "top-7"}`}
                           >
                             {!thread.space ? (
                               <span
-                                className="hover:bg-gray-200 p-2 rounded-md cursor-pointer"
+                                className="hover:bg-gray-200 py-3 px-2 rounded-md cursor-pointer touch-manipulation min-h-[44px] flex items-center"
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   setShowChooseSpaceModal(true);
@@ -436,12 +440,12 @@ export default function LibraryPage() {
                                   setCurrentThread(thread);
                                 }}
                               >
-                                <i className="fa fa-plus mr-2"></i>Add to Space
+                                <i className="fa fa-plus mr-2" aria-hidden></i>Add to Space
                               </span>
                             ) : (
                               <>
                                 <span
-                                  className="hover:bg-gray-200 p-2 rounded-md cursor-pointer"
+                                  className="hover:bg-gray-200 py-3 px-2 rounded-md cursor-pointer touch-manipulation min-h-[44px] flex items-center"
                                   onClick={(e) => {
                                     e.stopPropagation();
                                     setShowChooseSpaceModal(true);
@@ -453,7 +457,7 @@ export default function LibraryPage() {
                                   <i className="fa fa-shuffle mr-2"></i>Swap Space
                                 </span>
                                 <span
-                                  className="hover:bg-gray-200 p-2 rounded-md cursor-pointer"
+                                  className="hover:bg-gray-200 py-3 px-2 rounded-md cursor-pointer touch-manipulation min-h-[44px] flex items-center"
                                   onClick={(e) => {
                                     e.stopPropagation();
                                     setOpenMenuId(null);
@@ -473,14 +477,14 @@ export default function LibraryPage() {
                               </>
                             )}
                             <span
-                              className="hover:bg-gray-200 p-2 rounded-md cursor-pointer"
+                              className="hover:bg-gray-200 py-3 px-2 rounded-md cursor-pointer touch-manipulation min-h-[44px] flex items-center"
                               onClick={(e) => handleRenameThread(e, thread)}
                             >
                               <i className="fa fa-pencil mr-2"></i>Rename Thread
                             </span>
                             <hr />
                             <span
-                              className="hover:bg-gray-200 p-2 rounded-md cursor-pointer"
+                              className="hover:bg-gray-200 py-3 px-2 rounded-md cursor-pointer touch-manipulation min-h-[44px] flex items-center"
                               onClick={(e) => handleDeleteThread(e, thread)}
                             >
                               <i className="fa fa-trash mr-2"></i>Delete

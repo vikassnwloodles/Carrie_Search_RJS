@@ -1,9 +1,17 @@
-import { useEffect, useLayoutEffect, useRef } from "react";
+import { useEffect, useLayoutEffect, useRef, useState, useMemo } from "react";
 import { createPortal } from "react-dom";
 import { showCustomToast } from "../utils/customToast";
 import ThinkingLoader from "./ThinkingLoader";
 import { useSearch } from "../context/SearchContext";
 import { fetchWithAuth } from "../api/fetchWithAuth";
+
+function getDomain(url) {
+  try {
+    return new URL(url).hostname.replace(/^www\./, "") || "";
+  } catch {
+    return "";
+  }
+}
 
 export default function SearchResponseContainer({
   content,
@@ -13,11 +21,23 @@ export default function SearchResponseContainer({
   searchResultId,
   setSelectedText,
   docUrl,
-  docName
+  docName,
+  annotations = [],
+  citationsMetadata = []
 }) {
   const responseContainerRef = useRef(null);
   const selectedTextRef = useRef("")
   const toolbarRef = useRef(null);
+  const [sourcesExpanded, setSourcesExpanded] = useState(false);
+
+  const uniqueSources = useMemo(() => {
+    const list = (annotations?.length ? annotations : citationsMetadata || []).map((a) => ({
+      url: a.url || a.site_url,
+      title: a.title || ""
+    })).filter((a) => a.url);
+    const seen = new Set();
+    return list.filter((a) => !seen.has(a.url) && seen.add(a.url));
+  }, [annotations, citationsMetadata]);
 
   const {
     searchStarted,
@@ -232,6 +252,46 @@ export default function SearchResponseContainer({
             )}
             {searchStarted && searchResultId === searchInputData.search_result_id && (imageGenerationStarted || fileGenerationStarted) && (
               <ThinkingLoader text={imageGenerationStarted ? "Generating..." : "Generating File..."} />
+            )}
+            {/* Sources (inline citations + aggregated "N sources" button) */}
+            {!imageURL && !docUrl && uniqueSources.length > 0 && (
+              <div className="mt-3 flex flex-wrap items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setSourcesExpanded((e) => !e)}
+                  className="inline-flex items-center gap-1.5 rounded-md border border-gray-300 bg-gray-50 px-2.5 py-1 text-xs font-medium text-gray-700 hover:bg-gray-100 transition-colors"
+                  aria-expanded={sourcesExpanded}
+                >
+                  <span className="inline-flex items-center gap-1">
+                    <i className="fa-solid fa-globe text-gray-500" aria-hidden />
+                    {uniqueSources.length} source{uniqueSources.length !== 1 ? "s" : ""}
+                  </span>
+                </button>
+                {sourcesExpanded && (
+                  <ul className="flex flex-col gap-1.5 w-full mt-2 list-none pl-0">
+                    {uniqueSources.map((a, i) => (
+                      <li key={i}>
+                        <a
+                          href={a.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-start gap-2 p-2 rounded hover:bg-gray-100 text-gray-800 no-underline"
+                        >
+                          <img
+                            src={`https://www.google.com/s2/favicons?domain=${getDomain(a.url)}&sz=16`}
+                            alt=""
+                            className="w-4 h-4 flex-shrink-0 rounded mt-0.5"
+                            onError={(e) => { e.target.style.display = "none"; }}
+                          />
+                          <span className="text-sm truncate flex-1 min-w-0">
+                            {a.title || a.url}
+                          </span>
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
             )}
           </>
         )}

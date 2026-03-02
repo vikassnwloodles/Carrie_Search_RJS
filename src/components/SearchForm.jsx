@@ -750,8 +750,8 @@ const SearchForm = ({ isThreadPage, threadId, selectedText = "", setSelectedText
                             // className="max-h-[40vh] resize-none w-full rounded-xl pt-2 pl-16 pr-32 md:pl-20 md:pr-40 text-lg bg-white focus:outline-none transition-shadow whitespace-pre-wrap overflow-y-auto"
                             className={`
                                 max-h-[40vh] resize-none w-full rounded-xl
-                                pl-16 pr-32 md:pl-20 md:pr-40
-                                text-lg bg-white focus:outline-none
+                                pl-12 pr-24 sm:pl-16 sm:pr-32 md:pl-20 md:pr-40
+                                text-base sm:text-lg bg-white focus:outline-none
                                 whitespace-pre-wrap overflow-y-auto
                                 transition-all
                                 ${hideFileMetadataBox ? "pt-2" : (selectedText.trim() && uploadedFiles.length > 0) ? "pt-40" : (selectedText.trim() ? "pt-20" : (uploadedFiles.length > 0 ? "pt-20" : "pt-2"))}
