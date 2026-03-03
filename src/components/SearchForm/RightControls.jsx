@@ -174,9 +174,10 @@ function RightControls({
                 <div
                     id="main2Dropdown"
                     className={`${main2DropdownOpen ? "" : "hidden"}
-                                    absolute right-0 ${isThreadPage ? "bottom-full mb-2" : "mt-2"}
+                                    absolute right-0 bottom-full mb-2
                                     w-56 max-h-[min(18rem,70vh)] overflow-y-auto
                                     bg-white rounded shadow-lg z-[9999]
+                                    border border-gray-200
                                 `}
                 >
                     <div className="p-1">

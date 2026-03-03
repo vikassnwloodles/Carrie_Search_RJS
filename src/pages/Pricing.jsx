@@ -226,7 +226,7 @@ export default function Pricing() {
                 <p className="subtitle">Real Impact.</p>
 
                 <div className="price" aria-hidden>
-                  <span className="price-amount">$20</span>
+                  <span className="price-amount">$25</span>
                   <span className="price-period">/month</span>
                 </div>
 

@@ -74,7 +74,7 @@ export default function AboutUs() {
                         <li>Professional writing assistance</li>
                         <li>Seamless Canva and CRM integration</li>
                         <li>Enterprise-grade security</li>
-                        <li>Every $20/month subscription transforms families' lives</li>
+                        <li>Every $25/month subscription transforms families' lives</li>
                     </ul>
                     <h2 className="text-3xl font-semibold text-gray-800 mb-3">Join Carrie Today</h2>
                     <p className="text-lg text-gray-700 leading-relaxed mb-4">
@@ -86,7 +86,7 @@ export default function AboutUs() {
                     {/* <p align="center">
                         <br />
                         <b>
-                            [Sign Up Now — Only $20/month]</b>
+                            [Sign Up Now — Only $25/month]</b>
                     </p> */}
                     Be the change. Help uplift communities nationwide.
                 </div>
