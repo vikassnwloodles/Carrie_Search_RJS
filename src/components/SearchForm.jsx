@@ -21,7 +21,7 @@ const SearchForm = ({ isThreadPage, threadId, selectedText = "", setSelectedText
         searchInputData,
         setSearchInputData,
     } = useSearch();
-    const fireSearch = useFireSearch()
+    const { fireSearch, abortSearch } = useFireSearch()
 
     // ================ STATES DEFINED HERE ================
     const [searchSuggestions, setSearchSuggestions] = useState([])
@@ -671,9 +671,38 @@ const SearchForm = ({ isThreadPage, threadId, selectedText = "", setSelectedText
 
 
     const handlePaste = (e) => {
-        e.preventDefault();
-
         const clipboard = e.clipboardData;
+        if (!clipboard) return;
+
+        // Handle pasted files (e.g. images from screenshot, Copy Image, or paste from clipboard)
+        const files = clipboard.files && clipboard.files.length > 0
+            ? Array.from(clipboard.files)
+            : [];
+        const items = clipboard.items ? Array.from(clipboard.items) : [];
+        const imageItems = items.filter((item) => item.kind === "file" && (item.type || "").startsWith("image/"));
+        const filesFromItems = imageItems.map((item) => item.getAsFile()).filter(Boolean);
+
+        const allPastedFiles = files.length > 0 ? files : filesFromItems;
+        if (allPastedFiles.length > 0) {
+            e.preventDefault();
+            const validFiles = allPastedFiles.filter((file) => {
+                if (!allowedMimeTypes.includes(file.type)) {
+                    showCustomToast(
+                        `Pasted file type "${file.type || file.name}" is not allowed.`,
+                        { type: "warn", title: "Invalid File Type" }
+                    );
+                    return false;
+                }
+                return true;
+            });
+            if (validFiles.length > 0) {
+                setUploadedFiles((prev) => [...prev, ...validFiles]);
+            }
+            return;
+        }
+
+        // Text/HTML paste
+        e.preventDefault();
         const html = clipboard.getData("text/html");
         const text = (clipboard.getData("text/plain") ?? "").trim();
 
@@ -710,6 +739,10 @@ const SearchForm = ({ isThreadPage, threadId, selectedText = "", setSelectedText
                 className={`z-10 w-full max-w-4xl min-w-0 pb-12 rounded-xl ${isThreadPage ? "fixed -bottom-5 !w-full" : ""} ${embedInModal ? "left-1/2 -translate-x-1/2" : ""}`}
                 onSubmit={(e) => {
                     e.preventDefault();
+                    if (searchStarted) {
+                        abortSearch();
+                        return;
+                    }
                     handleSearchSubmit();
                 }}
             >

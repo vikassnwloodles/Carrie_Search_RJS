@@ -482,12 +482,11 @@ function RightControls({
                 />
             </button>
 
-            {/* Submit */}
+            {/* Submit / Stop */}
             <button
-                disabled={searchStarted}
                 type="submit"
                 id="search-form-btn"
-                className="cursor-pointer bg-[#652F74] text-white rounded-lg w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center hover:bg-teal-700 transition-colors"
+                className="cursor-pointer bg-[#652F74] text-white rounded-lg w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center hover:bg-teal-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
                 <i className={`fas ${searchStarted ? "fa-stop" : "fa-arrow-right"} text-base sm:text-xl`} />
             </button>

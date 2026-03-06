@@ -246,12 +246,17 @@ export default function SearchResponseContainer({
               id={`response-text-inner-${uniqueId}`}
               dangerouslySetInnerHTML={{ __html: content }}
             />
-            {/* Orb is injected inline at end of text via useLayoutEffect. When no content yet, show loader on its own line. */}
+            {/* Orb is injected inline at end of text via useLayoutEffect. When no content yet, show one loader: "Generating..." when file/image gen started, else "Thinking...". */}
             {searchStarted && searchResultId === searchInputData.search_result_id && !content && (
-              <ThinkingLoader text="Thinking..." />
-            )}
-            {searchStarted && searchResultId === searchInputData.search_result_id && (imageGenerationStarted || fileGenerationStarted) && (
-              <ThinkingLoader text={imageGenerationStarted ? "Generating..." : "Generating File..."} />
+              <ThinkingLoader
+                text={
+                  imageGenerationStarted
+                    ? "Generating..."
+                    : fileGenerationStarted
+                      ? "Generating File..."
+                      : "Thinking..."
+                }
+              />
             )}
             {/* Sources (inline citations + aggregated "N sources" button) */}
             {!imageURL && !docUrl && uniqueSources.length > 0 && (

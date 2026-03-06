@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef } from "react";
 import { useSearch } from "../context/SearchContext";
 import { showCustomToast } from "../utils/customToast";
 import { flushSync } from "react-dom";
@@ -18,7 +18,13 @@ export function useFireSearch() {
         setNewThreadForSidebar,
     } = useSearch();
 
+    const abortControllerRef = useRef(null);
 
+    const abortSearch = () => {
+        if (abortControllerRef.current) {
+            abortControllerRef.current.abort();
+        }
+    };
 
     const fireSearch = async (prompt, search_result_id, thread_id, isFirstSearchOfThread, uploadedFiles, selected_text, space_id) => {
         prompt = prompt.trim()
@@ -87,9 +93,13 @@ export function useFireSearch() {
                 formData.append(key, value);
             });
 
+            abortControllerRef.current = new AbortController();
+            const signal = abortControllerRef.current.signal;
+
             const res = await fetchWithAuth(`${import.meta.env.VITE_API_URL}/search/`, {
                 method: "POST",
-                body: formData
+                body: formData,
+                signal,
             });
 
             if (!res.ok) {
@@ -317,15 +327,19 @@ export function useFireSearch() {
 
 
         } catch (err) {
+            if (err.name === "AbortError") {
+                return;
+            }
             console.error(err);
             showCustomToast({ message: "Something went wrong" }, { type: "error" });
         } finally {
             setSearchStarted(false);
-            setStreamStarted(false)
-            setImageGenerationStarted(false)
-            setFileGenerationStarted(false)
+            setStreamStarted(false);
+            setImageGenerationStarted(false);
+            setFileGenerationStarted(false);
+            abortControllerRef.current = null;
         }
     };
 
-    return fireSearch;
+    return { fireSearch, abortSearch };
 }

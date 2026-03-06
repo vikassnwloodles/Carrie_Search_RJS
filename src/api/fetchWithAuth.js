@@ -6,6 +6,7 @@ export async function fetchWithAuth(url, options = {}) {
 
   const baseOptions = {
     ...options,
+    signal: options.signal,
     headers: {
       ...(isFormData ? {} : { "Content-Type": "application/json" }),
       ...(options.headers || {}),
@@ -32,6 +33,7 @@ export async function fetchWithAuth(url, options = {}) {
 
       const retryOptions = {
         ...options,
+        signal: options.signal,
         headers: {
           ...(isFormData ? {} : { "Content-Type": "application/json" }),
           ...(options.headers || {}),
